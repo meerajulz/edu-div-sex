@@ -1,11 +1,14 @@
 'use client'
 import { useState } from "react";
 import { Question, questionsData } from "../data/questions";
-import RootLayout from "../layout";
+import { useRouter } from 'next/navigation'; 
 
 export default function Form() {
   // State to manage the questions
   const [questions, setQuestions] = useState<Question[]>(questionsData);
+
+  // Router hook now used correctly
+  const router = useRouter();
 
   // Handle TIPO DE APOYO change
   const handleSupportTypeChange = (id: number, value: "1" | "0") => {
@@ -25,12 +28,18 @@ export default function Form() {
     );
   };
 
-  return (
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // You might want to add validation here
+    router.push('/home');
+  };
 
+  return (
     <div className="min-h-screen bg-neutral py-10 px-4">
       <div className="max-w-3xl mx-auto bg-white shadow-md rounded-md p-6">
         <h1 className="text-2xl font-bold mb-6">Evaluación de Nivel</h1>
-        <form>
+        <form onSubmit={handleSubmit}>
           {questions.map((q) => (
             <div key={q.id} className="mb-6">
               {/* Question Text */}
@@ -115,6 +124,5 @@ export default function Form() {
         </form>
       </div>
     </div>
-
   );
 }

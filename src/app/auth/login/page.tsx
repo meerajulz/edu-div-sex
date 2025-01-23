@@ -1,33 +1,35 @@
-'use client'
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation'; 
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  
+  // Router hook now used correctly
+  const router = useRouter();
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
-    // Simple validation
     if (!email || !password) {
-      setError("Please fill in all fields.");
+      setError('Please fill in all fields.');
       return;
     }
 
     try {
-      // Handle login logic (e.g., API call)
-      console.log("Logging in with", { email, password });
-      setError(""); // Clear any previous errors
-      // Redirect or handle success
+      console.log('Logging in with', { email, password });
+      setError('');
+      router.push('/evaluation-form'); // Navigation works the same way
     } catch (err) {
-      setError("Login failed. Please try again.");
+      setError('Login failed. Please try again.');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen ">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-md p-8 space-y-6 bg-neutral shadow-lg rounded-lg">
         <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -62,12 +64,11 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full py-2 text-white btn secondary rounded-lg hover:bg-blue-600"
+            className="w-full py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg"
           >
             Login
           </button>
         </form>
-    
       </div>
     </div>
   );
