@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Home, Volume2, User, Flag, Info, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
 
 interface MenuItem {
   id: string;
@@ -16,19 +17,34 @@ const FloatingMenu = () => {
   const router = useRouter();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [ripples, setRipples] = useState<{ id: string; x: number; y: number }[]>([]);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+    // Initialize audio on component mount
+    useEffect(() => {
+      const audioElement = new Audio('/ui-sound/click.mp3');
+      audioElement.preload = 'auto';
+      setAudio(audioElement);
+    }, []);
+    
 
   const menuItems: MenuItem[] = [
-    { id: 'home', icon: <Home size={24} />, href: '/', sound: '/click.mp3' },
-    { id: 'sound', icon: <Volume2 size={24} />, href: '/sound', sound: '/click.mp3' },
-    { id: 'profile', icon: <User size={24} />, href: '/profile', sound: '/click.mp3' },
-    { id: 'language', icon: <Flag size={24} />, href: '/language', sound: '/click.mp3' },
-    { id: 'info', icon: <Info size={24} />, href: '/info', sound: '/click.mp3' },
-    { id: 'exit', icon: <LogOut size={24} />, href: '/', sound: '/click.mp3' }
+    { id: 'home', icon: <Home size={24} />, href: '/', sound: '/ui-sound/click.mp3' },
+    { id: 'sound', icon: <Volume2 size={24} />, href: '/sound', sound: '/ui-sound/click.mp3' },
+    { id: 'profile', icon: <User size={24} />, href: '/profile', sound: '/ui-sound/click.mp3' },
+    { id: 'language', icon: <Flag size={24} />, href: '/language', sound: '/ui-sound/click.mp3' },
+    { id: 'info', icon: <Info size={24} />, href: '/info', sound: '/ui-sound/click.mp3' },
+    { id: 'exit', icon: <LogOut size={24} />, href: '#', sound: '/ui-sound/click.mp3' },
   ];
 
-  const playSound = (soundUrl: string) => {
-    const audio = new Audio(soundUrl);
-    audio.play();
+  const playSound = async () => {
+    try {
+      if (audio) {
+        // Reset the audio to start
+        audio.currentTime = 0;
+        await audio.play();
+      }
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
   };
 
   const handleClick = async (item: MenuItem, e: React.MouseEvent) => {
@@ -43,9 +59,7 @@ const FloatingMenu = () => {
     setRipples(prev => [...prev, { id: rippleId, x, y }]);
 
     // Play sound
-    if (item.sound) {
-      playSound(item.sound);
-    }
+    await playSound();
 
     // Set active state
     setActiveId(item.id);

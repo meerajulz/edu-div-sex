@@ -125,8 +125,42 @@ interface Props {
 }
 
 const OrbitalCarousel = ({ items = itemsData }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const router = useRouter();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [moveAudio, setMoveAudio] = useState<HTMLAudioElement | null>(null);
+  const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
+
+  // Initialize audio elements
+  useEffect(() => {
+    // Movement sound
+    const moveSound = new Audio('/ui-sound/whoosh.mp3');
+    moveSound.preload = 'auto';
+    moveSound.volume = 0.3;
+    setMoveAudio(moveSound);
+
+    // Click sound
+    const clickSound = new Audio('/ui-sound/click.mp3');
+    clickSound.preload = 'auto';
+    clickSound.volume = 0.5;
+    setClickAudio(clickSound);
+
+    // Cleanup
+    return () => {
+      moveSound.pause();
+      clickSound.pause();
+    };
+  }, []);
+
+  const playSound = async (audio: HTMLAudioElement | null) => {
+    try {
+      if (audio) {
+        audio.currentTime = 0;
+        await audio.play();
+      }
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
+  };
 
   const calculatePosition = (index: number, totalItems: number) => {
     const angleStep = 360 / totalItems;
@@ -151,11 +185,18 @@ const OrbitalCarousel = ({ items = itemsData }) => {
     };
   };
 
-  const handleCircleClick = (index: number) => {
+  const handleCircleClick = async (index: number) => {
+    if (index !== activeIndex) {
+      // Play click sound first
+      await playSound(clickAudio);
+      // Then play movement sound
+      await playSound(moveAudio);
+    }
     setActiveIndex(index);
   };
 
-  const handleLabelClick = (url: string) => {
+  const handleLabelClick = async (url: string) => {
+    await playSound(clickAudio);
     router.push(url);
   };
 
