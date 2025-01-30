@@ -1,0 +1,110 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { CloudSVG } from './CloudSVG';
+
+const AnimatedSky: React.FC = () => {
+  // Define four layers of static clouds with improved spacing
+  const cloudLayers = [
+    { size: 0.6, opacity: 0.2, count: 3 }, // Deep far layer (smaller, more transparent)
+    { size: 1, opacity: 0.3, count: 4 }, // Far layer
+    { size: 1.5, opacity: 0.6, count: 4 }, // Middle layer
+    { size: 2, opacity: 1, count: 4 }, // Close layer (largest, most opaque)
+  ];
+
+  const movingCloudLayers = [
+    { size: 1, opacity: 0.4, speed: 25, count: 3, variant: 1 }, // Farthest moving clouds (smallest, slowest)
+    { size: 1.8, opacity: 0.6, speed: 20, count: 3, variant: 1 }, // Mid-far moving clouds
+    { size: 2.5, opacity: 0.8, speed: 15, count: 2, variant: 2 }, // Middle moving clouds
+   // { size: 3.2, opacity: 1, speed: 10, count: 2, variant: 2 }, // Closest moving clouds (largest, fastest)
+  ];
+
+  // Store cloud positions in state to prevent SSR mismatch
+  const [cloudPositions, setCloudPositions] = useState<
+    { top: number; left: number; layer: { size: number; opacity: number } }[]
+  >([]);
+
+  useEffect(() => {
+    const positions = cloudLayers.flatMap((layer, index) => {
+      const layerPositions: { top: number; left: number; layer: { size: number; opacity: number; count: number; }; }[] = [];
+      for (let i = 0; i < layer.count; i++) {
+        let top: number, left: number;
+        let attempts = 0;
+        do {
+          top = index * 10 + Math.random() * 10; // Pushes clouds to the upper 50% of the screen
+          left = 50 + (Math.random() * 40 - 20) * (index + 1); // Keeps the clouds staggered horizontally
+          attempts++;
+        } while (
+          layerPositions.some(
+            (pos) => Math.abs(pos.top - top) < 15 && Math.abs(pos.left - left) < 15
+          ) && attempts < 10
+        );
+        layerPositions.push({ top, left, layer });
+      }
+      return layerPositions;
+    });
+
+    setCloudPositions(positions);
+  }, []); // Run only on mount to ensure consistent positions
+
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-[#B5E7F0]">
+      {/* 3D Cylinder Gradient */}
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/40 via-transparent to-white/10 z-5 blur-2xl"></div>
+
+      {/* Cloud Container Limited to 50% Height */}
+      <div className="absolute top-0 w-full h-[50vh]">
+        {/* Moving Clouds with Layered Depth */}
+        {movingCloudLayers.map((layer, layerIndex) => (
+          Array.from({ length: layer.count }).map((_, index) => {
+            let top = layerIndex * 10 + Math.random() * 10; // Creates a triangular depth shape
+            let left = 50 + (Math.random() * 40 - 20) * (layerIndex + 1); // Staggered movement
+            return (
+              <motion.div
+                key={`moving-${layerIndex}-${index}`}
+                className="absolute z-10"
+                initial={{ x: index % 2 === 0 ? -200 : '100vw' }}
+                animate={{ x: index % 2 === 0 ? '100vw' : -200 }}
+                transition={{
+                  duration: layer.speed + index * 2,
+                  repeat: Infinity,
+                  ease: "linear",
+                  delay: index * 3,
+                }}
+                style={{
+                  top: `${top}%`,
+                  left: `${left}%`,
+                  opacity: layer.opacity,
+                  transform: `scale(${layer.size})`,
+                  maxWidth: '8rem',
+                }}
+              >
+                <CloudSVG variant={layer.variant} />
+              </motion.div>
+            );
+          })
+        ))}
+
+        {/* Static Clouds with Four Layers, Ensuring Spacing & Triangular Shape */}
+        {cloudPositions.map((pos, index) => (
+          <div
+            key={`static-layer-${index}`}
+            className="absolute z-20"
+            style={{
+              top: `${pos.top}%`,
+              left: `${pos.left}%`,
+              opacity: pos.layer.opacity,
+              transform: `scale(${pos.layer.size})`,
+              maxWidth: '6rem',
+            }}
+          >
+            <CloudSVG variant={(index + 1) % 2 + 1} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default AnimatedSky;
