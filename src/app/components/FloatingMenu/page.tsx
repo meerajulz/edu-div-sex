@@ -77,7 +77,7 @@ const FloatingMenu = () => {
 
   return (
     <motion.div
-      className="fixed right-8 top-10 -translate-y-1/2 flex flex-col gap-6 bg-white/10 backdrop-blur-sm p-4 rounded-full shadow-lg"
+      className="fixed right-8 top-5 -translate-y-1/2 flex flex-col gap-6 bg-white/10 backdrop-blur-sm p-4 rounded-full shadow-lg"
       initial={{ x: 100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
