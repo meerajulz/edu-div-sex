@@ -37,7 +37,7 @@ const itemsData: ItemData[] = [
 </svg>`
   },
   {
-    id: 1,
+    id: 2,
     label: "Modulo 2",
     url: "/dashboard",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
@@ -59,8 +59,8 @@ const itemsData: ItemData[] = [
 </svg>`
   },
   {
-    id: 1,
-    label: "Modulo 2",
+    id: 3,
+    label: "Modulo 3",
     url: "/dashboard",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
   <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
@@ -81,7 +81,7 @@ const itemsData: ItemData[] = [
 </svg>`
   },
   {
-    id: 1,
+    id: 4,
     label: "Modulo 4",
     url: "/dashboard",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
@@ -96,8 +96,74 @@ const itemsData: ItemData[] = [
         </svg>`
   },
     {
-    id: 1,
-    label: "Modulo 4",
+    id: 5,
+    label: "Modulo 5",
+    url: "/dashboard",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
+  <!-- Bed -->
+  <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
+  <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
+  <!-- Pillows -->
+  <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
+  <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
+  <!-- Lamp -->
+  <circle cx="60" cy="25" r="6" fill="#FFA500"/>
+  <!-- Teddy -->
+  <circle cx="25" cy="25" r="5" fill="#8B4513"/>
+  <circle cx="23" cy="23" r="2" fill="#654321"/>
+  <circle cx="27" cy="23" r="2" fill="#654321"/>
+  <!-- Bed legs -->
+  <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
+</svg>`
+  },
+  {
+    id: 6,
+    label: "Modulo 6",
+    url: "/dashboard",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
+  <!-- Bed -->
+  <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
+  <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
+  <!-- Pillows -->
+  <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
+  <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
+  <!-- Lamp -->
+  <circle cx="60" cy="25" r="6" fill="#FFA500"/>
+  <!-- Teddy -->
+  <circle cx="25" cy="25" r="5" fill="#8B4513"/>
+  <circle cx="23" cy="23" r="2" fill="#654321"/>
+  <circle cx="27" cy="23" r="2" fill="#654321"/>
+  <!-- Bed legs -->
+  <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
+</svg>`
+  },
+  {
+    id: 7,
+    label: "Modulo 7",
+    url: "/dashboard",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
+  <!-- Bed -->
+  <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
+  <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
+  <!-- Pillows -->
+  <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
+  <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
+  <!-- Lamp -->
+  <circle cx="60" cy="25" r="6" fill="#FFA500"/>
+  <!-- Teddy -->
+  <circle cx="25" cy="25" r="5" fill="#8B4513"/>
+  <circle cx="23" cy="23" r="2" fill="#654321"/>
+  <circle cx="27" cy="23" r="2" fill="#654321"/>
+  <!-- Bed legs -->
+  <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
+</svg>`
+  },
+  {
+    id: 8,
+    label: "Modulo 8",
     url: "/dashboard",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
   <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
@@ -167,7 +233,7 @@ const OrbitalCarousel = ({ items = itemsData }) => {
     const angle = ((index - activeIndex) * angleStep) % 360;
     const angleRad = (angle * Math.PI) / 180;
     
-    const radiusX = 200;
+    const radiusX = 150;
     const radiusY = 80;
     
     const x = Math.sin(angleRad) * radiusX;
@@ -201,7 +267,8 @@ const OrbitalCarousel = ({ items = itemsData }) => {
   };
 
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 top-32">
+    <div className="fixed left-1/2 -translate-x-1/2 top-0">
+      
       <div className="relative w-[500px] h-[400px]">
         <div className="absolute top-1/2 left-1/2 w-full h-full" style={{ transform: 'translate(-59.6667%, -50%)' }}>
           <AnimatePresence>
@@ -244,6 +311,7 @@ const OrbitalCarousel = ({ items = itemsData }) => {
                     </motion.div>
                     <motion.span 
                       className={`
+                        bg-white/10 backdrop-blur-sm p-2 rounded-full shadow-lg
                         mt-2 text-sm font-medium text-center cursor-pointer
                         ${index === activeIndex ? 'text-blue-500' : 'text-gray-600'}
                         transition-all duration-300

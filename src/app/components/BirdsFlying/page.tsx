@@ -32,7 +32,7 @@ const BirdsFlying: React.FC<{ count?: number }> = ({ count = 5 }) => {
     // Initialize bird sound
     birdSoundRef.current = new Audio('/ui-sound/bird.mp3');
     if (birdSoundRef.current) {
-      birdSoundRef.current.volume = 0.3;
+      birdSoundRef.current.volume = 0.5;
       birdSoundRef.current.loop = true;
     }
 

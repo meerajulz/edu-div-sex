@@ -7,22 +7,23 @@ import { CloudSVG } from './CloudSVG';
 const AnimatedSky: React.FC = () => {
   // Define four layers of static clouds with improved spacing
   const cloudLayers = [
-    { size: 0.6, opacity: 0.2, count: 3 }, // Deep far layer (smaller, more transparent)
-    { size: 1, opacity: 0.3, count: 4 }, // Far layer
-    { size: 1.5, opacity: 0.6, count: 4 }, // Middle layer
-    { size: 2, opacity: 1, count: 4 }, // Close layer (largest, most opaque)
+    { size: 0.6, opacity: 0.2, count: 3 }, // Deep far layer (smallest, most transparent)
+    { size: 1.2, opacity: 0.4, count: 4 }, // Far layer
+    { size: 1.8, opacity: 0.7, count: 4 }, // Middle layer
+   // { size: 2.4, opacity: 1, count: 4 }, // Close layer (largest, most opaque)
   ];
 
+  // Moving cloud layers
   const movingCloudLayers = [
-    { size: 1, opacity: 0.4, speed: 25, count: 3, variant: 1 }, // Farthest moving clouds (smallest, slowest)
-    { size: 1.8, opacity: 0.6, speed: 20, count: 3, variant: 1 }, // Mid-far moving clouds
-    { size: 2.5, opacity: 0.8, speed: 15, count: 2, variant: 2 }, // Middle moving clouds
-   // { size: 3.2, opacity: 1, speed: 10, count: 2, variant: 2 }, // Closest moving clouds (largest, fastest)
+    { size: 0.5, opacity: 0.3, speed: 30, count: 3, variant: 1 }, // Farthest moving clouds (smallest, slowest)
+    { size: 0.8, opacity: 0.4, speed: 25, count: 3, variant: 1 }, // Mid-far moving clouds
+    { size: 1.2, opacity: 0.5, speed: 20, count: 2, variant: 2 }, // Middle moving clouds
+    { size: 2.2, opacity: 1, speed: 30, count: 2, variant: 1 }, // Middle moving clouds
   ];
 
   // Store cloud positions in state to prevent SSR mismatch
   const [cloudPositions, setCloudPositions] = useState<
-    { top: number; left: number; layer: { size: number; opacity: number } }[]
+    { top: number; left: number; layer: { size: number; opacity: number; count: number } }[]
   >([]);
 
   useEffect(() => {
@@ -49,7 +50,8 @@ const AnimatedSky: React.FC = () => {
   }, []); // Run only on mount to ensure consistent positions
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#B5E7F0]">
+    <div className="fixed left-1/2 -translate-x-1/2 top-0 w-full h-screen bg-gradient-to-b from-cyan-200 to-cyan-100">
+      
       {/* 3D Cylinder Gradient */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/40 via-transparent to-white/10 z-5 blur-2xl"></div>
 
@@ -64,13 +66,13 @@ const AnimatedSky: React.FC = () => {
               <motion.div
                 key={`moving-${layerIndex}-${index}`}
                 className="absolute z-10"
-                initial={{ x: index % 2 === 0 ? -200 : '100vw' }}
-                animate={{ x: index % 2 === 0 ? '100vw' : -200 }}
+                initial={{ x: index % 2 === 0 ? '-110vw' : '110vw' }}
+                animate={{ x: index % 2 === 0 ? '110vw' : '-110vw' }}
                 transition={{
-                  duration: layer.speed + index * 2,
+                  duration: layer.speed + index * 4,
                   repeat: Infinity,
                   ease: "linear",
-                  delay: index * 3,
+                  delay: (index * layer.speed) / 3,
                 }}
                 style={{
                   top: `${top}%`,
@@ -78,6 +80,7 @@ const AnimatedSky: React.FC = () => {
                   opacity: layer.opacity,
                   transform: `scale(${layer.size})`,
                   maxWidth: '8rem',
+                  willChange: 'transform',
                 }}
               >
                 <CloudSVG variant={layer.variant} />
@@ -87,7 +90,7 @@ const AnimatedSky: React.FC = () => {
         ))}
 
         {/* Static Clouds with Four Layers, Ensuring Spacing & Triangular Shape */}
-        {cloudPositions.map((pos, index) => (
+        {cloudPositions.map((pos: { top: any; left: any; layer: { opacity: any; size: any; }; }, index: number) => (
           <div
             key={`static-layer-${index}`}
             className="absolute z-20"
