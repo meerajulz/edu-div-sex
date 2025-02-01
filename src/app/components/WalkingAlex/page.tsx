@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import AlexSVG from '../AlexVariants/page';
 
@@ -10,6 +10,50 @@ const WalkingAlex = () => {
   const [blinkCount, setBlinkCount] = useState(0);
   const [isTalking, setIsTalking] = useState(false);
   const [isArmUp, setIsArmUp] = useState(false);
+  const [isAudioLoaded, setIsAudioLoaded] = useState(false);
+  
+  // Audio refs
+  const holaAudio = useRef<HTMLAudioElement | null>(null);
+  const clickAventuraAudio = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio on client side only
+  useEffect(() => {
+    let mounted = true;
+    
+    // Create and load audio elements
+    const initAudio = () => {
+      holaAudio.current = new Audio('/audio/hola.mp3');
+      clickAventuraAudio.current = new Audio('/audio/click-aventura.mp3');
+
+      Promise.all([
+        holaAudio.current.load(),
+        clickAventuraAudio.current.load()
+      ]).then(() => {
+        if (mounted) {
+          setIsAudioLoaded(true);
+        }
+      });
+    };
+
+    // Try to initialize immediately
+    initAudio();
+
+    // Also try to initialize after a short delay (for reload cases)
+    const timeoutId = setTimeout(initAudio, 100);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      if (holaAudio.current) {
+        holaAudio.current.pause();
+        holaAudio.current = null;
+      }
+      if (clickAventuraAudio.current) {
+        clickAventuraAudio.current.pause();
+        clickAventuraAudio.current = null;
+      }
+    };
+  }, []);
 
   // Expression change during walking
   useEffect(() => {
@@ -50,6 +94,12 @@ const WalkingAlex = () => {
   }, [isWalkingDone]);
 
   const handleTalking = () => {
+    // Play hola audio when starting to talk
+    if (holaAudio.current) {
+      holaAudio.current.currentTime = 0;
+      holaAudio.current.play().catch(console.error);
+    }
+    
     let talkCount = 0;
     const talkInterval = setInterval(() => {
       talkCount++;
@@ -69,6 +119,12 @@ const WalkingAlex = () => {
 
   const handleArmUpAnimation = () => {
     setIsArmUp(true);
+    // Play click aventura audio when starting arm up animation
+    if (clickAventuraAudio.current) {
+      clickAventuraAudio.current.currentTime = 0;
+      clickAventuraAudio.current.play().catch(console.error);
+    }
+    
     let armMoveCount = 0;
     const armInterval = setInterval(() => {
       armMoveCount++;
@@ -92,7 +148,6 @@ const WalkingAlex = () => {
     return currentExpression ? 'default' : 'smiling';
   };
 
-  // Rest of your animations remain the same
   const walkAnimation = {
     initial: {
       x: '50%',
@@ -142,10 +197,9 @@ const WalkingAlex = () => {
         onAnimationComplete={() => setIsWalkingDone(true)}
       >
         <div className="relative">
-          {/* Shadow beneath Alex */}
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-            initial={{ width: 200, height: 50, bottom: -20 }}
+            initial={{ width: 100, height: 50, bottom: -50 }}
             animate={{
               width: 300,
               height: 75,
@@ -158,13 +212,10 @@ const WalkingAlex = () => {
               ease: "easeInOut"
             }}
           />
-
-          {/* Walking motion container */}
           <motion.div
             variants={walkingMotion}
             animate={!isWalkingDone ? "walking" : "stopped"}
           >
-            {/* Current expression */}
             <div className="relative">
               <AlexSVG 
                 variant={getVariant()}
