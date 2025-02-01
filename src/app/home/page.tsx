@@ -6,6 +6,7 @@ import BirdsFlying from '../components/BirdsFlying/page';
 import BirdsSoaring from '../components/BirdsSoaring/page';
 import OrbitalCarousel from '../components/OrbitalCarousel/page';
 import FloatingMenu from '../components/FloatingMenu/page';
+import WalkingAlex from '../components/WalkingAlex/page';
 
 
 
@@ -27,11 +28,14 @@ const Dashboard: React.FC = () => {
                 <div className=" z-40"> <BirdsSoaring /></div>
                
             </div>
-            <div className="fixed bottom-4 left-4 z-40">
-                <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-white text-xl">4</span>
-                </div>
+            <div className="absolute z-50">
+                <WalkingAlex />
             </div>
+            {/* <div className="fixed bottom-4 left-4 z-40">
+                <div className="w-24 h-12 rounded-3 bg-gray-900 flex items-center justify-center">
+                    <span className="text-white text-xl">footer </span>
+                </div>
+            </div> */}
         </div>
     </RootLayout>
     );
