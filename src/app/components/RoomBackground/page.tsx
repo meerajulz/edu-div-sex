@@ -19,6 +19,7 @@ interface Position {
 
 const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false }) => {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
 
   const POSITIONS = {
@@ -37,9 +38,21 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
   };
 
   useEffect(() => {
+    // Set initial browser dimensions
+    setBrowserDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+
     const updateDimensions = () => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
+      
+      // Update browser dimensions
+      setBrowserDimensions({
+        width: viewportWidth,
+        height: viewportHeight
+      });
       
       // Calculate dimensions to maintain aspect ratio while filling screen
       let width = viewportWidth;
@@ -61,8 +74,8 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
   const containerStyle = {
     width: `${containerDimensions.width}px`,
     height: `${containerDimensions.height}px`,
-    left: `${(window.innerWidth - containerDimensions.width) / 2}px`,
-    top: `${(window.innerHeight - containerDimensions.height) / 2}px`,
+    left: `${(browserDimensions.width - containerDimensions.width) / 2}px`,
+    top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
   };
 
   return (

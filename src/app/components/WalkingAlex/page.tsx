@@ -6,47 +6,37 @@ import Image from 'next/image';
 
 interface WalkingAlexProps {
   shouldStartWalking: boolean;
+  onComplete?: () => void;
 }
 
-const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
+const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking, onComplete }) => {
   const [isWalkingDone, setIsWalkingDone] = useState(false);
   const [currentState, setCurrentState] = useState('initial');
   const [currentImage, setCurrentImage] = useState('/svg/alex-smiling.svg');
   const [hasStartedWalking, setHasStartedWalking] = useState(false);
+  const [isTalking, setIsTalking] = useState(false);
   const walkingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const talkingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Audio refs
-  const holaAudio = useRef<HTMLAudioElement | null>(null);
-  const clickAventuraAudio = useRef<HTMLAudioElement | null>(null);
+  // Audio files with their durations in milliseconds
+  const audioSequence = [
+    { file: '/audio/alex/intro/1-alex.mp3', duration: 1000 },
+    { file: '/audio/alex/intro/2-alex.mp3', duration: 2000 },
+    { file: '/audio/alex/intro/3-alex.mp3', duration: 4000 },
+    { file: '/audio/alex/intro/4-alex.mp3', duration: 1000 },
+    { file: '/audio/alex/intro/5-alex.mp3', duration: 2000 },
+    { file: '/audio/alex/intro/6-alex.mp3', duration: 3000 },
+    { file: '/audio/alex/intro/7-alex.mp3', duration: 1000 },
+    { file: '/audio/alex/intro/8-alex.mp3', duration: 2000 }
+  ];
 
   // Initialize audio
   useEffect(() => {
-    let mounted = true;
+    const audioElements = audioSequence.map(({ file }) => new Audio(file));
     
-    const initAudio = () => {
-      holaAudio.current = new Audio('/audio/hola.mp3');
-      clickAventuraAudio.current = new Audio('/audio/click-aventura.mp3');
-
-      Promise.all([
-        holaAudio.current.load(),
-        clickAventuraAudio.current.load()
-      ]);
-    };
-
-    initAudio();
     return () => {
-      mounted = false;
-      if (holaAudio.current) {
-        holaAudio.current.pause();
-        holaAudio.current = null;
-      }
-      if (clickAventuraAudio.current) {
-        clickAventuraAudio.current.pause();
-        clickAventuraAudio.current = null;
-      }
-      if (walkingIntervalRef.current) {
-        clearInterval(walkingIntervalRef.current);
-      }
+      if (walkingIntervalRef.current) clearInterval(walkingIntervalRef.current);
+      if (talkingIntervalRef.current) clearInterval(talkingIntervalRef.current);
     };
   }, []);
 
@@ -63,6 +53,11 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
   // Handle walking animation
   useEffect(() => {
     if (currentState === 'walking' && !isWalkingDone) {
+      setIsTalking(false);
+      if (talkingIntervalRef.current) {
+        clearInterval(talkingIntervalRef.current);
+      }
+      
       walkingIntervalRef.current = setInterval(() => {
         setCurrentImage(prev => 
           prev === '/svg/alex-smiling.svg' 
@@ -72,30 +67,77 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
       }, 300);
 
       return () => {
-        if (walkingIntervalRef.current) {
-          clearInterval(walkingIntervalRef.current);
-        }
+        if (walkingIntervalRef.current) clearInterval(walkingIntervalRef.current);
       };
     }
   }, [currentState, isWalkingDone]);
 
   const startHolaSequence = () => {
-    let talkCount = 0;
-    if (holaAudio.current) {
-      holaAudio.current.currentTime = 0;
-      holaAudio.current.play().catch(console.error);
-    }
+    const audio = new Audio(audioSequence[0].file);
+    setCurrentImage('/svg/alex-smiling.svg');
 
-    const talkInterval = setInterval(() => {
-      talkCount++;
-      setCurrentImage(talkCount % 2 === 0 ? '/svg/alex-smiling.svg' : '/svg/alex-boca-aberta.svg');
-      
-      if (talkCount >= 6) {
-        clearInterval(talkInterval);
-        setCurrentState('walking');
-        setCurrentImage('/svg/alex-smiling.svg');
-      }
+    // Play audio and start mouth movements immediately
+    audio.play().catch(console.error);
+    let count = 0;
+    talkingIntervalRef.current = setInterval(() => {
+      count++;
+      setCurrentImage(count % 2 === 0 
+        ? '/svg/alex-smiling.svg'  // Closed mouth
+        : '/svg/alex-boca-aberta.svg'  // Open mouth
+      );
     }, 200);
+
+    // After audio finishes, wait a bit then start walking
+    setTimeout(() => {
+      if (talkingIntervalRef.current) {
+        clearInterval(talkingIntervalRef.current);
+      }
+      setCurrentImage('/svg/alex-smiling.svg');
+      setTimeout(() => {
+        setCurrentState('walking');
+      }, 500); // Small pause before walking
+    }, audioSequence[0].duration);
+  };
+
+  const startTalkingSequence = async () => {
+    let totalDelay = 0;
+
+    const playDialogue = (index: number) => {
+      setTimeout(() => {
+        const audio = new Audio(audioSequence[index].file);
+        audio.play().catch(console.error);
+        const duration = audioSequence[index].duration + (index === 1 ? 1000 : 0);
+        
+        // Start mouth animation
+        let count = 0;
+        talkingIntervalRef.current = setInterval(() => {
+          count++;
+          setCurrentImage(count % 2 === 0 
+            ? '/svg/alex-boca-aberta.svg'
+            : '/svg/alex-boca-cerrada-brazo-down-ojos-cerrado.svg'
+          );
+        }, 200);
+
+        setTimeout(() => {
+          if (talkingIntervalRef.current) {
+            clearInterval(talkingIntervalRef.current);
+          }
+          setCurrentImage('/svg/alex-smiling.svg');
+          
+          if (index === audioSequence.length - 1) {
+            if (onComplete) {
+              onComplete();
+            }
+          }
+        }, duration);
+      }, totalDelay);
+
+      totalDelay += audioSequence[index].duration + 1000 + (index === 1 ? 1000 : 0);
+    };
+
+    for (let i = 1; i < audioSequence.length; i++) {
+      playDialogue(i);
+    }
   };
 
   const handleWalkingComplete = () => {
@@ -104,41 +146,7 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
     if (walkingIntervalRef.current) {
       clearInterval(walkingIntervalRef.current);
     }
-    startFinalSequence();
-  };
-
-  const startFinalSequence = () => {
-    let sequenceCount = 0;
-    if (clickAventuraAudio.current) {
-      clickAventuraAudio.current.currentTime = 0;
-      clickAventuraAudio.current.play().catch(console.error);
-    }
-
-    const blinkInterval = setInterval(() => {
-      sequenceCount++;
-      if (sequenceCount <= 12) {
-        setCurrentImage(
-          sequenceCount % 2 === 0 
-            ? '/svg/alex-boca-cerrada-brazo-down-ojos-cerrado.svg'
-            : '/svg/alex-boca-aberta.svg'
-        );
-      } else {
-        clearInterval(blinkInterval);
-        let armUpCount = 0;
-        const armUpInterval = setInterval(() => {
-          armUpCount++;
-          setCurrentImage(
-            armUpCount % 2 === 0 
-              ? '/svg/alex-boca-aberta-brazo-up.svg'
-              : '/svg/alex-boca-cerrada-brazo-up.svg'
-          );
-          if (armUpCount >= 16) {
-            clearInterval(armUpInterval);
-            setCurrentImage('/svg/alex-smiling.svg');
-          }
-        }, 200);
-      }
-    }, 200);
+    startTalkingSequence();
   };
 
   if (!hasStartedWalking) return null;
@@ -148,8 +156,8 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
       className="absolute w-full h-full"
       style={{
         position: 'absolute',
-        left: '40%', // Aligned with door's left position
-        width: '9%',   // Same as door's width
+        left: '40%',
+        width: '9%',
         top: 10,
         height: '100%',
         pointerEvents: 'none',
@@ -158,12 +166,12 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
       <motion.div
         className="absolute left-0 w-full"
         initial={{
-          top: '45%',  // Start at door's top position
+          top: '45%',
           scale: 2,
           opacity: shouldStartWalking ? 1 : 0
         }}
         animate={{
-          top: '200%',  // Walk to near bottom of screen
+          top: '200%',
           scale: 8,
           opacity: 1,
         }}
@@ -175,7 +183,6 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
         onAnimationComplete={handleWalkingComplete}
       >
         <div className="relative">
-          {/* Shadow */}
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
             initial={{ width: '100%', height: '25%', bottom: '-12.5%' }}
@@ -190,7 +197,6 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking }) => {
               ease: "easeInOut"
             }}
           />
-          {/* Character */}
           <motion.div
             animate={currentState === 'walking' ? {
               y: ['-2%', '2%'],

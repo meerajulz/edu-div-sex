@@ -94,8 +94,8 @@ const FloatingMenu = () => {
       className={`
         fixed z-50 bg-white/10 backdrop-blur-sm shadow-lg
         ${isMobile 
-          ? 'bottom-0 left-0 right-0 p-4 flex justify-around items-center rounded-t-xl' 
-          : 'right-8 top-5 -translate-y-1/2 flex flex-col gap-6 p-4 rounded-full'
+          ? 'bottom-0 left-0 right-0 p-2 flex justify-around items-center rounded-t-xl' 
+          : 'right-8 top-5 -translate-y-1/2 flex flex-col gap-2 p-2 rounded-full'
         }
       `}
       initial={isMobile ? { y: 100 } : { x: 100, opacity: 0 }}
@@ -111,7 +111,7 @@ const FloatingMenu = () => {
           <motion.button
             className={`
               rounded-full flex items-center justify-center overflow-hidden relative
-              ${isMobile ? 'w-24 h-24 sm:w-14 sm:h-14' : 'w-16 h-16'}
+              ${isMobile ? 'w-32 h-32 sm:w-14 sm:h-14' : 'w-16 h-16'}
             `}
             onClick={(e) => handleClick(item, e)}
             whileHover={{ scale: 1.1 }}
@@ -131,7 +131,7 @@ const FloatingMenu = () => {
                 opacity: [1, 0, 1],
               } : {}}
               transition={{ duration: 0.3 }}
-              className="relative w-10 h-10"
+              className="relative w-24 h-24"
             >
               <Image
                 src={iconStates[item.id] ? item.icon2 : item.icon1}
