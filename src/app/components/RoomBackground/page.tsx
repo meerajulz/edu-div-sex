@@ -25,8 +25,8 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
   const POSITIONS = {
     door: {
       left: 32.1,    
-      top: 36,       
-      width: 7,     
+      top: 35.5,       
+      width: 7.5,     
       height: 25,    
     },
     window: {

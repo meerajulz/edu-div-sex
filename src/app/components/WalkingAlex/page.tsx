@@ -81,10 +81,18 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking, onComplet
     let count = 0;
     talkingIntervalRef.current = setInterval(() => {
       count++;
-      setCurrentImage(count % 2 === 0 
-        ? '/svg/alex-smiling.svg'  // Closed mouth
-        : '/svg/alex-boca-aberta.svg'  // Open mouth
-      );
+      // Use modulo 3 to cycle through three states
+      switch (count % 3) {
+        case 0:
+          setCurrentImage('/svg/alex-smiling.svg');  // Closed mouth
+          break;
+        case 1:
+          setCurrentImage('/svg/alex-boca-aberta.svg');  // Open mouth
+          break;
+        case 2:
+          setCurrentImage('/svg/alex-smiling.svg');  // Smiling expression
+          break;
+      }
     }, 200);
 
     // After audio finishes, wait a bit then start walking
@@ -108,14 +116,22 @@ const WalkingAlex: React.FC<WalkingAlexProps> = ({ shouldStartWalking, onComplet
         audio.play().catch(console.error);
         const duration = audioSequence[index].duration + (index === 1 ? 1000 : 0);
         
-        // Start mouth animation
+        // Start mouth animation with three states
         let count = 0;
         talkingIntervalRef.current = setInterval(() => {
           count++;
-          setCurrentImage(count % 2 === 0 
-            ? '/svg/alex-boca-aberta.svg'
-            : '/svg/alex-boca-cerrada-brazo-down-ojos-cerrado.svg'
-          );
+          // Use modulo 3 to cycle through three states
+          switch (count % 3) {
+            case 0:
+              setCurrentImage('/svg/alex-boca-aberta.svg');  // Open mouth
+              break;
+            case 1:
+              setCurrentImage('/svg/alex-boca-cerrada-brazo-down-ojos-cerrado.svg');  // Closed eyes
+              break;
+            case 2:
+              setCurrentImage('/svg/alex-smiling.svg');  // Smiling expression
+              break;
+          }
         }, 200);
 
         setTimeout(() => {

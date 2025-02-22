@@ -33,7 +33,7 @@ const AnimatedDoor = () => {
         onClick={handleDoorClick}
       >
         <Image
-          src={isOpen ? '/svg/Asset2.svg' : '/svg/Asset1.svg'}
+          src={isOpen ? '/svg/Asset2-2.svg' : '/svg/Asset1-1.svg'}
           alt="Door"
           fill
           priority
