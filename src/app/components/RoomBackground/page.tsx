@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import AnimatedDoor from '../AnimatedDoor/page';
 import WindowBirds from '../WindowBirds/page';
-import CloudsBG from './svg/clouds.svg';
 
 interface BackgroundProps {
   imagePath: string;
@@ -153,6 +152,7 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
             }}
           >
             <AnimatedDoor />
+           
           </div>
 
           {/* Debug Position Indicators */}

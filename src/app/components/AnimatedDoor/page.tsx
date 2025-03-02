@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import WalkingAlex from '../WalkingAlex/page';
+import FullAlex from '../FullAlex/page';
 import WalkingCris from '../WalkingCris/page';
+
 
 const AnimatedDoor = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +41,8 @@ const AnimatedDoor = () => {
           className="transition-opacity duration-500 ease-in-out object-fill"
         />
       </div>
-      <WalkingAlex shouldStartWalking={isOpen} onComplete={handleAlexComplete} />
+     
+      <FullAlex shouldStartWalking={isOpen} onComplete={handleAlexComplete} /> 
       <WalkingCris shouldStartWalking={showCris} />
     </>
   );
