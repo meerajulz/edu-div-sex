@@ -396,13 +396,13 @@ const FullAlex: React.FC<FullAlexProps> = ({ shouldStartWalking, onComplete }) =
   // Define final position values where Alex should end up during talking
   const finalPosition = {
     top: '175%', // Position where talking Alex should be
-    scale: 8     // Final scale as before
+    scale: 10     // Increased final scale to make him bigger
   };
   
   // Define side position values where Alex should move to after talking
   const sidePosition = {
     top: '220%',  // Much lower on the screen
-    scale: 14     // Much bigger size for closeness perception
+    scale: 19.2   // Increased by 20% from 16 to 19.2 for final position
   };
 
   // Don't render anything until sequence begins
@@ -413,7 +413,7 @@ const FullAlex: React.FC<FullAlexProps> = ({ shouldStartWalking, onComplete }) =
       className="absolute w-full h-full"
       style={{
         position: 'absolute',
-        left: '40%',  // Always keep container at 40%, we'll use transform for positioning
+        left: '45%',  // Moved further right (from 40% to 45%)
         width: '9%',       // Width of Alex container
         top: 10,           // Top offset of Alex container
         height: '100%',    // Height of Alex container
@@ -428,7 +428,7 @@ const FullAlex: React.FC<FullAlexProps> = ({ shouldStartWalking, onComplete }) =
             left: 0, 
             top: sidePosition.top,
             // Initial values that will be overwritten with exact final transform
-            transform: `translateX(-25vw) scale(${sidePosition.scale})`,
+            transform: `translateX(-15vw) scale(${sidePosition.scale})`,
           }}
         >
           <div className="relative">
@@ -467,12 +467,12 @@ const FullAlex: React.FC<FullAlexProps> = ({ shouldStartWalking, onComplete }) =
             left: 0,
           }}
           initial={{
-            x: 0, // Start at current position (40%)
+            x: 0, // Start at current position (45%)
             top: finalPosition.top,
             scale: finalPosition.scale,
           }}
           animate={{
-            x: '-25vw', // Move leftward by 25% of viewport width (less extreme)
+            x: '-15vw', // Move leftward by 15% of viewport width
             top: sidePosition.top,
             scale: sidePosition.scale,
           }}
@@ -563,7 +563,7 @@ const FullAlex: React.FC<FullAlexProps> = ({ shouldStartWalking, onComplete }) =
           }}
           transition={{
             delay: 2,
-            duration: 6,
+            duration: 4, // Reduced from 6 to 4 seconds (2 seconds earlier completion)
             ease: "easeInOut",
           }}
           onAnimationComplete={handleWalkingComplete}
@@ -580,7 +580,7 @@ const FullAlex: React.FC<FullAlexProps> = ({ shouldStartWalking, onComplete }) =
                 opacity: 0.3
               }}
               transition={{ 
-                duration: 4,
+                duration: 3, // Reduced shadow animation duration
                 ease: "easeInOut"
               }}
             />

@@ -4,12 +4,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-interface WalkingCrisProps {
+interface WalkingDaniProps {
   shouldStartWalking: boolean;
   onComplete?: () => void;
 }
 
-const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplete }) => {
+const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplete }) => {
   const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'done'>('initial');
   const [hasStartedSequence, setHasStartedSequence] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
@@ -25,28 +25,25 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   
   // SVG images for different talking expressions
   const talkingExpressions = {
-    eyeOpenMouthClose: '/svg/cris/cris-talk/cris-eyes-open-mouth-close.svg',
-    eyeOpenMouthOpen: '/svg/cris/cris-talk/cris-eyes-open-mouth-open.svg',
-    eyeCloseMouthOpen: '/svg/cris/cris-talk/cris-eyes-close-mouth-open.svg',
-    eyeCloseMouthClose: '/svg/cris/cris-talk/cris-eyes-close-mouth-close.svg',
+    eyeOpenMouthClose: '/svg/dani/dani_talk/dani-eyes-open-mouth-close.svg',
+    eyeCloseMouthOpen: '/svg/dani/dani_talk/dani-eyes-close-mouth-open.svg',
   };
 
   // SVG images for walking expressions
   const walkingExpressions = {
-    eyeOpenLegLeft: '/svg/cris/cris-walk/eyes_open-mouth_close_left_leg.svg',
-    eyeOpenLegRight: '/svg/cris/cris-walk/eyes_open-mouth_close_right_leg.svg',
-    eyeOpenStanding: '/svg/cris/cris-walk/eyes_open-mouth_close_right_leg_crossing_done.svg',
-    eyeCloseStanding: '/svg/cris/cris-walk/eyes_close-mouth_close_right_leg_crossing_done.svg',
+    leftLeg1: '/svg/dani/dani_walk/dani-eyes-open-mouth-close-left-leg-1.svg',
+    leftLeg2: '/svg/dani/dani_walk/dani-eyes-open-mouth-close-left-leg-2.svg',
+    standing: '/svg/dani/dani_walk/dani-eyes-open-mouth-close-right-leg-1.svg',
   };
   
   // Current image state
-  const [currentImage, setCurrentImage] = useState(walkingExpressions.eyeOpenStanding);
+  const [currentImage, setCurrentImage] = useState(talkingExpressions.eyeOpenMouthClose);
   
   // Audio files with their correct durations in milliseconds
   const audioSequence = [
-    { file: '/audio/cris/intro/1-cris.mp3', duration: 1000 }, // Initial Hola
-    { file: '/audio/cris/intro/2-cris.mp3', duration: 1000 }, // Me encantan los animales
-    { file: '/audio/cris/intro/3-cris.mp3', duration: 4000 }, // Longer animals talk
+    { file: '/audio/dani/hola.mp3', duration: 3000 },    // Initial Hola (3 seconds)
+    { file: '/audio/dani/dani-2.mp3', duration: 4000 },  // Second audio (4 seconds)
+    { file: '/audio/dani/dani-3.mp3', duration: 4000 },  // Third audio (4 seconds)
   ];
 
   // Clean up all animations and audio
@@ -106,55 +103,14 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     // Set current state to playing
     setIsCurrentAudioPlaying(true);
     
-    // Mouth animation (faster - 150ms is about 6-7 times per second)
+    // Toggle between open and closed mouth
     mouthIntervalRef.current = setInterval(() => {
       setCurrentImage(prevImage => {
-        // Make sure we're using the talking expressions
-        if (!prevImage.includes('cris-talk')) {
-          return talkingExpressions.eyeOpenMouthOpen;
-        }
-        
-        // Determine current eye state
-        const hasOpenEyes = prevImage.includes('eyes-open');
-        
-        // Toggle mouth state
-        const hasMouthOpen = prevImage.includes('mouth-open');
-        
-        if (hasMouthOpen) {
-          return hasOpenEyes ? talkingExpressions.eyeOpenMouthClose : talkingExpressions.eyeCloseMouthClose;
-        } else {
-          return hasOpenEyes ? talkingExpressions.eyeOpenMouthOpen : talkingExpressions.eyeCloseMouthOpen;
-        }
+        return prevImage === talkingExpressions.eyeOpenMouthClose 
+          ? talkingExpressions.eyeCloseMouthOpen 
+          : talkingExpressions.eyeOpenMouthClose;
       });
     }, 150);
-    
-    // Eye animation (slower - 400ms with 15% chance of blinking)
-    eyeIntervalRef.current = setInterval(() => {
-      setCurrentImage(prevImage => {
-        // Make sure we're using the talking expressions
-        if (!prevImage.includes('cris-talk')) {
-          return talkingExpressions.eyeOpenMouthOpen;
-        }
-        
-        // Determine current mouth state
-        const hasMouthOpen = prevImage.includes('mouth-open');
-        
-        // Toggle eye state with higher probability of open eyes
-        const hasOpenEyes = prevImage.includes('eyes-open');
-        
-        // Random blink - 15% chance of changing eye state
-        if (Math.random() < 0.15) {
-          if (hasOpenEyes) {
-            return hasMouthOpen ? talkingExpressions.eyeCloseMouthOpen : talkingExpressions.eyeCloseMouthClose;
-          } else {
-            return hasMouthOpen ? talkingExpressions.eyeOpenMouthOpen : talkingExpressions.eyeOpenMouthClose;
-          }
-        }
-        
-        // If no blink occurs, keep the current eye state
-        return prevImage;
-      });
-    }, 400);
     
     // Set timeout to end animation exactly when audio ends
     animationTimeoutRef.current = setTimeout(() => {
@@ -169,11 +125,6 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
       mouthIntervalRef.current = null;
     }
     
-    if (eyeIntervalRef.current) {
-      clearInterval(eyeIntervalRef.current);
-      eyeIntervalRef.current = null;
-    }
-    
     setIsCurrentAudioPlaying(false);
     
     // Reset to default state - eyes open, mouth closed
@@ -186,76 +137,27 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     cleanupAnimations();
     
     // Set initial walking image
-    setCurrentImage(walkingExpressions.eyeOpenLegLeft);
+    setCurrentImage(walkingExpressions.leftLeg1);
     
-    // Leg animation - Slower leg movement (400ms instead of 250ms)
+    // Leg animation - alternate between leg positions
     legIntervalRef.current = setInterval(() => {
       setCurrentImage(prevImage => {
-        // Make sure we're using walking expressions
-        if (!prevImage.includes('_leg') && !prevImage.includes('crossing_done')) {
-          return walkingExpressions.eyeOpenLegLeft;
+        if (prevImage === walkingExpressions.leftLeg1) {
+          return walkingExpressions.leftLeg2;
+        } else {
+          return walkingExpressions.leftLeg1;
         }
-        
-        // Only alternate between the two leg positions during walking
-        if (prevImage.includes('_left_leg')) {
-          return walkingExpressions.eyeOpenLegRight;
-        } else if (prevImage.includes('_right_leg') && !prevImage.includes('crossing_done')) {
-          return walkingExpressions.eyeOpenLegLeft;
-        }
-        
-        return prevImage;
       });
-    }, 400); // Slower walking speed (increased from 250ms to 400ms)
-    
-    // Eye animation (blinking occasionally)
-    eyeIntervalRef.current = setInterval(() => {
-      setCurrentImage(prevImage => {
-        // Random blink - 10% chance of blinking
-        if (Math.random() < 0.1) {
-          if (prevImage.includes('eyes_open')) {
-            if (prevImage.includes('crossing_done')) {
-              return walkingExpressions.eyeCloseStanding;
-            }
-          } else {
-            if (prevImage.includes('crossing_done')) {
-              return walkingExpressions.eyeOpenStanding;
-            }
-          }
-        }
-        
-        // If no blink occurs, keep the current eye state
-        return prevImage;
-      });
-    }, 500); // 500ms for eye blinks
+    }, 400); // Slower walking speed
   };
 
   // Natural blinking animation for final position
   const startBlinkingAnimation = () => {
-    console.log("Starting blinking animation");
     // Clear any existing animations
     cleanupAnimations();
     
-    // Set initial image to eyes open
-    setCurrentImage(walkingExpressions.eyeOpenStanding);
-    
-    // Function to handle a single blink cycle
-    const doBlink = () => {
-      // Close eyes
-      setCurrentImage(walkingExpressions.eyeCloseStanding);
-      
-      // Open eyes after a short delay (typical blink is 100-400ms)
-      blinkTimeoutRef.current = setTimeout(() => {
-        setCurrentImage(walkingExpressions.eyeOpenStanding);
-        
-        // Schedule next blink after random interval (3-7 seconds)
-        const nextBlinkTime = 3000 + Math.random() * 4000;
-        blinkTimeoutRef.current = setTimeout(doBlink, nextBlinkTime);
-      }, 200);
-    };
-    
-    // Start the first blink after a random delay
-    const initialDelay = 1000 + Math.random() * 2000;
-    blinkTimeoutRef.current = setTimeout(doBlink, initialDelay);
+    // Set image to standing position - no blinking, just use the standing image
+    setCurrentImage(walkingExpressions.standing);
   };
 
   // Initial "Hola" sequence
@@ -263,10 +165,11 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     setStage('hola');
     
     // Initial talking animation for "Hola"
-    setCurrentImage(talkingExpressions.eyeOpenMouthOpen);
+    setCurrentImage(talkingExpressions.eyeCloseMouthOpen);
     
     // Play "Hola" audio
     const audio = new Audio(audioSequence[0].file);
+    audioRef.current = audio;
     
     // Start talking animation for the exact duration of "Hola"
     startTalkingAnimation(audioSequence[0].duration);
@@ -290,9 +193,9 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     cleanupAnimations();
     
     // Set to standing position
-    setCurrentImage(walkingExpressions.eyeOpenStanding);
+    setCurrentImage(walkingExpressions.standing);
     
-    // Start talking sequence
+    // Start talking sequence with additional audios
     setTimeout(() => {
       setStage('talking');
       setCurrentAudioIndex(1); // Start from the second audio (index 1)
@@ -303,7 +206,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   const playCurrentAudio = () => {
     if (currentAudioIndex >= audioSequence.length) {
       setStage('done');
-      // Start blinking animation when done
+      // Start blinking animation
       startBlinkingAnimation();
       if (onComplete) {
         onComplete();
@@ -334,7 +237,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
           // This is the last audio
           setStage('done');
           // Reset to standing position
-          setCurrentImage(walkingExpressions.eyeOpenStanding);
+          setCurrentImage(walkingExpressions.standing);
           
           // Start blinking animation
           startBlinkingAnimation();
@@ -377,10 +280,10 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     };
   }, [stage]);
 
-  // Define position values where Cris should end up during talking
+  // Define position values where Dani should end up during talking
   const finalPosition = {
     top: '155%', // Position higher up to show more legs
-    scale: 8     // Further reduced scale to make her smaller and show more legs
+    scale: 8     // Smaller scale to make him less prominent
   };
 
   // Don't render anything until sequence begins
@@ -391,24 +294,24 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
       className="absolute w-full h-full"
       style={{
         position: 'absolute',
-        left: '40%',  // Start at the same position as Alex 
+        left: '40%',  // Start at the same position as Alex/Cris
         width: '9%', 
         top: 10,      
         height: '100%',
         pointerEvents: 'none',
       }}
     >
-      {/* If in talking or done stage, render Cris at the final position */}
+      {/* If in talking or done stage, render Dani at the final position */}
       {(stage === 'talking' || stage === 'done') && (
         <div 
           className="absolute left-0 w-full"
           style={{
             top: finalPosition.top,
-            transform: `translateX(40vw) scale(${finalPosition.scale})`,
+            transform: `translateX(20vw) scale(${finalPosition.scale})`, // Move more to the right (20vw instead of 15vw)
           }}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
+            {/* Shadow under Dani */}
             <div 
               className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
               style={{ 
@@ -420,11 +323,11 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
             />
             
             <div className="relative">
-              {/* The talking Cris with exact positioning */}
+              {/* Dani with exact positioning */}
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
                 <Image
                   src={currentImage}
-                  alt="Cris"
+                  alt="Dani"
                   fill
                   className="object-contain transition-opacity duration-75"
                   priority
@@ -445,7 +348,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
           }}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
+            {/* Shadow under Dani */}
             <div
               className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
               style={{ 
@@ -460,7 +363,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
                 <Image
                   src={currentImage}
-                  alt="Cris"
+                  alt="Dani"
                   fill
                   className="object-contain transition-opacity duration-75"
                   priority
@@ -481,19 +384,19 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
             x: 0           // Start at container position (40% left)
           }}
           animate={{
-            // Animate to the right position diagonally
+            // Animate to the middle position diagonally
             top: finalPosition.top,
             scale: finalPosition.scale,
-            x: '40vw'      // Move more to the right (40% of viewport width)
+            x: '20vw'      // Move more to the right (20vw instead of 15vw)
           }}
           transition={{
-            duration: 5, // Longer duration for slower walking (increased from 3s to 5s)
+            duration: 5, // Same slow walking speed as Cris
             ease: "easeInOut",
           }}
           onAnimationComplete={handleWalkingComplete}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
+            {/* Shadow under Dani */}
             <motion.div
               className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
               initial={{ width: '100%', height: '25%', bottom: '-12.5%' }}
@@ -510,27 +413,20 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
             />
             
             <motion.div
-              animate={stage === 'walking' ? {
+              animate={{
                 y: ['-2%', '2%'],
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.7, // Slower bobbing animation (increased from 0.5s to 0.7s)
+                  duration: 0.7, // Same slow bobbing as Cris
                   ease: "linear"
-                }
-              } : {
-                y: 0,
-                rotate: 0,
-                transition: {
-                  duration: 0.5,
-                  ease: "easeOut"
                 }
               }}
             >
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
                 <Image
                   src={currentImage}
-                  alt="Cris"
+                  alt="Dani"
                   fill
                   className="object-contain transition-opacity duration-75"
                   priority
@@ -544,4 +440,4 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   );
 };
 
-export default WalkingCris;
+export default WalkingDani;

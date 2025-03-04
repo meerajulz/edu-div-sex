@@ -31,14 +31,6 @@ const Dashboard: React.FC = () => {
           <FloatingMenu />
         </div>
 
-        {/* <div className="absolute z-50">
-                <WalkingAlex />
-            </div> */}
-        {/* <div className="fixed bottom-4 left-4 z-40">
-                <div className="w-24 h-12 rounded-3 bg-gray-900 flex items-center justify-center">
-                    <span className="text-white text-xl">footer </span>
-                </div>
-            </div> */}
       </div>
     </RootLayout>
   );
