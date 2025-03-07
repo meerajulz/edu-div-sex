@@ -124,26 +124,21 @@ const FullAlex: React.FC<FullAlexProps> = ({
     if (shouldDisappear) {
       console.log('Disappear triggered, current stage:', stage);
       
-      // Ensure we're in a final stage before disappearing
-      if (stage === 'finalStatic' || stage === 'static') {
-        setTimeout(() => {
-          // Play disappear sound
-          disappearSound?.play().catch(console.error);
-          
-          // Start disappear animation
-          setStage('disappearing');
-          
-          // Notify when animation is complete after the animation duration
-          setTimeout(() => {
-            console.log('Disappear animation complete');
-            if (onDisappearComplete) {
-              onDisappearComplete();
-            }
-          }, 1500); // Match this with the animation duration
-        }, 500);
-      }
+      // Force the stage to "disappearing" regardless of current state
+      setStage('disappearing');
+      
+      // Play disappear sound immediately
+      disappearSound?.play().catch(console.error);
+      
+      // Notify when animation is complete after the animation duration
+      setTimeout(() => {
+        console.log('Disappear animation complete');
+        if (onDisappearComplete) {
+          onDisappearComplete();
+        }
+      }, 1500); // Match this with the animation duration
     }
-  }, [shouldDisappear, stage, onDisappearComplete, disappearSound]);
+  }, [shouldDisappear, onDisappearComplete, disappearSound]);
 
 
   // Handle talking animation - with support for arm-up talking
@@ -781,57 +776,40 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
        </div>
      )}
 
-      {/* Add the new disappearing animation */}
-     {/* Updated disappearing animation with added logging */}
-     {stage === 'disappearing' && (
+      {/* Add the new disappearing animation */} 
+      {stage === 'disappearing' && (
         <motion.div
           className="absolute w-full"
           style={{
+            position: 'absolute',
             left: 0, 
             top: sidePosition.top,
             transform: `translateX(-15vw) scale(${sidePosition.scale})`,
           }}
           animate={{
-            y: '100vh', // Move down off-screen
+            y: 500, // Move down by a fixed amount in pixels
             opacity: 0,
-            scale: sidePosition.scale * 1.2, // Slightly increase scale while going down
           }}
           transition={{
-            duration: 1.5,
+            duration: 1.2,
             ease: "easeIn",
-          }}
-          onAnimationComplete={() => {
-            console.log('Disappear motion complete');
-            if (onDisappearComplete) {
-              onDisappearComplete();
-            }
           }}
         >
           <div className="relative">
-            <motion.div 
+            <div 
               className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              initial={{ 
+              style={{ 
                 width: '150%', 
                 height: '25%', 
                 bottom: '-12.5%',
                 opacity: 0.3
-              }}
-              animate={{
-                width: '200%', // Widen shadow
-                height: '20%', // Slightly reduce shadow height
-                bottom: '-12.5%',
-                opacity: 0, // Fade out shadow
-              }}
-              transition={{
-                duration: 1.5,
-                ease: "easeIn",
               }}
             />
             
             <div className="relative">
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
                 <Image
-                  src={armUpTalkingExpressions.finalPose}
+                  src={currentImage}
                   alt="Alex"
                   fill
                   className="object-contain transition-opacity duration-75"
@@ -841,8 +819,7 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
             </div>
           </div>
         </motion.div>
-      )}
- 
+)}
 
 
      {/* Only show the stationary hola animation */}

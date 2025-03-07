@@ -20,16 +20,16 @@ const AnimatedDoor = () => {
   const [crisMoveOut, setCrisMoveOut] = useState(false);
   const [daniMoveOut, setDaniMoveOut] = useState(false);
   const [noaMoveOut, setNoaMoveOut] = useState(false);
+  const [alexMoveOut, setAlexMoveOut] = useState(false);
   
   // Track if kids are completely gone
   const [isCrisGone, setIsCrisGone] = useState(false);
   const [isDaniGone, setIsDaniGone] = useState(false);
   const [isNoaGone, setIsNoaGone] = useState(false);
+  const [isAlexGone, setIsAlexGone] = useState(false);
   
   // States for Alex's animations
   const [alexContinues, setAlexContinues] = useState(false);
-  const [alexShouldDisappear, setAlexShouldDisappear] = useState(false);
-  const [isAlexGone, setIsAlexGone] = useState(false);
   
   const [audio] = useState(
     typeof window !== 'undefined' ? new Audio('/ui-sound/cabinet-door-open.mp3') : null
@@ -38,6 +38,10 @@ const AnimatedDoor = () => {
   // Add door close audio
   const [doorCloseAudio] = useState(
     typeof window !== 'undefined' ? new Audio('/ui-sound/cabinet-door-open.mp3') : null
+  );
+
+  const [alexDisappearSound] = useState(
+    typeof window !== 'undefined' ? new Audio('/ui-sound/whoosh.mp3') : null
   );
 
   // Flag for tracking if kids disappear animation has started
@@ -118,20 +122,24 @@ const AnimatedDoor = () => {
     setIsNoaGone(true);
   };
 
-  // Handle when all kids have disappeared
-  const handleDisappearComplete = () => {
-    // Trigger Alex to continue talking
-    setAlexContinues(true);
-    
-    // Set a timer to make Alex disappear after he finishes talking
-    setTimeout(() => {
-      setAlexShouldDisappear(true);
-    }, 11000); // 11 seconds after kids disappear (gives time for all 3 audio clips)
-  };
-  
   // Handle when Alex has completely disappeared
-  const handleAlexDisappearComplete = () => {
+  const handleAlexAnimationComplete = () => {
+    console.log("Alex animation complete, setting isAlexGone to true");
     setIsAlexGone(true);
+  };
+
+  
+  //Alex has completely disappeared
+  const handleAlexDisappear = () => {
+    setAlexMoveOut(true);
+  };
+
+  // Handle when Alex has completely disappeared
+  const handleDisappearComplete = () => {
+    // Trigger Alex to continue talking only, but don't make him disappear here
+    setAlexContinues(true);
+    console.log("Kids disappear complete, Alex will continue talking");
+    // Alex's disappearance is now handled by KidsDisappearAnimation
   };
 
   return (
@@ -150,13 +158,89 @@ const AnimatedDoor = () => {
       </div>
      
       {/* Alex sequence with added props for disappearing */}
-      <FullAlex 
-        shouldStartWalking={isOpen} 
-        onComplete={handleAlexComplete} 
-        shouldContinueTalking={kidsDisappearStarted}
-        shouldDisappear={alexShouldDisappear}
-        onDisappearComplete={handleAlexDisappearComplete}
-      /> 
+      <AnimatePresence>
+        {!isAlexGone && (
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            animate={
+              alexMoveOut 
+                ? { 
+                    y: 600, // Move down off-screen
+                    opacity: 0,
+                  }
+                : {}
+            }
+            transition={
+              alexMoveOut 
+                ? { 
+                    duration: 1.2,
+                    ease: "easeIn" 
+                  }
+                : {}
+            }
+            onAnimationComplete={() => {
+              if (alexMoveOut) handleAlexAnimationComplete();
+            }}
+          >
+            <FullAlex 
+              shouldStartWalking={isOpen} 
+              onComplete={handleAlexComplete} 
+              shouldContinueTalking={kidsDisappearStarted}
+            /> 
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Direct Alex disappear animation when triggered */}
+      {/* {alexShouldDisappear && !isAlexGone && (
+        <motion.div
+          className="absolute"
+          style={{
+            position: 'absolute',
+            left: '30%', // Position where Alex should be
+            top: '220%',
+            transform: 'translateX(-15vw) scale(19.2)',
+            zIndex: 60, // Higher than the FullAlex component
+            width: '9%',
+          }}
+          animate={{
+            y: 400, // Move down
+            opacity: 0,
+          }}
+          transition={{
+            duration: 1.5,
+            ease: "easeIn",
+          }}
+          onAnimationComplete={() => {
+            console.log("Direct disappear animation completed");
+            setIsAlexGone(true);
+          }}
+        >
+          <div className="relative">
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+              style={{ 
+                width: '150%', 
+                height: '25%', 
+                bottom: '-12.5%',
+                opacity: 0.3
+              }}
+            />
+            
+            <div className="relative">
+              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                <Image
+                  src="/svg/alex-talk/0-alex-eye-open-mouth-close-arm-down.svg"
+                  alt="Alex"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )} */}
       
       {/* Cris with move animation when disappearing - NO FADE */}
       <AnimatePresence>
@@ -253,6 +337,97 @@ const AnimatedDoor = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* EMERGENCY ALEX - GUARANTEED TO DISAPPEAR */}
+      {/* {showEmergencyAlex && !isAlexGone && (
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1000 }}>
+          {forceDisappearAlex ? (
+            // Disappearing Alex
+            <motion.div
+              className="absolute"
+              style={{
+                position: 'absolute',
+                left: '30%',
+                top: '70%',
+                width: '9%',
+              }}
+              initial={{
+                transform: 'translateX(-15vw) translateY(0) scale(19.2)',
+                opacity: 1
+              }}
+              animate={{
+                transform: 'translateX(-15vw) translateY(400px) scale(19.2)',
+                opacity: 0
+              }}
+              transition={{
+                duration: 1.5,
+                ease: "easeIn"
+              }}
+            >
+              <div className="relative">
+                <div 
+                  className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+                  style={{ 
+                    width: '150%', 
+                    height: '25%', 
+                    bottom: '-12.5%',
+                    opacity: 0.3
+                  }}
+                />
+                
+                <div className="relative">
+                  <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                    <Image
+                      src="/svg/alex-talk/0-alex-eye-open-mouth-close-arm-down.svg"
+                      alt="Alex"
+                      fill
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            // Static Alex before disappearing
+            <div
+              className="absolute"
+              style={{
+                position: 'absolute',
+                left: '30%',
+                top: '70%',
+                transform: 'translateX(-15vw) scale(19.2)',
+                width: '9%',
+              }}
+            >
+              <div className="relative">
+                <div 
+                  className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+                  style={{ 
+                    width: '150%', 
+                    height: '25%', 
+                    bottom: '-12.5%',
+                    opacity: 0.3
+                  }}
+                />
+                
+                <div className="relative">
+                  <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                    <Image
+                      src="/svg/alex-talk/0-alex-eye-open-mouth-close-arm-down.svg"
+                      alt="Alex"
+                      fill
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )} */}
+
       
       {/* Disappear animation with callbacks for each kid */}
       <KidsDisappearAnimation 
@@ -261,6 +436,7 @@ const AnimatedDoor = () => {
         onCrisDisappear={handleCrisDisappear}
         onDaniDisappear={handleDaniDisappear}
         onNoaDisappear={handleNoaDisappear}
+        onAlexDisappear={handleAlexDisappear}
       />
     </>
   );

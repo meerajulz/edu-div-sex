@@ -9,6 +9,7 @@ interface KidsDisappearAnimationProps {
   onCrisDisappear?: () => void;
   onDaniDisappear?: () => void;
   onNoaDisappear?: () => void;
+  onAlexDisappear?: () => void; // Add Alex callback
 }
 
 const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({ 
@@ -16,9 +17,10 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
   onComplete,
   onCrisDisappear,
   onDaniDisappear,
-  onNoaDisappear 
+  onNoaDisappear,
+  onAlexDisappear
 }) => {
-  const [animationStage, setAnimationStage] = useState<'initial' | 'cris' | 'dani' | 'noa' | 'complete'>('initial');
+  const [animationStage, setAnimationStage] = useState<'initial' | 'cris' | 'dani' | 'noa' | 'alex' | 'complete'>('initial');
   const [flashEffect, setFlashEffect] = useState(false);
   
   // Refs for audio
@@ -27,6 +29,7 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
   // Animation timers
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const noaTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const alexTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Setup audio
   useEffect(() => {
@@ -48,6 +51,7 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
       // Clear any timers
       if (timerRef.current) clearTimeout(timerRef.current);
       if (noaTimerRef.current) clearTimeout(noaTimerRef.current);
+      if (alexTimerRef.current) clearTimeout(alexTimerRef.current);
     };
   }, []);
   
@@ -64,6 +68,7 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (noaTimerRef.current) clearTimeout(noaTimerRef.current);
+      if (alexTimerRef.current) clearTimeout(alexTimerRef.current);
     };
   }, [shouldStartAnimation, animationStage]);
   
@@ -75,6 +80,8 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
       playDaniDisappearAnimation();
     } else if (animationStage === 'noa') {
       playNoaDisappearAnimation();
+    } else if (animationStage === 'alex') {
+      playAlexDisappearAnimation();
     }
   }, [animationStage]);
   
@@ -130,19 +137,31 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
       // Move to next stage
       setAnimationStage('noa');
       
-      // Complete the animation sequence after a short delay
-      timerRef.current = setTimeout(() => {
-        setAnimationStage('complete');
-        if (onComplete) onComplete();
-      }, 800);
-      
     }, 500); // Noa starts disappearing 500ms after Dani
   };
   
-  // Noa disappear animation - this will only handle completion now
+  // Noa disappear animation
   const playNoaDisappearAnimation = () => {
-    // No additional actions needed here since Noa's disappearance
-    // is now handled in the Dani stage
+    // After Noa disappears, trigger Alex with a delay to allow Alex to finish talking
+    alexTimerRef.current = setTimeout(() => {
+      // Move to Alex stage
+      setAnimationStage('alex');
+    }, 12000); // Wait 5 seconds to allow Alex to finish his talking
+  };
+  
+  // Alex disappear animation
+  const playAlexDisappearAnimation = () => {
+    // Play sound for Alex
+    playSound(soundRef.current);
+    
+    // Make Alex disappear
+    if (onAlexDisappear) onAlexDisappear();
+    
+    // Complete the animation sequence after a delay
+    timerRef.current = setTimeout(() => {
+      setAnimationStage('complete');
+      if (onComplete) onComplete();
+    }, 1500);
   };
   
   // Don't render anything during initial stage
