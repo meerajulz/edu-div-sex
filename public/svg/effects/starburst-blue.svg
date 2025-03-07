@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="blueGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#00FFFF" />
+      <stop offset="50%" stop-color="#0080FF" />
+      <stop offset="100%" stop-color="rgba(0, 128, 255, 0)" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Main burst glow -->
+  <circle cx="100" cy="100" r="70" fill="url(#blueGradient)" opacity="0.8" />
+  
+  <!-- Starburst rays - zigzag pattern for Dani -->
+  <g stroke="#0099FF" stroke-linecap="round">
+    <!-- Zigzag rays -->
+    <path d="M100 20 L90 50 L110 80 L90 110 L110 140 L100 180" stroke-width="8" opacity="0.9" fill="none" />
+    <path d="M20 100 L50 90 L80 110 L110 90 L140 110 L180 100" stroke-width="8" opacity="0.9" fill="none" />
+    <path d="M37 37 L57 67 L87 77 L117 107 L147 117 L163 163" stroke-width="8" opacity="0.9" fill="none" />
+    <path d="M37 163 L67 143 L77 113 L107 83 L117 53 L163 37" stroke-width="8" opacity="0.9" fill="none" />
+    
+    <!-- Star points -->
+    <path d="M100 30 L105 60 L130 60 L110 80 L120 110 L100 90 L80 110 L90 80 L70 60 L95 60 Z" stroke-width="3" fill="#40A0FF" opacity="0.8" />
+    
+    <!-- Diagonal stars -->
+    <circle cx="30" cy="30" r="8" fill="#80C0FF" />
+    <circle cx="170" cy="30" r="8" fill="#80C0FF" />
+    <circle cx="30" cy="170" r="8" fill="#80C0FF" />
+    <circle cx="170" cy="170" r="8" fill="#80C0FF" />
+  </g>
+  
+  <!-- Center core -->
+  <circle cx="100" cy="100" r="25" fill="#FFFFFF" opacity="0.9" />
+  <circle cx="100" cy="100" r="15" fill="#00CCFF" opacity="1" />
+  
+  <!-- Small star clusters around the edge -->
+  <g fill="#FFFFFF">
+    <circle cx="140" cy="40" r="3" />
+    <circle cx="145" cy="45" r="2" />
+    <circle cx="135" cy="45" r="2" />
+    
+    <circle cx="40" cy="140" r="3" />
+    <circle cx="45" cy="145" r="2" />
+    <circle cx="45" cy="135" r="2" />
+    
+    <circle cx="140" cy="140" r="3" />
+    <circle cx="145" cy="135" r="2" />
+    <circle cx="135" cy="145" r="2" />
+  </g>
+</svg>

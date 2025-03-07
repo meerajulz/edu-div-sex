@@ -10,7 +10,7 @@ interface WalkingDaniProps {
 }
 
 const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplete }) => {
-  const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'done'>('initial');
+  const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'finalWalking' | 'done'>('initial');
   const [hasStartedSequence, setHasStartedSequence] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const [isCurrentAudioPlaying, setIsCurrentAudioPlaying] = useState(false);
@@ -148,7 +148,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
           return walkingExpressions.leftLeg1;
         }
       });
-    }, 400); // Slower walking speed
+    }, 250); // Faster walking speed (reduced from 400ms to 250ms)
   };
 
   // Natural blinking animation for final position
@@ -181,7 +181,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
       setTimeout(() => {
         setStage('walking');
         startWalkingAnimation();
-      }, 500); // Small pause before walking
+      }, 200); // Reduced pause before walking (from 500ms to 200ms)
     };
     
     audio.play().catch(console.error);
@@ -195,22 +195,37 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     // Set to standing position
     setCurrentImage(walkingExpressions.standing);
     
-    // Start talking sequence with additional audios
-    setTimeout(() => {
-      setStage('talking');
-      setCurrentAudioIndex(1); // Start from the second audio (index 1)
-    }, 1000);
+    // Start talking sequence with additional audios immediately
+    setStage('talking');
+    setCurrentAudioIndex(1); // Start from the second audio (index 1)
+  };
+
+  // Handle final walking complete
+  const handleFinalWalkingComplete = () => {
+    // Stop walking animations
+    cleanupAnimations();
+    
+    // Set to standing position
+    setCurrentImage(walkingExpressions.standing);
+    
+    // Change to done stage
+    setStage('done');
+    
+    // Start blinking animation
+    startBlinkingAnimation();
+    
+    // Call onComplete callback
+    if (onComplete) {
+      onComplete();
+    }
   };
 
   // Play the current audio file
   const playCurrentAudio = () => {
     if (currentAudioIndex >= audioSequence.length) {
-      setStage('done');
-      // Start blinking animation
-      startBlinkingAnimation();
-      if (onComplete) {
-        onComplete();
-      }
+      // Start the final walking sequence
+      setStage('finalWalking');
+      startWalkingAnimation();
       return;
     }
     
@@ -229,24 +244,14 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     
     // Handle when audio ends
     audioRef.current.onended = () => {
-      // Move to next audio after a pause
-      setTimeout(() => {
-        if (currentAudioIndex < audioSequence.length - 1) {
-          setCurrentAudioIndex(prev => prev + 1);
-        } else {
-          // This is the last audio
-          setStage('done');
-          // Reset to standing position
-          setCurrentImage(walkingExpressions.standing);
-          
-          // Start blinking animation
-          startBlinkingAnimation();
-          
-          if (onComplete) {
-            onComplete();
-          }
-        }
-      }, 1000); // 1 second pause between audio clips
+      // Move to next audio immediately without pause
+      if (currentAudioIndex < audioSequence.length - 1) {
+        setCurrentAudioIndex(prev => prev + 1);
+      } else {
+        // After the last audio, move to final walking
+        setStage('finalWalking');
+        startWalkingAnimation();
+      }
     };
     
     audioRef.current.play().catch(console.error);
@@ -280,10 +285,15 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     };
   }, [stage]);
 
-  // Define position values where Dani should end up during talking
+  // Define position values for different stages
+  const midPosition = {
+    top: '100%', // Higher position to show more legs and appear more distant
+    scale: 6     // Smaller scale to make him appear further back
+  };
+  
   const finalPosition = {
-    top: '155%', // Position higher up to show more legs
-    scale: 8     // Smaller scale to make him less prominent
+    top: '135%', // Even higher position (more in the back)
+    scale: 7.2   // Slightly bigger than before (from 6.7 to 7.2)
   };
 
   // Don't render anything until sequence begins
@@ -301,13 +311,50 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
         pointerEvents: 'none',
       }}
     >
-      {/* If in talking or done stage, render Dani at the final position */}
-      {(stage === 'talking' || stage === 'done') && (
+      {/* If in done stage, render Dani at the final position */}
+      {stage === 'done' && (
         <div 
           className="absolute left-0 w-full"
           style={{
             top: finalPosition.top,
-            transform: `translateX(20vw) scale(${finalPosition.scale})`, // Move more to the right (20vw instead of 15vw)
+            transform: `translateX(20vw) scale(${finalPosition.scale})`,
+          }}
+        >
+          <div className="relative">
+            {/* Shadow under Dani */}
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+              style={{ 
+                width: '150%', 
+                height: '25%', 
+                bottom: '-12.5%',
+                opacity: 0.3
+              }}
+            />
+            
+            <div className="relative">
+              {/* Dani with exact positioning */}
+              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                <Image
+                  src={currentImage}
+                  alt="Dani"
+                  fill
+                  className="object-contain transition-opacity duration-75"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* If in talking stage, render Dani at the middle position */}
+      {stage === 'talking' && (
+        <div 
+          className="absolute left-0 w-full"
+          style={{
+            top: midPosition.top,
+            transform: `translateX(20vw) scale(${midPosition.scale})`,
           }}
         >
           <div className="relative">
@@ -343,8 +390,8 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
         <div
           className="absolute left-0 w-full"
           style={{
-            top: '45%',    // Initial starting position (from top)
-            transform: `scale(2)`,  // Initial scale
+            top: '40%',    // Initial starting position (from top)
+            transform: `scale(3.2)`,  // Slightly bigger initial scale (10% bigger)
           }}
         >
           <div className="relative">
@@ -379,18 +426,18 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
         <motion.div
           className="absolute left-0 w-full"
           initial={{
-            top: '45%',    // Initial starting position (from top)
-            scale: 2,      // Initial scale
+            top: '40%',    // Initial starting position (from top)
+            scale: 3.2,    // Initial scale (matching hola)
             x: 0           // Start at container position (40% left)
           }}
           animate={{
-            // Animate to the middle position diagonally
-            top: finalPosition.top,
-            scale: finalPosition.scale,
-            x: '20vw'      // Move more to the right (20vw instead of 15vw)
+            // Animate to the middle position for talking
+            top: midPosition.top,
+            scale: midPosition.scale,
+            x: '20vw'      // Move to the right
           }}
           transition={{
-            duration: 5, // Same slow walking speed as Cris
+            duration: 3.5, // Faster walking (reduced from 5 to 3.5)
             ease: "easeInOut",
           }}
           onAnimationComplete={handleWalkingComplete}
@@ -407,7 +454,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
                 opacity: 0.3
               }}
               transition={{ 
-                duration: 4,
+                duration: 3, // Adjusted duration (reduced from 4 to 3)
                 ease: "easeInOut"
               }}
             />
@@ -418,7 +465,65 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.7, // Same slow bobbing as Cris
+                  duration: 0.5, // Faster bobbing animation (reduced from 0.7 to 0.5)
+                  ease: "linear"
+                }
+              }}
+            >
+              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                <Image
+                  src={currentImage}
+                  alt="Dani"
+                  fill
+                  className="object-contain transition-opacity duration-75"
+                  priority
+                />
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+      
+      {/* Final walking animation after talking */}
+      {stage === 'finalWalking' && (
+        <motion.div
+          className="absolute left-0 w-full"
+          initial={{
+            top: midPosition.top,
+            scale: midPosition.scale,
+            x: '20vw'      // Start from middle position
+          }}
+          animate={{
+            // Animate to final position
+            top: finalPosition.top,
+            scale: finalPosition.scale,
+            x: '20vw'      // Keep same horizontal position
+          }}
+          transition={{
+            duration: 1.5, // Even quicker transition (reduced from 2s to 1.5s)
+            ease: "easeInOut",
+          }}
+          onAnimationComplete={handleFinalWalkingComplete}
+        >
+          <div className="relative">
+            {/* Shadow under Dani */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+              style={{ 
+                width: '150%', 
+                height: '25%', 
+                bottom: '-12.5%',
+                opacity: 0.3
+              }}
+            />
+            
+            <motion.div
+              animate={{
+                y: ['-2%', '2%'],
+                rotate: [-2, 2],
+                transition: {
+                  repeat: Infinity,
+                  duration: 0.5, // Faster bobbing animation (reduced from 0.7 to 0.5)
                   ease: "linear"
                 }
               }}

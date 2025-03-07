@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface ItemData {
   id: number;
   label: string;
   url: string;
-  icon: string;
+  svgPath: string;
+  isUnlocked: boolean;
 }
 
 const OrbitalCarousel = () => {
@@ -17,112 +19,56 @@ const OrbitalCarousel = () => {
   const [moveAudio, setMoveAudio] = useState<HTMLAudioElement | null>(null);
   const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
   const [containerSize, setContainerSize] = useState({
-    width: 420,
-    height: 180,
-    iconSize: 96
+    width: 600,
+    height: 200,
+    iconSize: 100
   });
 
-  // Complete items data
+  // Removed mock user progress state as we're setting unlocked status directly in items
+
+  // Complete items data with SVG paths and locked status
   const items: ItemData[] = [
     {
       id: 1,
-      label: "Modulo 1",
-      url: "/dashboard",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
-        <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
-        <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
-        <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <circle cx="60" cy="25" r="6" fill="#FFA500"/>
-        <circle cx="25" cy="25" r="5" fill="#8B4513"/>
-        <circle cx="23" cy="23" r="2" fill="#654321"/>
-        <circle cx="27" cy="23" r="2" fill="#654321"/>
-        <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
-      </svg>`
+      label: "Actividad 1",
+      url: "/actividad-1",
+      svgPath: "/svg/menu/orbital/activity1-descubriendo-mi-cuerpo.svg",
+      isUnlocked: true // First module is always unlocked
     },
     {
       id: 2,
-      label: "Modulo 2",
-      url: "/dashboard",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
-          <rect x="15" y="20" width="50" height="40" fill="#B2EBF2" stroke="#1C274C" stroke-width="1.5"/>
-          <path d="M25 20v40M35 20v40M45 20v40M55 20v40" stroke="#1C274C" stroke-width="1.5"/>
-          <circle cx="25" cy="15" r="2" fill="#1C274C"/>
-          <circle cx="35" cy="15" r="2" fill="#1C274C"/>
-          <circle cx="45" cy="15" r="2" fill="#1C274C"/>
-          <circle cx="55" cy="15" r="2" fill="#1C274C"/>
-          <path d="M20 60l5 5 5-5M40 60l5 5 5-5" fill="none" stroke="#1C274C" stroke-width="1.5"/>
-        </svg>`
+      label: "Actividad 2",
+      url: "/actividad-2",
+      svgPath: "/svg/menu/orbital/activity2-intimidad.svg",
+      isUnlocked: true // Manually set to false for now
     },
     {
       id: 3,
-      label: "Modulo 3",
-      url: "/dashboard",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
-        <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
-        <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
-        <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <circle cx="60" cy="25" r="6" fill="#FFA500"/>
-        <circle cx="25" cy="25" r="5" fill="#8B4513"/>
-        <circle cx="23" cy="23" r="2" fill="#654321"/>
-        <circle cx="27" cy="23" r="2" fill="#654321"/>
-        <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
-      </svg>`
+      label: "Actividad 3",
+      url: "/actividad-3",
+      svgPath: "/svg/menu/orbital/activity3-placer-sexual.svg",
+      isUnlocked: false // Manually set to false for now
     },
     {
       id: 4,
-      label: "Modulo 4",
-      url: "/dashboard",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
-        <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
-        <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
-        <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <circle cx="60" cy="25" r="6" fill="#FFA500"/>
-        <circle cx="25" cy="25" r="5" fill="#8B4513"/>
-        <circle cx="23" cy="23" r="2" fill="#654321"/>
-        <circle cx="27" cy="23" r="2" fill="#654321"/>
-        <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
-      </svg>`
+      label: "Actividad 4",
+      url: "/actividad-4",
+      svgPath: "/svg/menu/orbital/activity4cuido-mi-sexualidad.svg",
+      isUnlocked: false // Manually set to false for now
     },
     {
       id: 5,
-      label: "Modulo 4",
-      url: "/dashboard",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
-        <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
-        <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
-        <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <circle cx="60" cy="25" r="6" fill="#FFA500"/>
-        <circle cx="25" cy="25" r="5" fill="#8B4513"/>
-        <circle cx="23" cy="23" r="2" fill="#654321"/>
-        <circle cx="27" cy="23" r="2" fill="#654321"/>
-        <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
-      </svg>`
+      label: "Actividad 5",
+      url: "/actividad-5",
+      svgPath: "/svg/menu/orbital/activity5-entender-respectar.svg",
+      isUnlocked: false // Manually set to false for now
     },
     {
       id: 6,
-      label: "Modulo 4",
-      url: "/dashboard",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="#fff" stroke="#1C274C" stroke-width="2"/>
-        <rect x="15" y="30" width="50" height="25" fill="#FFB6C1" stroke="#1C274C" stroke-width="1.5"/>
-        <path d="M15 45h50" stroke="#1C274C" stroke-width="1.5"/>
-        <rect x="20" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <rect x="35" y="35" width="12" height="8" fill="#fff" stroke="#1C274C"/>
-        <circle cx="60" cy="25" r="6" fill="#FFA500"/>
-        <circle cx="25" cy="25" r="5" fill="#8B4513"/>
-        <circle cx="23" cy="23" r="2" fill="#654321"/>
-        <circle cx="27" cy="23" r="2" fill="#654321"/>
-        <path d="M20 55v5M60 55v5" stroke="#8B4513" stroke-width="2"/>
-      </svg>`
+      label: "Actividad 6",
+      url: "/actividad-6",
+      svgPath: "/svg/menu/orbital/activity6.svg",
+      isUnlocked: false // Manually set to false for now
     }
   ];
 
@@ -148,9 +94,9 @@ const OrbitalCarousel = () => {
         });
       } else { // lg and above
         setContainerSize({
-          width: 420,
-          height: 180,
-          iconSize: 96
+          width: 600,
+          height: 200,
+          iconSize: 100
         });
       }
     };
@@ -215,7 +161,12 @@ const OrbitalCarousel = () => {
     }
   };
 
-  const handleCircleClick = async (index: number) => {
+  const handleCircleClick = async (index: number, isUnlocked: boolean) => {
+    // Only allow interaction with unlocked activities
+    if (!isUnlocked) {
+      return;
+    }
+    
     if (index !== activeIndex) {
       await playSound(clickAudio);
       await playSound(moveAudio);
@@ -223,10 +174,17 @@ const OrbitalCarousel = () => {
     setActiveIndex(index);
   };
 
-  const handleLabelClick = async (url: string) => {
+  const handleLabelClick = async (url: string, isUnlocked: boolean) => {
+    // Only navigate to unlocked activities
+    if (!isUnlocked) {
+      return;
+    }
+    
     await playSound(clickAudio);
     router.push(url);
   };
+
+  // Unlock function removed as requested
 
   return (
     <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-screen-lg">
@@ -236,7 +194,7 @@ const OrbitalCarousel = () => {
       {/* Carousel container */}
       <div className="relative z-10 px-4 py-8 sm:py-12">
         <div 
-          className="relative mx-auto rounded-full overflow-hidden"
+          className="relative mx-auto overflow-hidden"
           style={{ 
             width: containerSize.width, 
             height: containerSize.height
@@ -245,13 +203,12 @@ const OrbitalCarousel = () => {
           {/* Enhanced glass effect background */}
           <div className="absolute inset-0 " />
           
-          {/* Glowing border */}
-          <div className="absolute inset-0 " />
+         
           
           {/* Content container */}
           <div 
-            className="absolute top-[30%] left-1/2 w-full h-full" 
-            style={{ transform: 'translate(-59.6667%, -90%)' }}
+            className="absolute top-[40%] left-1/2 w-full h-full" 
+            style={{ transform: 'translate(-64.6667%, -87%)' }}
           >
             <AnimatePresence>
               {items.map((item, index) => {
@@ -280,40 +237,60 @@ const OrbitalCarousel = () => {
                     <div className="flex flex-col items-center">
                       <motion.div
                         className={`
-                          rounded-full border-2 border-blue-400/80 
-                          flex items-center justify-center cursor-pointer
-                          bg-gradient-to-br from-white to-blue-50
-                          ${index === activeIndex ? 'shadow-lg shadow-blue-200/50' : ''}
-                          transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]
+                          rounded-full border-2 
+                          flex items-center justify-center
+                          bg-gradient-to-br 
+                          transition-all duration-300
+                          ${item.isUnlocked 
+                            ? 'border-blue-400/80 from-white to-blue-50 cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]' 
+                            : 'border-gray-300 from-gray-100 to-gray-200 cursor-not-allowed opacity-70'}
+                          ${index === activeIndex && item.isUnlocked ? 'shadow-lg shadow-blue-200/50' : ''}
                         `}
                         style={{
                           width: iconSize,
                           height: iconSize
                         }}
-                        onClick={() => handleCircleClick(index)}
-                        whileHover={{ scale: 1.1 }}
+                        onClick={() => handleCircleClick(index, item.isUnlocked)}
+                        whileHover={item.isUnlocked ? { scale: 1.1 } : {}}
                       >
                         <div 
                           style={{
                             width: iconSize,
-                            height: iconSize
+                            height: iconSize,
+                            position: 'relative'
                           }}
-                          dangerouslySetInnerHTML={{ __html: item.icon }}
-                        />
+                        >
+                          <Image 
+                            src={item.svgPath} 
+                            alt={item.label}
+                            fill
+                            style={{ objectFit: 'contain' }}
+                          />
+                          
+                          {/* Lock overlay for locked activities */}
+                          {!item.isUnlocked && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-500/30 rounded-full">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
                       </motion.div>
                       <motion.span 
                         className={`
                           px-3 py-1.5 rounded-full mt-2
-                          bg-white/80 backdrop-blur-md
-                          shadow-[0_2px_8px_rgba(0,0,0,0.05)]
-                          text-xs font-medium text-center cursor-pointer
-                          ${index === activeIndex ? 'text-blue-600 bg-blue-50/90' : 'text-gray-700'}
+                          backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.05)]
+                          text-xs font-medium text-center
                           transition-all duration-300
                           sm:text-sm sm:px-4 sm:py-2
                           md:text-base
+                          ${item.isUnlocked 
+                            ? `cursor-pointer ${index === activeIndex ? 'text-blue-600 bg-blue-50/90' : 'text-gray-700 bg-white/80'}` 
+                            : 'text-gray-500 bg-gray-100/80 cursor-not-allowed'}
                         `}
-                        onClick={() => handleLabelClick(item.url)}
-                        whileHover={{ scale: 1.1 }}
+                        onClick={() => handleLabelClick(item.url, item.isUnlocked)}
+                        whileHover={item.isUnlocked ? { scale: 1.1 } : {}}
                       >
                         {item.label}
                       </motion.span>
@@ -324,6 +301,8 @@ const OrbitalCarousel = () => {
             </AnimatePresence>
           </div>
         </div>
+        
+        {/* Demo button removed as requested */}
       </div>
     </div>
   );

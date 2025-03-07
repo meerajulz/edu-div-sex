@@ -23,16 +23,16 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
 
   const POSITIONS = {
     door: {
-      left: 32.1,    
-      top: 35.5,       
+      left: 30.1,    
+      top: 43,       
       width: 7.5,     
       height: 25,    
     },
     window: {
-      left: 70,    
-      top: 30,     
-      width: 12,   
-      height: 25,    
+      left: 68,    
+      top: 48,     
+      width: 8,   
+      height: 20,    
     }
   };
 
@@ -107,7 +107,7 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
             top: `${POSITIONS.window.top}%`,
             width: `${POSITIONS.window.width}%`,
             height: `${POSITIONS.window.height}%`,
-            backgroundImage: `url('./svg/clouds.svg'), linear-gradient(to bottom, #8ce7f5 0%, #c1e3e4 100%)`,
+            backgroundImage: `url(./svg/clouds.svg), linear-gradient(#00b3f0 0%, rgb(193, 227, 228) 100%)`,
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
             backgroundPosition: 'center',

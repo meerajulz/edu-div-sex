@@ -19,7 +19,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className='absolute inset-0 z-10'>
-          <RoomBackground imagePath='/svg/background-home.svg' />
+          <RoomBackground imagePath='/svg/HOME.svg' />
          
         </div>
 

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="pinkGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FF80FF" />
+      <stop offset="50%" stop-color="#FF40A0" />
+      <stop offset="100%" stop-color="rgba(255, 64, 160, 0)" />
+    </radialGradient>
+    
+    <!-- Spiral pattern -->
+    <pattern id="spiralPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+      <path d="M20 5 C30 10, 35 20, 30 30 C25 40, 15 35, 5 30 C-5 25, 0 15, 5 5 C10 -5, 15 0, 20 5" 
+            fill="none" stroke="#FF80C0" stroke-width="2" />
+    </pattern>
+  </defs>
+  
+  <!-- Main burst glow -->
+  <circle cx="100" cy="100" r="70" fill="url(#pinkGradient)" opacity="0.8" />
+  
+  <!-- Spiral burst pattern -->
+  <g stroke="#FF60B0" stroke-linecap="round">
+    <!-- Spiral arms -->
+    <path d="M100 20 C130 30, 150 50, 160 80 C170 110, 160 140, 130 160 C100 180, 60 170, 40 140 C20 110, 30 70, 60 50 C80 35, 100 40, 100 20" 
+          stroke-width="8" opacity="0.8" fill="none" />
+          
+    <path d="M60 40 C80 30, 120 30, 140 60 C160 90, 150 130, 120 150 C90 170, 50 160, 40 130 C30 100, 40 60, 60 40" 
+          stroke-width="5" opacity="0.7" fill="none" />
+          
+    <!-- Spiral rings -->
+    <circle cx="100" cy="100" r="50" stroke-width="3" fill="none" opacity="0.6" />
+    <circle cx="100" cy="100" r="40" stroke-width="3" fill="none" opacity="0.6" />
+    <circle cx="100" cy="100" r="30" stroke-width="3" fill="none" opacity="0.6" />
+  </g>
+  
+  <!-- Heart patterns around the edge -->
+  <path d="M50 50 C45 45, 35 45, 30 55 C25 65, 35 75, 50 85 C65 75, 75 65, 70 55 C65 45, 55 45, 50 50" 
+        fill="#FF80B0" opacity="0.7" />
+  
+  <path d="M150 50 C145 45, 135 45, 130 55 C125 65, 135 75, 150 85 C165 75, 175 65, 170 55 C165 45, 155 45, 150 50" 
+        fill="#FF80B0" opacity="0.7" />
+        
+  <path d="M50 150 C45 145, 35 145, 30 155 C25 165, 35 175, 50 185 C65 175, 75 165, 70 155 C65 145, 55 145, 50 150" 
+        fill="#FF80B0" opacity="0.7" />
+        
+  <path d="M150 150 C145 145, 135 145, 130 155 C125 165, 135 175, 150 185 C165 175, 175 165, 170 155 C165 145, 155 145, 150 150" 
+        fill="#FF80B0" opacity="0.7" />
+  
+  <!-- Center core -->
+  <circle cx="100" cy="100" r="25" fill="#FFFFFF" opacity="0.9" />
+  <circle cx="100" cy="100" r="15" fill="#FF60B0" opacity="1" />
+</svg>

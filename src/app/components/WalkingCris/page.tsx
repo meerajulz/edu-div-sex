@@ -10,7 +10,7 @@ interface WalkingCrisProps {
 }
 
 const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplete }) => {
-  const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'done'>('initial');
+  const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'finalWalking' | 'done'>('initial');
   const [hasStartedSequence, setHasStartedSequence] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const [isCurrentAudioPlaying, setIsCurrentAudioPlaying] = useState(false);
@@ -188,7 +188,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     // Set initial walking image
     setCurrentImage(walkingExpressions.eyeOpenLegLeft);
     
-    // Leg animation - Slower leg movement (400ms instead of 250ms)
+    // Leg animation - Faster leg movement (250ms instead of 400ms)
     legIntervalRef.current = setInterval(() => {
       setCurrentImage(prevImage => {
         // Make sure we're using walking expressions
@@ -205,7 +205,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         
         return prevImage;
       });
-    }, 400); // Slower walking speed (increased from 250ms to 400ms)
+    }, 250); // Faster walking speed (decreased from 400ms to 250ms)
     
     // Eye animation (blinking occasionally)
     eyeIntervalRef.current = setInterval(() => {
@@ -231,7 +231,6 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
 
   // Natural blinking animation for final position
   const startBlinkingAnimation = () => {
-    console.log("Starting blinking animation");
     // Clear any existing animations
     cleanupAnimations();
     
@@ -298,16 +297,33 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
       setCurrentAudioIndex(1); // Start from the second audio (index 1)
     }, 1000);
   };
+  
+  // Handle final walking complete
+  const handleFinalWalkingComplete = () => {
+    // Stop walking animations
+    cleanupAnimations();
+    
+    // Set to standing position
+    setCurrentImage(walkingExpressions.eyeOpenStanding);
+    
+    // Change to done stage
+    setStage('done');
+    
+    // Start blinking animation
+    startBlinkingAnimation();
+    
+    // Call onComplete callback
+    if (onComplete) {
+      onComplete();
+    }
+  };
 
   // Play the current audio file
   const playCurrentAudio = () => {
     if (currentAudioIndex >= audioSequence.length) {
-      setStage('done');
-      // Start blinking animation when done
-      startBlinkingAnimation();
-      if (onComplete) {
-        onComplete();
-      }
+      // Start the final walking sequence
+      setStage('finalWalking');
+      startWalkingAnimation();
       return;
     }
     
@@ -331,17 +347,9 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         if (currentAudioIndex < audioSequence.length - 1) {
           setCurrentAudioIndex(prev => prev + 1);
         } else {
-          // This is the last audio
-          setStage('done');
-          // Reset to standing position
-          setCurrentImage(walkingExpressions.eyeOpenStanding);
-          
-          // Start blinking animation
-          startBlinkingAnimation();
-          
-          if (onComplete) {
-            onComplete();
-          }
+          // After the last audio, move to final walking
+          setStage('finalWalking');
+          startWalkingAnimation();
         }
       }, 1000); // 1 second pause between audio clips
     };
@@ -377,10 +385,15 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     };
   }, [stage]);
 
-  // Define position values where Cris should end up during talking
+  // Define position values for different stages
+  const midPosition = {
+    top: '80%', // 7% higher position (from 130% to 120%) to appear more in the back
+    scale: 7.5   // Keeping the same scale during talks
+  };
+  
   const finalPosition = {
-    top: '155%', // Position higher up to show more legs
-    scale: 8     // Further reduced scale to make her smaller and show more legs
+    top: '200%', // Lower position for final close-up
+    scale: 10.6   // 20% bigger than before (increased from 8 to 9.6)
   };
 
   // Don't render anything until sequence begins
@@ -398,8 +411,8 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         pointerEvents: 'none',
       }}
     >
-      {/* If in talking or done stage, render Cris at the final position */}
-      {(stage === 'talking' || stage === 'done') && (
+      {/* If in done stage, render Cris at the final position */}
+      {stage === 'done' && (
         <div 
           className="absolute left-0 w-full"
           style={{
@@ -435,13 +448,50 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         </div>
       )}
 
+      {/* If in talking stage, render Cris at the middle position */}
+      {stage === 'talking' && (
+        <div 
+          className="absolute left-0 w-full"
+          style={{
+            top: midPosition.top,
+            transform: `translateX(40vw) scale(${midPosition.scale})`,
+          }}
+        >
+          <div className="relative">
+            {/* Shadow under Cris */}
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+              style={{ 
+                width: '150%', 
+                height: '25%', 
+                bottom: '-12.5%',
+                opacity: 0.3
+              }}
+            />
+            
+            <div className="relative">
+              {/* The talking Cris with exact positioning */}
+              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                <Image
+                  src={currentImage}
+                  alt="Cris"
+                  fill
+                  className="object-contain transition-opacity duration-75"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Only show the stationary hola animation */}
       {stage === 'hola' && (
         <div
           className="absolute left-0 w-full"
           style={{
-            top: '45%',    // Initial starting position (from top)
-            transform: `scale(2)`,  // Initial scale
+            top: '40%',    // Initial starting position (from top)
+            transform: `scale(3.4)`,  // Initial scale (increased from 2 to 2.4)
           }}
         >
           <div className="relative">
@@ -476,18 +526,18 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         <motion.div
           className="absolute left-0 w-full"
           initial={{
-            top: '45%',    // Initial starting position (from top)
-            scale: 2,      // Initial scale
+            top: '40%',    // Initial starting position (from top)
+            scale: 3.4,    // Initial scale (matching hola)
             x: 0           // Start at container position (40% left)
           }}
           animate={{
-            // Animate to the right position diagonally
-            top: finalPosition.top,
-            scale: finalPosition.scale,
-            x: '40vw'      // Move more to the right (40% of viewport width)
+            // Animate to the middle position for talking
+            top: midPosition.top,
+            scale: midPosition.scale,
+            x: '40vw'      // Move to the right
           }}
           transition={{
-            duration: 5, // Longer duration for slower walking (increased from 3s to 5s)
+            duration: 3.5, // Faster walking (decreased from 5 to 3.5)
             ease: "easeInOut",
           }}
           onAnimationComplete={handleWalkingComplete}
@@ -504,26 +554,77 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
                 opacity: 0.3
               }}
               transition={{ 
-                duration: 4,
+                duration: 3,  // Adjusted duration (decreased from 4 to 3)
                 ease: "easeInOut"
               }}
             />
             
             <motion.div
-              animate={stage === 'walking' ? {
+              animate={{
                 y: ['-2%', '2%'],
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.7, // Slower bobbing animation (increased from 0.5s to 0.7s)
+                  duration: 0.5, // Faster bobbing animation (decreased from 0.7 to 0.5)
                   ease: "linear"
                 }
-              } : {
-                y: 0,
-                rotate: 0,
+              }}
+            >
+              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+                <Image
+                  src={currentImage}
+                  alt="Cris"
+                  fill
+                  className="object-contain transition-opacity duration-75"
+                  priority
+                />
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+      
+      {/* Final walking animation after talking */}
+      {stage === 'finalWalking' && (
+        <motion.div
+          className="absolute left-0 w-full"
+          initial={{
+            top: midPosition.top,
+            scale: midPosition.scale,
+            x: '40vw'      // Start from middle position
+          }}
+          animate={{
+            // Animate to final position
+            top: finalPosition.top,
+            scale: finalPosition.scale,
+            x: '40vw'      // Keep same horizontal position
+          }}
+          transition={{
+            duration: 2.5, // Faster transition to final position (decreased from 3 to 2.5)
+            ease: "easeInOut",
+          }}
+          onAnimationComplete={handleFinalWalkingComplete}
+        >
+          <div className="relative">
+            {/* Shadow under Cris */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+              style={{ 
+                width: '150%', 
+                height: '25%', 
+                bottom: '-12.5%',
+                opacity: 0.3
+              }}
+            />
+            
+            <motion.div
+              animate={{
+                y: ['-2%', '2%'],
+                rotate: [-2, 2],
                 transition: {
-                  duration: 0.5,
-                  ease: "easeOut"
+                  repeat: Infinity,
+                  duration: 0.5, // Faster bobbing animation (decreased from 0.7 to 0.5)
+                  ease: "linear"
                 }
               }}
             >
