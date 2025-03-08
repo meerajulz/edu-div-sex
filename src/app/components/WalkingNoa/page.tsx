@@ -338,6 +338,26 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
     scale: 8.2   // Larger scale to make her appear taller than Dani
   };
 
+  // Helper function to create cartoon shadow for consistency with Alex, Cris, and Dani
+  const createCartoonShadow = (extraStyles = {}) => {
+    return (
+      <div 
+        className="absolute rounded-full"
+        style={{ 
+          width: '14px',
+          height: '8px',
+          bottom: '3px',
+          left: '57%', // Default position for Noa's shadow
+          transform: 'translateX(-50%)',
+          opacity: 0.5, 
+          filter: 'blur(1.5px)',
+          backgroundColor: '#956d39', // Brown color like other characters
+          ...extraStyles
+        }}
+      />
+    );
+  };
+
   // Don't render anything until sequence begins
   if (!hasStartedSequence) return null;
 
@@ -400,16 +420,8 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
           }}
         >
           <div className="relative">
-            {/* Shadow under Noa */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow with style like Alex, Cris, and Dani */}
+            {createCartoonShadow({ width: '15px', height: '9px', left: '60%' })}
             
             <div className="relative">
               {/* Noa with exact positioning */}
@@ -437,16 +449,8 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
           }}
         >
           <div className="relative">
-            {/* Shadow under Noa */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow with style like Alex, Cris, and Dani */}
+            {createCartoonShadow({ left: '57%' })}
             
             <div className="relative">
               {/* Noa with exact positioning */}
@@ -474,15 +478,8 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
           }}
         >
           <div className="relative">
-            {/* Shadow under Noa */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '100%', 
-                height: '25%', 
-                bottom: '-12.5%'
-              }}
-            />
+            {/* Shadow under Noa with style like other characters */}
+            {createCartoonShadow({ width: '12px', height: '7px', left: '53%', bottom: '3px' })}
             
             <div className="relative">
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>

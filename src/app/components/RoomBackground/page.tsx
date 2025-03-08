@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import AnimatedDoor from '../AnimatedDoor/page';
 import WindowBirds from '../WindowBirds/page';
+import Backpack from '../Backpack/page';
+import Table from '../Table/page'; // Import the Table component
 
 interface BackgroundProps {
   imagePath: string;
@@ -33,6 +35,12 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
       top: 48,     
       width: 8,   
       height: 20,    
+    },
+    table: {
+      left: 5,
+      bottom: 15,
+      width: 20,
+      height: 15,
     }
   };
 
@@ -140,6 +148,19 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
             }}
           />
 
+          <Backpack scale={2.5} />
+
+          {/* Table positioned on the left side */}
+          <Table 
+            left={`${POSITIONS.table.left}%`}
+            bottom={`${POSITIONS.table.bottom}%`}
+            width={`${POSITIONS.table.width}%`}
+            height={`${POSITIONS.table.height}%`}
+            scale={1}
+            imagePath="/svg/table.svg"
+          />
+
+
           {/* Door Container */}
           <div 
             className="absolute"
@@ -152,8 +173,10 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
             }}
           >
             <AnimatedDoor />
-           
           </div>
+
+          {/* Backpack positioned under the window */}
+      
 
           {/* Debug Position Indicators */}
           {debug && Object.entries(POSITIONS).map(([key, position]) => (
@@ -162,10 +185,14 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
               className="absolute border-2 border-dashed"
               style={{
                 left: `${position.left}%`,
-                top: `${position.top}%`,
+                top: position.top ? `${position.top}%` : undefined,
+                bottom: position.bottom ? `${position.bottom}%` : undefined,
                 width: `${position.width}%`,
                 height: `${position.height}%`,
-                borderColor: key === 'door' ? 'rgba(255, 0, 0, 0.5)' : 'rgba(0, 255, 0, 0.5)',
+                borderColor: 
+                  key === 'door' ? 'rgba(255, 0, 0, 0.5)' : 
+                  key === 'window' ? 'rgba(0, 255, 0, 0.5)' :
+                  'rgba(0, 0, 255, 0.5)',
               }}
             >
               <div className="absolute -top-5 left-0 text-xs bg-black/50 text-white px-1 rounded">

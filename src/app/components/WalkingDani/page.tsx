@@ -296,6 +296,27 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     scale: 7.2   // Slightly bigger than before (from 6.7 to 7.2)
   };
 
+
+  // Helper function to create cartoon shadow for consistency with Alex and Cris
+  const createCartoonShadow = (extraStyles = {}) => {
+    return (
+      <div 
+        className="absolute rounded-full"
+        style={{ 
+          width: '14px',
+          height: '8px',
+          bottom: '3px',
+          left: '50%', // Default position - more to the right for diagonal movement
+          transform: 'translateX(-50%)',
+          opacity: 0.5, 
+          filter: 'blur(1.5px)',
+          backgroundColor: '#956d39', // Brown color like Alex and Cris
+          ...extraStyles
+        }}
+      />
+    );
+  };
+
   // Don't render anything until sequence begins
   if (!hasStartedSequence) return null;
 
@@ -321,16 +342,8 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
           }}
         >
           <div className="relative">
-            {/* Shadow under Dani */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow with style like Alex and Cris */}
+            {createCartoonShadow({ width: '15px', height: '9px', left: '62%' })}
             
             <div className="relative">
               {/* Dani with exact positioning */}
@@ -358,16 +371,8 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
           }}
         >
           <div className="relative">
-            {/* Shadow under Dani */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow with style like Alex and Cris */}
+            {createCartoonShadow({ left: '60%' })}
             
             <div className="relative">
               {/* Dani with exact positioning */}
@@ -395,16 +400,8 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
           }}
         >
           <div className="relative">
-            {/* Shadow under Dani */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '100%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow under Dani with style like Alex and Cris */}
+            {createCartoonShadow({ width: '12px', height: '7px', left: '52%', bottom: '3px' })}
             
             <div className="relative">
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
@@ -443,19 +440,52 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
           onAnimationComplete={handleWalkingComplete}
         >
           <div className="relative">
-            {/* Shadow under Dani */}
+            {/* Diagonal shadow that moves right as Dani walks */}
             <motion.div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              initial={{ width: '100%', height: '25%', bottom: '-12.5%' }}
+              className="absolute rounded-full blur-sm"
+              style={{ 
+                backgroundColor: '#956d39', // Brown color like Alex's and Cris's shadow
+                opacity: 0.5,
+                filter: 'blur(1.5px)',
+              }}
+              initial={{
+                width: '14px',
+                height: '8px',
+                bottom: '3px',
+                left: '50%'
+              }}
               animate={{
-                width: '150%',
-                height: '25%',
-                bottom: '-12.5%',
-                opacity: 0.3
+                width: ['14px', '16px'],
+                height: ['8px', '9px'],
+               // left: ['50%', '58%'], // Shadow shifts right as Dani walks diagonally
+                opacity: [0.5, 0.6, 0.5]
               }}
               transition={{ 
-                duration: 3, // Adjusted duration (reduced from 4 to 3)
+                duration: 3.5,  // Match the walking duration
+                times: [0, 1],
                 ease: "easeInOut"
+              }}
+            />
+            
+            {/* The bouncing shadow during walking */}
+            <motion.div
+              className="absolute rounded-full"
+              style={{ 
+                backgroundColor: '#956d39',
+                opacity: 0.5,
+                filter: 'blur(1.5px)',
+                width: '14px',
+                height: '8px',
+                bottom: '3px',
+              }}
+              animate={{
+                left: ['55%', '61%'],
+                scaleX: [1, 0.9, 1],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.4,
+                ease: "linear"
               }}
             />
             
@@ -465,7 +495,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.5, // Faster bobbing animation (reduced from 0.7 to 0.5)
+                  duration: 0.5, // Faster bobbing animation
                   ease: "linear"
                 }
               }}
@@ -500,20 +530,33 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
             x: '20vw'      // Keep same horizontal position
           }}
           transition={{
-            duration: 1.5, // Even quicker transition (reduced from 2s to 1.5s)
+            duration: 1.5, // Even quicker transition
             ease: "easeInOut",
           }}
           onAnimationComplete={handleFinalWalkingComplete}
         >
           <div className="relative">
-            {/* Shadow under Dani */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+            {/* Shadow with style like Alex and Cris */}
+            <motion.div
+              className="absolute rounded-full"
               style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
+                backgroundColor: '#956d39',
+                opacity: 0.5,
+                filter: 'blur(1.5px)',
+                width: '14px',
+                height: '8px',
+                bottom: '3px',
+                left: '50%', // Center horizontally
+                transform: 'translateX(-50%)' 
+              }}
+              animate={{
+               // left: ['58%', '64%'],
+                scaleX: [1, 0.9, 1],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.4,
+                ease: "linear"
               }}
             />
             
@@ -523,7 +566,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.5, // Faster bobbing animation (reduced from 0.7 to 0.5)
+                  duration: 0.5,
                   ease: "linear"
                 }
               }}

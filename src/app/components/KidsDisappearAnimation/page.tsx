@@ -161,7 +161,7 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
     timerRef.current = setTimeout(() => {
       setAnimationStage('complete');
       if (onComplete) onComplete();
-    }, 1500);
+    }, 1800);
   };
   
   // Don't render anything during initial stage
