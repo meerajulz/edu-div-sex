@@ -4,11 +4,9 @@ import AnimatedSky from '../components/AnimatedSky/page';
 import BirdAnimation from '../components/BirdAnimation/page';
 import BirdsFlying from '../components/BirdsFlying/page';
 import BirdsSoaring from '../components/BirdsSoaring/page';
-import OrbitalCarousel from '../components/OrbitalCarousel/page';
+import OrbitalCarousel from '../components/OrbitalCarousel';
 import FloatingMenu from '../components/FloatingMenu/page';
-import WalkingAlex from '../components/FullAlex/page';
 import RoomBackground from '../components/RoomBackground/page';
-import AnimatedDoor from '../components/AnimatedDoor/page';
 
 const Dashboard: React.FC = () => {
   return (
