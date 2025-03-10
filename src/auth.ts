@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "./lib/zod";
 
-export const { handlers, auth, signIn } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
 	providers: [
 		Credentials({
 			// You can specify which fields should be submitted, by adding keys to the `credentials` object.
@@ -48,7 +48,7 @@ export const { handlers, auth, signIn } = NextAuth({
 	callbacks: {
 		async redirect({ url, baseUrl }) {
 			// After successful sign in, redirect to evaluation form
-			return `${baseUrl}/evaluation-form`;
+			return `${baseUrl}/home`;
 		},
 	},
 });
