@@ -3,11 +3,30 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ContainerSize, ItemData } from './types';
 import { calculatePosition, playSound, getDefaultItems } from './utils';
 import CarouselItem from './CarouselItem';
 
-const OrbitalCarousel: React.FC = () => {
+// Make sure to add this interface
+interface ContainerSize {
+  width: number;
+  height: number;
+  iconSize: number;
+}
+
+// Add this interface if it's not already in your types file
+interface ItemData {
+  id: number;
+  label: string;
+  url: string;
+  svgPath: string;
+  isUnlocked: boolean;
+}
+
+interface OrbitalCarouselProps {
+  onSelectActivity?: (url: string) => void; // Callback for when activity is selected
+}
+
+const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({ onSelectActivity }) => {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [moveAudio, setMoveAudio] = useState<HTMLAudioElement | null>(null);
@@ -92,14 +111,20 @@ const OrbitalCarousel: React.FC = () => {
     }
     
     await playSound(clickAudio);
-    router.push(url);
+    
+    // Notify parent component that an activity was selected
+    if (onSelectActivity) {
+      onSelectActivity(url);
+      console.log("Activity selected, triggering animation:", url);
+    } else {
+      // If no callback is provided, navigate directly
+      console.log("No animation callback provided, navigating directly");
+      router.push(url);
+    }
   };
 
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-screen-lg">
-      {/* Main background with blur */}
-      <div className="absolute inset-0" />
-      
+    <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-screen-lg">      
       {/* Carousel container */}
       <div className="relative z-10 px-4 py-8 sm:py-12">
         <div 
