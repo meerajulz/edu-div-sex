@@ -3,9 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ContainerSize, ItemData } from './types';
 import { calculatePosition, playSound, getDefaultItems } from './utils';
 import CarouselItem from './CarouselItem';
+
+// Make sure to add this interface
+interface ContainerSize {
+  width: number;
+  height: number;
+  iconSize: number;
+}
+
+// Add this interface if it's not already in your types file
+interface ItemData {
+  id: number;
+  label: string;
+  url: string;
+  svgPath: string;
+  isUnlocked: boolean;
+}
 
 interface OrbitalCarouselProps {
   onSelectActivity?: (url: string) => void; // Callback for when activity is selected
@@ -16,7 +31,6 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({ onSelectActivity }) =
   const [activeIndex, setActiveIndex] = useState(0);
   const [moveAudio, setMoveAudio] = useState<HTMLAudioElement | null>(null);
   const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
-  const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState<ContainerSize>({
     width: 600,
     height: 200,
@@ -97,15 +111,14 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({ onSelectActivity }) =
     }
     
     await playSound(clickAudio);
-
-    // Store the selected URL to use after animation completes
-    setSelectedUrl(url);
     
     // Notify parent component that an activity was selected
     if (onSelectActivity) {
       onSelectActivity(url);
+      console.log("Activity selected, triggering animation:", url);
     } else {
       // If no callback is provided, navigate directly
+      console.log("No animation callback provided, navigating directly");
       router.push(url);
     }
   };

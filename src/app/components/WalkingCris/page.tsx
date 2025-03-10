@@ -399,6 +399,26 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   // Don't render anything until sequence begins
   if (!hasStartedSequence) return null;
 
+  // Shadow component for Cris with diagonal movement support
+  const createCartoonShadow = (extraStyles = {}) => {
+    return (
+      <div 
+        className="absolute rounded-full"
+        style={{ 
+          width: '14px',
+          height: '8px',
+          bottom: '3px',
+          left: '62%', // More to the right for diagonal movement
+          transform: 'translateX(-50%)',
+          opacity: 0.5, 
+          filter: 'blur(1.5px)',
+          backgroundColor: '#956d39', // Brown color like Alex
+          ...extraStyles
+        }}
+      />
+    );
+  };
+
   return (
     <div 
       className="absolute w-full h-full"
@@ -409,6 +429,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         top: 10,      
         height: '100%',
         pointerEvents: 'none',
+        zIndex: 50 
       }}
     >
       {/* If in done stage, render Cris at the final position */}
@@ -423,12 +444,12 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
           <div className="relative">
             {/* Shadow under Cris */}
             <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+              className="absolute left-1/2 -translate-x-1/2 bg-black/500 rounded-full blur-sm"
               style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
+                width: '10%', 
+                height: '20%', 
+                bottom: '1%',
+                opacity:4
               }}
             />
             
@@ -458,16 +479,8 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
           }}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow positioned to the right for diagonal appearance */}
+            {createCartoonShadow({ left: '64%' })}
             
             <div className="relative">
               {/* The talking Cris with exact positioning */}
@@ -491,20 +504,12 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
           className="absolute left-0 w-full"
           style={{
             top: '40%',    // Initial starting position (from top)
-            transform: `scale(3.4)`,  // Initial scale (increased from 2 to 2.4)
+            transform: `scale(3.4)`,  // Initial scale
           }}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '100%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
+            {/* Shadow under Cris positioned to the right */}
+            {createCartoonShadow({ width: '12px', height: '7px', left: '50%', bottom: '3px' })}
             
             <div className="relative">
               <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
@@ -526,36 +531,71 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
         <motion.div
           className="absolute left-0 w-full"
           initial={{
-            top: '40%',    // Initial starting position (from top)
-            scale: 3.4,    // Initial scale (matching hola)
-            x: 0           // Start at container position (40% left)
+            top: '40%',    // Initial starting position
+            scale: 3.4,    // Initial scale
+            x: 0           // Start position
           }}
           animate={{
-            // Animate to the middle position for talking
             top: midPosition.top,
             scale: midPosition.scale,
-            x: '40vw'      // Move to the right
+            x: '40vw'      // Move diagonally to the right
           }}
           transition={{
-            duration: 3.5, // Faster walking (decreased from 5 to 3.5)
+            duration: 3.5, // Walking duration
             ease: "easeInOut",
           }}
           onAnimationComplete={handleWalkingComplete}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
+            {/* Diagonal shadow that moves right as Cris walks */}
             <motion.div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              initial={{ width: '100%', height: '25%', bottom: '-12.5%' }}
+              className="absolute rounded-full blur-sm"
+              style={{ 
+                backgroundColor: '#956d39', // Brown color like Alex's shadow
+                opacity: 0.5,
+                filter: 'blur(1.5px)',
+                left: '50%', // Center the shadow horizontally
+                transform: 'translateX(-50%)' // Ensure proper centering
+              }}
+              initial={{
+                width: '14px',
+                height: '8px',
+                bottom: '0px',
+              //  left: '40%'
+              }}
               animate={{
-                width: '150%',
-                height: '25%',
-                bottom: '-12.5%',
-                opacity: 0.3
+                width: ['14px'],
+                height: ['8px'],
+                //left: ['35%', '40%'], // Shadow shifts right as Cris walks diagonally
+                opacity: [0.5, 0.6, 0.5]
               }}
               transition={{ 
-                duration: 3,  // Adjusted duration (decreased from 4 to 3)
+                duration: 3.5,  // Match the walking duration
+                times: [0, 1],
                 ease: "easeInOut"
+              }}
+            />
+            
+            {/* The bouncing shadow during walking */}
+            <motion.div
+              className="absolute rounded-full"
+              style={{ 
+                backgroundColor: '#956d39',
+                opacity: 0.5,
+                filter: 'blur(1.5px)',
+                width: '14px',
+                height: '8px',
+                bottom: '3px',
+                left: '50%', // Center the shadow horizontally
+                transform: 'translateX(-50%)' // Ensure proper centering
+              }}
+              animate={{
+                scaleX: [1, 0.9, 1],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.4,
+                ease: "linear"
               }}
             />
             
@@ -565,7 +605,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.5, // Faster bobbing animation (decreased from 0.7 to 0.5)
+                  duration: 0.5,
                   ease: "linear"
                 }
               }}
@@ -594,26 +634,37 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
             x: '40vw'      // Start from middle position
           }}
           animate={{
-            // Animate to final position
             top: finalPosition.top,
             scale: finalPosition.scale,
             x: '40vw'      // Keep same horizontal position
           }}
           transition={{
-            duration: 2.5, // Faster transition to final position (decreased from 3 to 2.5)
+            duration: 2.5,
             ease: "easeInOut",
           }}
           onAnimationComplete={handleFinalWalkingComplete}
         >
           <div className="relative">
-            {/* Shadow under Cris */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
+            {/* Shadow positioned to the right for final walking */}
+            <motion.div
+              className="absolute rounded-full"
               style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
+                backgroundColor: '#956d39',
+                opacity: 0.7,
+                filter: 'blur(1.5px)',
+                width: '14px',
+                height: '8px',
+                bottom: '3px',
+                left: '50%', // Center the shadow horizontally
+                transform: 'translateX(-50%)' // Ensure proper centering
+              }}
+              animate={{
+                scaleX: [1, 0.9, 1],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.4,
+                ease: "linear"
               }}
             />
             
@@ -623,7 +674,7 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
                 rotate: [-2, 2],
                 transition: {
                   repeat: Infinity,
-                  duration: 0.5, // Faster bobbing animation (decreased from 0.7 to 0.5)
+                  duration: 0.5,
                   ease: "linear"
                 }
               }}

@@ -166,7 +166,7 @@ const AnimatedDoor = () => {
               alexMoveOut 
                 ? { 
                     y: 600, // Move down off-screen
-                    opacity: 0,
+                    opacity: 1,
                   }
                 : {}
             }
@@ -192,61 +192,12 @@ const AnimatedDoor = () => {
       </AnimatePresence>
 
       {/* Direct Alex disappear animation when triggered */}
-      {/* {alexShouldDisappear && !isAlexGone && (
-        <motion.div
-          className="absolute"
-          style={{
-            position: 'absolute',
-            left: '30%', // Position where Alex should be
-            top: '220%',
-            transform: 'translateX(-15vw) scale(19.2)',
-            zIndex: 60, // Higher than the FullAlex component
-            width: '9%',
-          }}
-          animate={{
-            y: 400, // Move down
-            opacity: 0,
-          }}
-          transition={{
-            duration: 1.5,
-            ease: "easeIn",
-          }}
-          onAnimationComplete={() => {
-            console.log("Direct disappear animation completed");
-            setIsAlexGone(true);
-          }}
-        >
-          <div className="relative">
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
-            
-            <div className="relative">
-              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                <Image
-                  src="/svg/alex-talk/0-alex-eye-open-mouth-close-arm-down.svg"
-                  alt="Alex"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )} */}
       
       {/* Cris with move animation when disappearing - NO FADE */}
       <AnimatePresence>
         {showCris && !isCrisGone && (
           <motion.div 
-            className="absolute inset-0 pointer-events-none"
+          style={{ zIndex: 50 }} 
             animate={
               crisMoveOut 
                 ? { 
@@ -337,97 +288,6 @@ const AnimatedDoor = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* EMERGENCY ALEX - GUARANTEED TO DISAPPEAR */}
-      {/* {showEmergencyAlex && !isAlexGone && (
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1000 }}>
-          {forceDisappearAlex ? (
-            // Disappearing Alex
-            <motion.div
-              className="absolute"
-              style={{
-                position: 'absolute',
-                left: '30%',
-                top: '70%',
-                width: '9%',
-              }}
-              initial={{
-                transform: 'translateX(-15vw) translateY(0) scale(19.2)',
-                opacity: 1
-              }}
-              animate={{
-                transform: 'translateX(-15vw) translateY(400px) scale(19.2)',
-                opacity: 0
-              }}
-              transition={{
-                duration: 1.5,
-                ease: "easeIn"
-              }}
-            >
-              <div className="relative">
-                <div 
-                  className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-                  style={{ 
-                    width: '150%', 
-                    height: '25%', 
-                    bottom: '-12.5%',
-                    opacity: 0.3
-                  }}
-                />
-                
-                <div className="relative">
-                  <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                    <Image
-                      src="/svg/alex-talk/0-alex-eye-open-mouth-close-arm-down.svg"
-                      alt="Alex"
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            // Static Alex before disappearing
-            <div
-              className="absolute"
-              style={{
-                position: 'absolute',
-                left: '30%',
-                top: '70%',
-                transform: 'translateX(-15vw) scale(19.2)',
-                width: '9%',
-              }}
-            >
-              <div className="relative">
-                <div 
-                  className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-                  style={{ 
-                    width: '150%', 
-                    height: '25%', 
-                    bottom: '-12.5%',
-                    opacity: 0.3
-                  }}
-                />
-                
-                <div className="relative">
-                  <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                    <Image
-                      src="/svg/alex-talk/0-alex-eye-open-mouth-close-arm-down.svg"
-                      alt="Alex"
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )} */}
-
       
       {/* Disappear animation with callbacks for each kid */}
       <KidsDisappearAnimation 

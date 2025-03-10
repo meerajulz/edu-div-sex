@@ -202,12 +202,12 @@ const FullAlex: React.FC<FullAlexProps> = ({
         // If no blink occurs, keep the current eye state
         return prevImage;
       });
-    }, 400);
+    }, 300);
     
     // Set timeout to end animation exactly when audio ends
     animationTimeoutRef.current = setTimeout(() => {
       stopTalkingAnimation();
-    }, duration + 300); // Add 150ms to ensure animation stops after audio ends
+    }, duration ); // Add 150ms to ensure animation stops after audio ends
   };
   
   const stopTalkingAnimation = () => {
@@ -346,6 +346,7 @@ const playCurrentAudio = () => {
   else if (stage === 'armUpTalking') {
     audioData = armUpAudioSequence[currentAudioIndex];
     useArmUpImages = true;
+    console.log(`Playing arm up audio ${currentAudioIndex}:`, audioData.file);
   } 
   else {
     audioData = audioSequence[currentAudioIndex];
@@ -363,60 +364,169 @@ const playCurrentAudio = () => {
   const isLastArmUpAudio = stage === 'armUpTalking' && 
                           currentAudioIndex === armUpAudioSequence.length - 1;
   
-  // If it's the 11-alex audio, use lower mouth animation frequency
-  // to match the longer, more measured speech pattern in this file
+  // Start mouth animation BEFORE playing audio for better sync
   if (isLastArmUpAudio) {
-    // Start arm up talking animation with slower mouth movement for the longer audio
+    console.log("Playing final arm-up audio with improved speech syncing");
     startSlowerTalkingAnimation(audioData.duration, useArmUpImages);
+    
+    // Brief delay to ensure animation is running
+    setTimeout(() => {
+      if (audioRef.current) {
+        // Preload audio for smoother start
+        audioRef.current.preload = "auto";
+        
+        // If browser supports the AudioContext API, we can analyze the audio
+        try {
+          if (typeof window !== 'undefined' && window.AudioContext) {
+            const audioContext = new window.AudioContext();
+            const source = audioContext.createMediaElementSource(audioRef.current);
+            const analyser = audioContext.createAnalyser();
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            // This could be used for advanced audio analysis if needed
+            // We can implement more sophisticated sync if required
+          }
+        } catch (e) {
+          console.log("AudioContext not available for advanced sync");
+        }
+        
+        // Play audio with improved error handling
+        audioRef.current.play().catch(err => {
+          console.error("Error playing audio:", err);
+        });
+      }
+    }, 100); // Slightly longer delay for final speech
   } else {
-    // Start talking animation BEFORE playing the audio
+    // For regular audio
     startTalkingAnimation(audioData.duration, useArmUpImages);
+    
+    // Small delay for regular talking
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch(err => {
+          console.error("Error playing audio:", err);
+        });
+      }
+    }, 50);
   }
   
-  // Add a small delay before starting audio to ensure animation is running
-  setTimeout(() => {
-    if (audioRef.current) {
-      // Handle when audio ends
-      audioRef.current.onended = () => {
-        // Different handling based on which audio sequence we're in
-        if (stage === 'continueTalking') {
-          // For continueTalking stage - NO DELAY between audio clips
-          if (currentAudioIndex < continueAudioSequence.length - 1) {
-            setCurrentAudioIndex(prev => prev + 1);
-          } else {
-            // After continuing talking, go back to static
-            setStage('static');
-            startStaticAnimation();
-          }
-        } else if (stage === 'armUpTalking') {
-          // For arm-up talking stage
-          if (currentAudioIndex < armUpAudioSequence.length - 1) {
-            setCurrentAudioIndex(prev => prev + 1);
-          } else {
-            // After arm-up talking, go to final static pose
+  // Add shared onended handler for audio
+  if (audioRef.current) {
+    // Handle when audio ends
+    audioRef.current.onended = () => {
+      // Different handling based on which audio sequence we're in
+      if (stage === 'continueTalking') {
+        // For continueTalking stage - NO DELAY between audio clips
+        if (currentAudioIndex < continueAudioSequence.length - 1) {
+          setCurrentAudioIndex(prev => prev + 1);
+        } else {
+          // After continuing talking, go back to static
+          setStage('static');
+          startStaticAnimation();
+        }
+      } else if (stage === 'armUpTalking') {
+        // For arm-up talking stage
+        if (currentAudioIndex < armUpAudioSequence.length - 1) {
+          console.log(`Moving to next arm-up audio: ${currentAudioIndex + 1}`);
+          setCurrentAudioIndex(prev => prev + 1);
+        } else {
+          // After final arm-up talking, go to final static pose with a longer delay
+          console.log("Final arm-up audio completed, transitioning to finalStatic");
+          
+          // Stop any ongoing animations before transition
+          stopTalkingAnimation();
+          
+          setTimeout(() => {
             setStage('finalStatic');
             startFinalStaticPose();
-          }
-        } else {
-          // Original audio sequence - keep the existing 500ms delay
-          setTimeout(() => {
-            if (currentAudioIndex < audioSequence.length - 1) {
-              setCurrentAudioIndex(prev => prev + 1);
-            } else {
-              // This is the last audio - move to final walking
-              setStage('finalWalking');
-              startWalkingAnimation();
-            }
-          }, 500); // Maintained pause between audio clips for the first talking sequence
+          }, 500); // Slightly longer delay for smoother transition
         }
-      };
-      
-      audioRef.current.play().catch(console.error);
-    }
-  }, 50); // Small delay to ensure mouth is already moving when audio starts
+      } else {
+        // Original audio sequence - keep the existing 500ms delay
+        setTimeout(() => {
+          if (currentAudioIndex < audioSequence.length - 1) {
+            setCurrentAudioIndex(prev => prev + 1);
+          } else {
+            // This is the last audio - move to final walking
+            setStage('finalWalking');
+            startWalkingAnimation();
+          }
+        }, 500); // Maintained pause between audio clips for the first talking sequence
+      }
+    };
+  }
 };
 
 // Slower talking animation specifically for the longer final audio (11-alex.mp3)
+// const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean = false) => {
+//   // Clear any existing animations
+//   cleanupAnimations();
+  
+//   // Set current state to playing
+//   setIsCurrentAudioPlaying(true);
+  
+//   // Choose the appropriate expression set
+//   const expressionSet = useArmUpImages ? armUpTalkingExpressions : talkingExpressions;
+  
+//   // Mouth animation (slower - 250ms for more deliberate speech pattern)
+//   mouthIntervalRef.current = setInterval(() => {
+//     setCurrentImage(prevImage => {
+//       // Make sure we're using the correct expressions
+//       if ((useArmUpImages && !isFromExpressionSet(prevImage, 'armUp')) || 
+//           (!useArmUpImages && !isFromExpressionSet(prevImage, 'talking'))) {
+//         return expressionSet.eyeOpenMouthOpen;
+//       }
+      
+//       // Determine current eye state
+//       const eyesOpen = hasOpenEyes(prevImage);
+      
+//       // Toggle mouth state
+//       const mouthOpen = hasMouthOpen(prevImage);
+      
+//       if (mouthOpen) {
+//         return eyesOpen ? expressionSet.eyeOpenMouthClose : expressionSet.eyeCloseMouthClose;
+//       } else {
+//         return eyesOpen ? expressionSet.eyeOpenMouthOpen : expressionSet.eyeCloseMouthOpen;
+//       }
+//     });
+//   }, 250); // Slower mouth movement for a more measured, deliberate speech pattern
+  
+//   // Eye animation (slower - 400ms with natural blinking - same as regular talking)
+//   eyeIntervalRef.current = setInterval(() => {
+//     setCurrentImage(prevImage => {
+//       // Make sure we're using the correct expressions
+//       if ((useArmUpImages && !isFromExpressionSet(prevImage, 'armUp')) || 
+//           (!useArmUpImages && !isFromExpressionSet(prevImage, 'talking'))) {
+//         return expressionSet.eyeOpenMouthOpen;
+//       }
+      
+//       // Determine current mouth state
+//       const mouthOpen = hasMouthOpen(prevImage);
+      
+//       // Toggle eye state with higher probability of open eyes
+//       const eyesOpen = hasOpenEyes(prevImage);
+      
+//       // Natural blinking pattern: 15% chance of changing eye state
+//       if (Math.random() < 0.15) {
+//         if (eyesOpen) {
+//           return mouthOpen ? expressionSet.eyeCloseMouthOpen : expressionSet.eyeCloseMouthClose;
+//         } else {
+//           return mouthOpen ? expressionSet.eyeOpenMouthOpen : expressionSet.eyeOpenMouthClose;
+//         }
+//       }
+      
+//       // If no blink occurs, keep the current eye state
+//       return prevImage;
+//     });
+//   }, 400);
+  
+//   // Set timeout to end animation exactly when audio ends plus buffer
+//   animationTimeoutRef.current = setTimeout(() => {
+//     stopTalkingAnimation();
+//   }, duration + 300); // Adding buffer time to ensure animation covers full audio
+// };
+
 const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean = false) => {
   // Clear any existing animations
   cleanupAnimations();
@@ -427,30 +537,65 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
   // Choose the appropriate expression set
   const expressionSet = useArmUpImages ? armUpTalkingExpressions : talkingExpressions;
   
-  // Mouth animation (slower - 250ms for more deliberate speech pattern)
-  mouthIntervalRef.current = setInterval(() => {
-    setCurrentImage(prevImage => {
-      // Make sure we're using the correct expressions
-      if ((useArmUpImages && !isFromExpressionSet(prevImage, 'armUp')) || 
-          (!useArmUpImages && !isFromExpressionSet(prevImage, 'talking'))) {
-        return expressionSet.eyeOpenMouthOpen;
-      }
-      
-      // Determine current eye state
-      const eyesOpen = hasOpenEyes(prevImage);
-      
-      // Toggle mouth state
-      const mouthOpen = hasMouthOpen(prevImage);
-      
-      if (mouthOpen) {
-        return eyesOpen ? expressionSet.eyeOpenMouthClose : expressionSet.eyeCloseMouthClose;
-      } else {
-        return eyesOpen ? expressionSet.eyeOpenMouthOpen : expressionSet.eyeCloseMouthOpen;
-      }
-    });
-  }, 250); // Slower mouth movement for a more measured, deliberate speech pattern
+  // Calculate a better mouth animation rate based on audio duration
+  // This creates a more natural speech pattern that matches longer sentences
+  const mouthSpeed = 300; // Slower mouth movement (was 250ms) for final speech
   
-  // Eye animation (slower - 400ms with natural blinking - same as regular talking)
+  // Add ability to detect pauses in speech to improve sync
+  let lastMouthToggleTime = Date.now();
+  let isPaused = false;
+  
+  // Mouth animation with adaptive timing
+  mouthIntervalRef.current = setInterval(() => {
+    // Check audio amplitude if available to improve sync
+    const currentTime = Date.now();
+    const timeSinceToggle = currentTime - lastMouthToggleTime;
+    
+    // Simulate speech pauses using variable timing
+    // For longer audio, we want occasional pauses between words
+    if (!isPaused && timeSinceToggle > 1200 && Math.random() < 0.3) {
+      // Simulate a pause in speech (mouth stays closed longer)
+      isPaused = true;
+      setCurrentImage(prevImage => {
+        const eyesOpen = hasOpenEyes(prevImage);
+        return eyesOpen ? expressionSet.eyeOpenMouthClose : expressionSet.eyeCloseMouthClose;
+      });
+      
+      // Resume after a natural pause duration
+      setTimeout(() => {
+        isPaused = false;
+        lastMouthToggleTime = Date.now();
+      }, 100); // Length of pause
+      
+      return;
+    }
+    
+    if (!isPaused) {
+      setCurrentImage(prevImage => {
+        // Make sure we're using the correct expressions
+        if ((useArmUpImages && !isFromExpressionSet(prevImage, 'armUp')) || 
+            (!useArmUpImages && !isFromExpressionSet(prevImage, 'talking'))) {
+          return expressionSet.eyeOpenMouthOpen;
+        }
+        
+        // Determine current eye state
+        const eyesOpen = hasOpenEyes(prevImage);
+        
+        // Toggle mouth state
+        const mouthOpen = hasMouthOpen(prevImage);
+        
+        if (mouthOpen) {
+          lastMouthToggleTime = Date.now();
+          return eyesOpen ? expressionSet.eyeOpenMouthClose : expressionSet.eyeCloseMouthClose;
+        } else {
+          lastMouthToggleTime = Date.now();
+          return eyesOpen ? expressionSet.eyeOpenMouthOpen : expressionSet.eyeCloseMouthOpen;
+        }
+      });
+    }
+  }, mouthSpeed);
+  
+  // Eye animation (unchanged - 400ms with natural blinking)
   eyeIntervalRef.current = setInterval(() => {
     setCurrentImage(prevImage => {
       // Make sure we're using the correct expressions
@@ -508,11 +653,11 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
         setTimeout(() => {
           setStage('walking');
           startWalkingAnimation();
-        }, 200);
+        }, 100);
       };
       
       audio.play().catch(console.error);
-    }, 50); // Small delay to ensure mouth is already moving when audio starts
+    }, 900); // Small delay to ensure mouth is already moving when audio starts
   };
   
   // Handle walking complete
@@ -578,349 +723,357 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
   // Don't render anything until sequence begins
   if (!hasStartedSequence) return null;
 
+  const createCartoonShadow = (extraStyles = {}) => {
+    return (
+      <div 
+        className="absolute rounded-full"
+        style={{ 
+          width: '14px',
+          height: '8px',
+          bottom: '3px',
+          left: '60%',
+          transform: 'translateX(-50%)',
+          opacity: 0.6, // Slightly increased opacity for the brown color
+          filter: 'blur(1.5px)',
+          backgroundColor: '#956d39', // Brown color
+          ...extraStyles
+        }}
+      />
+    );
+  };
+
+
   // Render component based on current stage
   return (
     <div 
-      className="absolute w-full h-full"
-      style={{
-        position: 'absolute',
-        left: '45%',  // Moved further right (from 40% to 45%)
-        width: '9%',       // Width of Alex container
-        top: 10,           // Top offset of Alex container
-        height: '100%',    // Height of Alex container
-        pointerEvents: 'none',
-        zIndex: 50,        // High z-index to ensure Alex is in front
-      }}
-    >
-      {/* Static position or Arm-Up Talking or Final Static after all animations */}
-      {(stage === 'static' || stage === 'continueTalking' || stage === 'armUpTalking' || stage === 'finalStatic') && (
-        <div
-          className="absolute w-full static-alex"
-          style={{
-            left: 0, 
-            top: sidePosition.top,
-            // Initial values that will be overwritten with exact final transform
-            transform: `translateX(-15vw) scale(${sidePosition.scale})`,
-          }}
-        >
+    className="absolute w-full h-full"
+    style={{
+      position: 'absolute',
+      left: '45%',  
+      width: '9%',      
+      top: 10,           
+      height: '100%',    
+      pointerEvents: 'none',
+      zIndex: 100,       
+    }}
+  >
+    {/* Static position or Arm-Up Talking or Final Static after all animations */}
+    {(stage === 'static' || stage === 'continueTalking' || stage === 'armUpTalking' || stage === 'finalStatic') && (
+      <div
+        className="absolute w-full static-alex"
+        style={{
+          left: 0, 
+          top: sidePosition.top,
+          transform: `translateX(-15vw) scale(${sidePosition.scale})`,
+        }}
+      >
+        <div className="relative">
+          {createCartoonShadow({ width: '15px', height: '9px', bottom: '4px', left: '62%' })}
+          
           <div className="relative">
-            {/* Shadow under Alex */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
-            
-            <div className="relative">
-              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                <Image
-                  src={currentImage}
-                  alt="Alex"
-                  fill
-                  className="object-contain transition-opacity duration-75"
-                  priority
-                />
-              </div>
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={currentImage}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* Side moving animation */}
-      {stage === 'sideMoving' && (
-        <motion.div
-          className="absolute w-full side-moving-alex"
-          style={{
-            // No left style here as we're animating it within the motion component
-            left: 0,
-          }}
-          initial={{
-            x: 0, // Start at current position (45%)
-            top: finalPosition.top,
-            scale: finalPosition.scale,
-          }}
-          animate={{
-            x: '-15vw', // Move leftward by 15% of viewport width
-            top: sidePosition.top,
-            scale: sidePosition.scale,
-          }}
-          transition={{
-            duration: 2, // Faster side movement (was 2.5s)
-            ease: "easeInOut",
-          }}
-          onAnimationComplete={handleSideMoveComplete}
-        >
+    {/* Side moving animation */}
+    {stage === 'sideMoving' && (
+      <motion.div
+        className="absolute w-full side-moving-alex"
+        style={{
+          left: 0,
+        }}
+        initial={{
+          x: 0,
+          top: finalPosition.top,
+          scale: finalPosition.scale,
+        }}
+        animate={{
+          x: '-15vw',
+          top: sidePosition.top,
+          scale: sidePosition.scale,
+        }}
+        transition={{
+          duration: 2,
+          ease: "easeInOut",
+        }}
+        onAnimationComplete={handleSideMoveComplete}
+      >
+        <div className="relative">
+          {createCartoonShadow({ left: '0%', bottom: '0px' })}
+          
           <div className="relative">
-            {/* Shadow under Alex */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
-            
-            <div className="relative">
-              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                <Image
-                  src={talkingExpressions.eyeOpenMouthClose}
-                  alt="Alex"
-                  fill
-                  className="object-contain transition-opacity duration-75"
-                  priority
-                />
-              </div>
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={talkingExpressions.eyeOpenMouthClose}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
             </div>
           </div>
-        </motion.div>
-      )}
+        </div>
+      </motion.div>
+    )}
 
-      {/* Final walking animation after talking */}
-      {stage === 'finalWalking' && (
-        <motion.div
-          className="absolute left-0 w-full"
-          initial={{
-            top: midPosition.top,
-            scale: midPosition.scale,
-            x: 0      // Start from middle position
-          }}
-          animate={{
-            // Animate to the final position
-            top: finalPosition.top,
-            scale: finalPosition.scale,
-            x: 0      // Keep same horizontal position
-          }}
-          transition={{
-            duration: 2, // Faster transition (was 3s)
-            ease: "easeInOut",
-          }}
-          onAnimationComplete={handleFinalWalkingComplete}
-        >
-          <div className="relative">
-            {/* Shadow under Alex */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
-            
-            <motion.div
-              animate={{
-                y: ['-2%', '2%'],
-                rotate: [-2, 2],
-                transition: {
-                  repeat: Infinity,
-                  duration: 0.4,
-                  ease: "linear"
-                }
-              }}
-            >
-              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                <Image
-                  src={currentImage}
-                  alt="Alex"
-                  fill
-                  className="object-contain transition-opacity duration-75"
-                  priority
-                />
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
+    {/* Final walking animation after talking */}
+    {stage === 'finalWalking' && (
+      <motion.div
+        className="absolute left-0 w-full"
+        initial={{
+          top: midPosition.top,
+          scale: midPosition.scale,
+          x: 0     
+        }}
+        animate={{
+          top: finalPosition.top,
+          scale: finalPosition.scale,
+          x: 0     
+        }}
+        transition={{
+          duration: 2,
+          ease: "easeInOut",
+        }}
+        onAnimationComplete={handleFinalWalkingComplete}
+      >
+        <div className="relative">
+          <motion.div
+            className="absolute rounded-full"
+            style={{ 
+              width: '14px', 
+              height: '8px', 
+              bottom: '3px',
+              opacity: 0.6,
+              filter: 'blur(1.5px)',
+              backgroundColor: '#956d39' // Brown color
+            }}
+            animate={{
+              left: ['58%', '64%'],
+              scaleX: [1, 0.9, 1],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 0.4,
+              ease: "linear"
+            }}
+          />
+          
+          <motion.div
+            animate={{
+              y: ['-2%', '2%'],
+              rotate: [-2, 2],
+              transition: {
+                repeat: Infinity,
+                duration: 0.4,
+                ease: "linear"
+              }
+            }}
+          >
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={currentImage}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    )}
 
-      {/* If in talking stage, render Alex at the middle position */}
-      {stage === 'talking' && (
-        <div 
-          className="absolute left-0 w-full"
-          style={{
-            top: midPosition.top,
-            transform: `scale(${midPosition.scale})`,
-          }}
-        >
+    {/* If in talking stage, render Alex at the middle position */}
+    {stage === 'talking' && (
+      <div 
+        className="absolute left-0 w-full"
+        style={{
+          top: midPosition.top,
+          transform: `scale(${midPosition.scale})`,
+        }}
+      >
+        <div className="relative">
+          {createCartoonShadow({ bottom: '3px', left: '62%' })}
+          
           <div className="relative">
-            {/* Shadow under Alex */}
-            <div 
-             className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-             style={{ 
-               width: '150%', 
-               height: '25%', 
-               bottom: '-12.5%',
-               opacity: 0.3
-             }}
-           />
-           
-           <div className="relative">
-             {/* The talking Alex with exact positioning */}
-             <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-               <Image
-                 src={currentImage}
-                 alt="Alex"
-                 fill
-                 className="object-contain transition-opacity duration-75"
-                 priority
-               />
-             </div>
-           </div>
-         </div>
-       </div>
-     )}
-
-      {/* Add the new disappearing animation */} 
-      {stage === 'disappearing' && (
-        <motion.div
-          className="absolute w-full"
-          style={{
-            position: 'absolute',
-            left: 0, 
-            top: sidePosition.top,
-            transform: `translateX(-15vw) scale(${sidePosition.scale})`,
-          }}
-          animate={{
-            y: 500, // Move down by a fixed amount in pixels
-            opacity: 0,
-          }}
-          transition={{
-            duration: 1.2,
-            ease: "easeIn",
-          }}
-        >
-          <div className="relative">
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-              style={{ 
-                width: '150%', 
-                height: '25%', 
-                bottom: '-12.5%',
-                opacity: 0.3
-              }}
-            />
-            
-            <div className="relative">
-              <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-                <Image
-                  src={currentImage}
-                  alt="Alex"
-                  fill
-                  className="object-contain transition-opacity duration-75"
-                  priority
-                />
-              </div>
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={currentImage}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
             </div>
           </div>
-        </motion.div>
-)}
+        </div>
+      </div>
+    )}
 
+    {/* Add the new disappearing animation */} 
+    {stage === 'disappearing' && (
+      <motion.div
+        className="absolute w-full"
+        style={{
+          position: 'absolute',
+          left: 0, 
+          top: sidePosition.top,
+          transform: `translateX(-15vw) scale(${sidePosition.scale})`,
+          zIndex: 100,
+        }}
+        animate={{
+          y: 500,
+          opacity: 0,
+        }}
+        transition={{
+          duration: 1.2,
+          ease: "easeIn",
+        }}
+      >
+        <div className="relative">
+          <motion.div 
+            className="absolute rounded-full"
+            style={{ 
+              width: '14px', 
+              height: '8px', 
+              bottom: '4px',
+              left: '62%',
+              transform: 'translateX(-50%)',
+              opacity: 0.6,
+              filter: 'blur(1.5px)',
+              backgroundColor: '#956d39' // Brown color
+            }}
+            animate={{
+              scaleX: [1, 0.5, 0.1],
+              opacity: [0.6, 0.3, 0],
+              left: ['62%', '67%', '72%'],
+            }}
+            transition={{
+              duration: 1,
+              ease: "easeIn",
+            }}
+          />
+          
+          <div className="relative">
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={currentImage}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    )}
 
-     {/* Only show the stationary hola animation */}
-     {stage === 'hola' && (
-       <div
-         className="absolute left-0 w-full"
-         style={{
-           top: '40%',    // Initial starting position (from top)
-           transform: `scale(3.2)`,  // 8% bigger initial scale (up from 2.2)
-         }}
-       >
-         <div className="relative">
-           {/* Shadow under Alex */}
-           <div
-             className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-             style={{ 
-               width: '100%', 
-               height: '25%', 
-               bottom: '-12.5%',
-               opacity: 0.3
-             }}
-           />
-           
-           <div className="relative">
-             <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-               <Image
-                 src={currentImage}
-                 alt="Alex"
-                 fill
-                 className="object-contain transition-opacity duration-75"
-                 priority
-               />
-             </div>
-           </div>
-         </div>
-       </div>
-     )}
-     
-     {/* Only show the walking animation if in walking stage */}
-     {stage === 'walking' && (
-       <motion.div
-         className="absolute left-0 w-full"
-         initial={{
-           top: '40%',    // Initial starting position (from top)
-           scale: 3.2,    // Bigger initial scale (matching hola)
-           x: 0           // Start at container position
-         }}
-         animate={{
-           // Animate to the middle position for talking
-           top: midPosition.top,
-           scale: midPosition.scale,
-           x: 0
-         }}
-         transition={{
-           duration: 2.5, // Much faster walking (was 4s)
-           ease: "easeInOut",
-         }}
-         onAnimationComplete={handleWalkingComplete}
-       >
-         <div className="relative">
-           {/* Shadow under Alex */}
-           <motion.div
-             className="absolute left-1/2 -translate-x-1/2 bg-black/20 rounded-full blur-sm"
-             initial={{ width: '100%', height: '25%', bottom: '-12.5%' }}
-             animate={{
-               width: '150%',
-               height: '25%',
-               bottom: '-12.5%',
-               opacity: 0.3
-             }}
-             transition={{ 
-               duration: 2.5, // Match the walking speed
-               ease: "easeInOut"
-             }}
-           />
-           
-           <motion.div
-             animate={{
-               y: ['-2%', '2%'],
-               rotate: [-2, 2],
-               transition: {
-                 repeat: Infinity,
-                 duration: 0.3, // Faster bounce animation (was 0.4s)
-                 ease: "linear"
-               }
-             }}
-           >
-             <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
-               <Image
-                 src={currentImage}
-                 alt="Alex"
-                 fill
-                 className="object-contain transition-opacity duration-75"
-                 priority
-               />
-             </div>
-           </motion.div>
-         </div>
-       </motion.div>
-     )}
-   </div>
+    {/* Only show the stationary hola animation */}
+    {stage === 'hola' && (
+      <div
+        className="absolute left-0 w-full"
+        style={{
+          top: '40%',    
+          transform: `scale(3.2)`,  
+        }}
+      >
+        <div className="relative">
+          {createCartoonShadow({ width: '12px', height: '7px', left: '58%', bottom: '3px' })}
+          
+          <div className="relative">
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={currentImage}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    
+    {/* Only show the walking animation if in walking stage */}
+    {stage === 'walking' && (
+      <motion.div
+        className="absolute left-0 w-full"
+        initial={{
+          top: '40%',    
+          scale: 3.2,   
+          x: 0          
+        }}
+        animate={{
+          top: midPosition.top,
+          scale: midPosition.scale,
+          x: 0
+        }}
+        transition={{
+          duration: 2.5,
+          ease: "easeInOut",
+        }}
+        onAnimationComplete={handleWalkingComplete}
+      >
+        <div className="relative">
+        <motion.div
+          className="absolute rounded-full"
+          style={{ 
+            width: '14px', 
+            height: '8px', 
+            bottom: '3px',
+            opacity: 0.6,
+            filter: 'blur(1.5px)',
+            backgroundColor: '#956d39', // Brown color
+            left: '40%', // Center the shadow
+            transform: 'translateX(-40%)' // Ensure it's centered
+          }}
+          animate={{
+            scaleX: [1, 0.9, 1],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 0.4,
+            ease: "linear"
+          }}
+        />
+          
+          <motion.div
+            animate={{
+              y: ['-2%', '2%'],
+              rotate: [-2, 2],
+              transition: {
+                repeat: Infinity,
+                duration: 0.3,
+                ease: "linear"
+              }
+            }}
+          >
+            <div className="relative w-[700%] aspect-square" style={{ left: '-300%' }}>
+              <Image
+                src={currentImage}
+                alt="Alex"
+                fill
+                className="object-contain transition-opacity duration-75"
+                priority
+              />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    )}
+  </div>
  );
 };
 

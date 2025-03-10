@@ -1,12 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'; // Add framer-motion
 import AnimatedDoor from '../AnimatedDoor/page';
 import WindowBirds from '../WindowBirds/page';
+import Backpack from '../Backpack/page';
+import Table from '../Table/page';
 
 interface BackgroundProps {
   imagePath: string;
   debug?: boolean;
+  isExiting?: boolean; // New prop to control exit animation
+  onExitComplete?: () => void; // Callback when exit animation completes
 }
 
 interface Position {
@@ -14,9 +19,15 @@ interface Position {
   top: number;
   width: number;
   height: number;
+  bottom?: number;
 }
 
-const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false }) => {
+const RoomBackground: React.FC<BackgroundProps> = ({ 
+  imagePath, 
+  debug = false, 
+  isExiting = false,
+  onExitComplete 
+}) => {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -33,6 +44,12 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
       top: 48,     
       width: 8,   
       height: 20,    
+    },
+    table: {
+      left: 5,
+      bottom: 15,
+      width: 20,
+      height: 15,
     }
   };
 
@@ -77,11 +94,30 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
     top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
   };
 
+  // Animation variants
+  const roomVariants = {
+    visible: { y: 0, opacity: 1 },
+    exit: { y: '-110%', opacity: 0, transition: { duration: 1.2, ease: "easeInOut" } }
+  };
+
+  const furnishingVariants = {
+    visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.5 } }
+  };
+
   return (
     <div className="fixed inset-0 overflow-hidden">
-      {/* Background gradient */}
+      {/* Sky background that will be revealed when room exits */}
       <div 
+        className="absolute inset-0 bg-gradient-to-b from-blue-300 to-blue-100"
+      />
+
+      {/* Background gradient - will exit with room */}
+      <motion.div 
         className="absolute inset-0"
+        initial="visible"
+        animate={isExiting ? "exit" : "visible"}
+        variants={roomVariants}
         style={{
           background: `
             linear-gradient(
@@ -95,9 +131,17 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
       />
 
       {/* Main container that maintains aspect ratio */}
-      <div 
+      <motion.div 
         className="absolute"
         style={containerStyle}
+        initial="visible"
+        animate={isExiting ? "exit" : "visible"}
+        variants={roomVariants}
+        onAnimationComplete={() => {
+          if (isExiting && onExitComplete) {
+            onExitComplete();
+          }
+        }}
       >
         {/* Window Container */}
         <div 
@@ -140,6 +184,31 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
             }}
           />
 
+          {/* Furnishings with their own exit animations */}
+          <motion.div
+            initial="visible"
+            animate={isExiting ? "exit" : "visible"}
+            variants={furnishingVariants}
+          >
+            <Backpack scale={2.5} />
+          </motion.div>
+
+          {/* Table positioned on the left side */}
+          <motion.div
+            initial="visible"
+            animate={isExiting ? "exit" : "visible"}
+            variants={furnishingVariants}
+          >
+            <Table 
+              left={`${POSITIONS.table.left}%`}
+              bottom={`${POSITIONS.table.bottom}%`}
+              width={`${POSITIONS.table.width}%`}
+              height={`${POSITIONS.table.height}%`}
+              scale={1}
+              imagePath="/svg/table.svg"
+            />
+          </motion.div>
+
           {/* Door Container */}
           <div 
             className="absolute"
@@ -152,29 +221,32 @@ const RoomBackground: React.FC<BackgroundProps> = ({ imagePath, debug = false })
             }}
           >
             <AnimatedDoor />
-           
           </div>
 
           {/* Debug Position Indicators */}
-          {debug && Object.entries(POSITIONS).map(([key, position]) => (
+          {/* {debug && Object.entries(POSITIONS).map(([key, position]) => (
             <div 
               key={key}
               className="absolute border-2 border-dashed"
               style={{
                 left: `${position.left}%`,
-                top: `${position.top}%`,
+                top: 'top' in position ? `${position.top}%` : undefined,
+                bottom: 'bottom' in position ? `${position.bottom}%` : undefined,
                 width: `${position.width}%`,
                 height: `${position.height}%`,
-                borderColor: key === 'door' ? 'rgba(255, 0, 0, 0.5)' : 'rgba(0, 255, 0, 0.5)',
+                borderColor: 
+                  key === 'door' ? 'rgba(255, 0, 0, 0.5)' : 
+                  key === 'window' ? 'rgba(0, 255, 0, 0.5)' :
+                  'rgba(0, 0, 255, 0.5)',
               }}
             >
               <div className="absolute -top-5 left-0 text-xs bg-black/50 text-white px-1 rounded">
                 {key}
               </div>
             </div>
-          ))}
+          ))} */}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
