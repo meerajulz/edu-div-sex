@@ -4,6 +4,10 @@ import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "./lib/zod";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+	session: {
+		// When remember me is checked, session will last for 30 days, otherwise 24 hours
+		strategy: "jwt",
+	},
 	providers: [
 		Credentials({
 			// You can specify which fields should be submitted, by adding keys to the `credentials` object.
@@ -49,6 +53,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		async redirect({ url, baseUrl }) {
 			// After successful sign in, redirect to evaluation form
 			return `${baseUrl}/home`;
+		},
+		async session({ session, token }) {
+			// Add user info from token to session
+			if (token && session.user) {
+				session.user.id = token.sub as string;
+			}
+			return session;
 		},
 	},
 });
