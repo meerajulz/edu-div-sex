@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; // Add framer-motion
 import AnimatedDoor from '../AnimatedDoor/page';
 import WindowBirds from '../WindowBirds/page';
-import Backpack from '../Backpack/page';
+import Backpack from '../Backpack/Backpack';
 import Table from '../Table/page';
 
 interface BackgroundProps {
