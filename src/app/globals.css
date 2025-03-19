@@ -2,22 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-:root {
-    --background: #ccc;
-    --foreground: #9ca2aa;
-}
+/* Add this to your globals.css file */
 
-@media (prefers-color-scheme: dark) {
-     :root {
-        --background: #ccc;
-        --foreground: #9ca2aa;
+/* Lock orientation for mobile/tablet */
+@media screen and (max-width: 1024px) {
+    /* Force content to render in landscape mode */
+    .landscape-container {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow: hidden;
     }
-}
-
-body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: Arial, Helvetica, sans-serif;
-}
-    */
+  
+    /* Hide content in portrait and show rotation message */
+    @media (orientation: portrait) {
+      .landscape-container .app-content {
+        display: none;
+      }
+      
+      .rotation-message {
+        display: flex;
+        height: 100vh;
+        height: -webkit-fill-available;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #f8f9fa;
+        z-index: 9999;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+      }
+  
+      .rotation-message svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 20px;
+        animation: rotate 2s infinite ease-in-out;
+      }
+    }
+  
+    /* Show content in landscape and hide rotation message */
+    @media (orientation: landscape) {
+      .landscape-container .app-content {
+        display: block;
+      }
+  
+      .rotation-message {
+        display: none;
+      }
+    }
+  }
+  
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-90deg); }
+    50% { transform: rotate(-90deg); }
+    75% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+  }
