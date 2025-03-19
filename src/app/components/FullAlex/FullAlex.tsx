@@ -493,7 +493,7 @@ const playCurrentAudio = async () => {
     await waitDuration(audioData.duration);
 
   } catch (err) {
-    console.error(`Error playing audio: ${audioData.file}. Waiting instead.`);
+    console.error(`Error playing audio: ${audioData.file}. Waiting instead. ${err}`);
     await waitDuration(audioData.duration);
   }
 
