@@ -13,22 +13,35 @@ export const calculatePosition = (
   const angle = ((index - activeIndex) * angleStep) % 360;
   const angleRad = (angle * Math.PI) / 180;
   
-  // Keep original radius proportions
-  const radiusX = containerSize.width * 0.357; // Maintains proportion of 150/420
-  const radiusY = containerSize.height * 0.444; // Maintains proportion of 80/180
+  // Get the spacing factor (if it exists in containerSize, otherwise default to 1)
+  const spacing = containerSize.spacing || 1;
+  
+  // Apply spacing factor to reduce radius on smaller screens
+  const radiusX = containerSize.width * 0.357 * spacing; // Maintains proportion of 150/420
+  const radiusY = containerSize.height * 0.444 * spacing; // Maintains proportion of 80/180
   
   const x = Math.sin(angleRad) * radiusX;
   const y = Math.cos(angleRad) * radiusY;
   
-  const scale = 0.6 + Math.cos(angleRad) * 0.4;
+  // Adjust scale for small screens
+  let scaleFactor = 0.4;
+  if (containerSize.iconSize < 70) {
+    scaleFactor = 0.3; // Less difference between front and back items on mobile
+  }
+  
+  const scale = 0.6 + Math.cos(angleRad) * scaleFactor;
   const zIndex = Math.round((Math.cos(angleRad) + 1) * 500);
+  
+  // Adjust opacity for better visibility on small screens
+  const opacityFactor = containerSize.iconSize < 70 ? 0.4 : 0.5;
+  const opacity = 0.8 + Math.cos(angleRad) * opacityFactor;
 
   return {
     x,
     y: y / 2,
     scale,
     zIndex,
-    opacity: 0.8 + Math.cos(angleRad) * 0.5
+    opacity
   };
 };
 

@@ -63,3 +63,39 @@
     75% { transform: rotate(0deg); }
     100% { transform: rotate(0deg); }
   }
+
+  /* Orbital menu responsive adjustments */
+@media screen and (max-width: 768px) {
+  /* Portrait mode - move menu up */
+  @media (orientation: portrait) {
+    .orbital-carousel-container {
+      padding-top: 0.5rem !important;
+      padding-bottom: 0.5rem !important;
+    }
+  }
+  
+  /* Landscape mode - keep menu visible with horizontal layout */
+  @media (orientation: landscape) {
+    .orbital-carousel-container {
+      transform: translateY(0) !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+  }
+  
+  /* Ensure smaller text on labels for mobile */
+  .orbital-carousel-container .text-xs {
+    font-size: 0.65rem;
+  }
+}
+
+/* Make sure content is forced to display in landscape on mobile/tablet */
+@media screen and (max-width: 1024px) {
+  @media (orientation: landscape) {
+    /* Force content to be visible in landscape */
+    .landscape-container .orbital-carousel-container {
+      display: block !important;
+    }
+  }
+}
+
