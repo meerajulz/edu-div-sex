@@ -47,7 +47,7 @@ const AnimatedSky: React.FC = () => {
     });
 
     setCloudPositions(positions);
-  }, []); // Run only on mount to ensure consistent positions
+  }, [cloudLayers]); // Run only on mount to ensure consistent positions
 
   return (
     <div className="fixed left-1/2 -translate-x-1/2 top-0 w-full h-screen bg-gradient-to-b from-cyan-200 to-cyan-100">
