@@ -6,8 +6,6 @@ interface LandscapeLayoutProps {
   children: React.ReactNode;
 }
 
-// Define a more specific type for the lock function
-type LockFunction = (orientation: string) => Promise<void>;
 
 const LandscapeLayout = ({ children }: LandscapeLayoutProps) => {
   const [isClient, setIsClient] = useState(false);
