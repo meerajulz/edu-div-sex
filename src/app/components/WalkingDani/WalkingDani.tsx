@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { playAudio } from '../../utils/audioHandler'; // Import the new audio handler
 import Image from 'next/image';
 
 interface WalkingDaniProps {
@@ -161,32 +162,56 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     setCurrentImage(walkingExpressions.standing);
   };
 
-  // Initial "Hola" sequence
-  const startHolaSequence = () => {
-    setStage('hola');
+  // Initial "Hola" sequence OLD
+  // const startHolaSequence = () => {
+  //   setStage('hola');
     
-    // Initial talking animation for "Hola"
-    setCurrentImage(talkingExpressions.eyeCloseMouthOpen);
+  //   // Initial talking animation for "Hola"
+  //   setCurrentImage(talkingExpressions.eyeCloseMouthOpen);
     
-    // Play "Hola" audio
-    const audio = new Audio(audioSequence[0].file);
-    audioRef.current = audio;
+  //   // Play "Hola" audio
+  //   const audio = new Audio(audioSequence[0].file);
+  //   audioRef.current = audio;
     
-    // Start talking animation for the exact duration of "Hola"
-    startTalkingAnimation(audioSequence[0].duration);
+  //   // Start talking animation for the exact duration of "Hola"
+  //   startTalkingAnimation(audioSequence[0].duration);
     
-    audio.onended = () => {
-      // After "Hola", start walking
-      stopTalkingAnimation();
+  //   audio.onended = () => {
+  //     // After "Hola", start walking
+  //     stopTalkingAnimation();
       
-      setTimeout(() => {
-        setStage('walking');
-        startWalkingAnimation();
-      }, 200); // Reduced pause before walking (from 500ms to 200ms)
-    };
+  //     setTimeout(() => {
+  //       setStage('walking');
+  //       startWalkingAnimation();
+  //     }, 200); // Reduced pause before walking (from 500ms to 200ms)
+  //   };
     
-    audio.play().catch(console.error);
+  //   audio.play().catch(console.error);
+  // };
+
+  // Initial "Hola" sequence NEW
+  const startHolaSequence = async () => {
+    setStage('hola');
+  
+    // Set initial talking animation
+    setCurrentImage(talkingExpressions.eyeCloseMouthOpen);
+  
+    // ✅ Ensure only one play request at a time
+    try {
+      await playAudio(audioSequence[0].file); // Wait for playback to start
+      startTalkingAnimation(audioSequence[0].duration); // Start talking animation after audio starts
+    } catch (error) {
+      console.error("Audio playback error in startHolaSequence:", error);
+    }
+  
+    // ✅ Wait for audio to finish before continuing
+    setTimeout(() => {
+      stopTalkingAnimation();
+      setStage('walking');
+      startWalkingAnimation();
+    }, audioSequence[0].duration + 200);
   };
+
 
   // Handle walking complete
   const handleWalkingComplete = () => {
@@ -221,42 +246,82 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     }
   };
 
-  // Play the current audio file
-  const playCurrentAudio = () => {
-    if (currentAudioIndex >= audioSequence.length) {
-      // Start the final walking sequence
+  // Play the current audio file PLD
+  // const playCurrentAudio = () => {
+  //   if (currentAudioIndex >= audioSequence.length) {
+  //     // Start the final walking sequence
+  //     setStage('finalWalking');
+  //     startWalkingAnimation();
+  //     return;
+  //   }
+    
+  //   const audioData = audioSequence[currentAudioIndex];
+    
+  //   if (audioRef.current) {
+  //     audioRef.current.pause();
+  //     audioRef.current = null;
+  //   }
+    
+  //   // Create and play audio
+  //   audioRef.current = new Audio(audioData.file);
+    
+  //   // Start talking animation for the exact duration of the audio
+  //   startTalkingAnimation(audioData.duration);
+    
+  //   // Handle when audio ends
+  //   audioRef.current.onended = () => {
+  //     // Move to next audio immediately without pause
+  //     if (currentAudioIndex < audioSequence.length - 1) {
+  //       setCurrentAudioIndex(prev => prev + 1);
+  //     } else {
+  //       // After the last audio, move to final walking
+  //       setStage('finalWalking');
+  //       startWalkingAnimation();
+  //     }
+  //   };
+    
+  //   audioRef.current.play().catch(console.error);
+  // };
+
+  //NEW
+const playCurrentAudio = async () => {
+  if (currentAudioIndex >= audioSequence.length) {
+    setStage('finalWalking');
+    startWalkingAnimation();
+    return;
+  }
+
+  const audioData = audioSequence[currentAudioIndex];
+
+  // ✅ Stop any currently playing audio safely
+  if (audioRef.current) {
+    try {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    } catch (error) {
+      console.warn("Error pausing previous audio:", error);
+    }
+  }
+
+  try {
+    await playAudio(audioData.file); // ✅ Ensure playback starts before moving forward
+    startTalkingAnimation(audioData.duration);
+  } catch (error) {
+    console.error("Audio playback error in playCurrentAudio:", error);
+  }
+
+  // Handle when audio ends
+  setTimeout(() => {
+    if (currentAudioIndex < audioSequence.length - 1) {
+      setCurrentAudioIndex(prev => prev + 1);
+    } else {
       setStage('finalWalking');
       startWalkingAnimation();
-      return;
     }
-    
-    const audioData = audioSequence[currentAudioIndex];
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    
-    // Create and play audio
-    audioRef.current = new Audio(audioData.file);
-    
-    // Start talking animation for the exact duration of the audio
-    startTalkingAnimation(audioData.duration);
-    
-    // Handle when audio ends
-    audioRef.current.onended = () => {
-      // Move to next audio immediately without pause
-      if (currentAudioIndex < audioSequence.length - 1) {
-        setCurrentAudioIndex(prev => prev + 1);
-      } else {
-        // After the last audio, move to final walking
-        setStage('finalWalking');
-        startWalkingAnimation();
-      }
-    };
-    
-    audioRef.current.play().catch(console.error);
-  };
+  }, audioData.duration + 200);
+};
+  
+
 
   // Handle audio playback when in talking stage
   useEffect(() => {

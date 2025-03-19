@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { playAudio, waitDuration } from '../../utils/audioHandler'; // Import audio utilities
 import Image from 'next/image';
 import {
   AlexStage,
@@ -20,6 +21,7 @@ import {
   hasLeftLeg,
   isFromExpressionSet
 } from './alexAnimationsUtils';
+
 
 interface FullAlexProps {
   shouldStartWalking: boolean;
@@ -331,128 +333,221 @@ const FullAlex: React.FC<FullAlexProps> = ({
     setCurrentImage(armUpTalkingExpressions.finalPose);
   };
 
-// Play the current audio file
-const playCurrentAudio = () => {
+// Play the current audio file OLD
+// const playCurrentAudio = () => {
+//   let audioData;
+//   let useArmUpImages = false;
+  
+//   // Determine which audio sequence to use based on the stage
+//   if (stage === 'continueTalking') {
+//     audioData = continueAudioSequence[currentAudioIndex];
+//   } 
+//   else if (stage === 'armUpTalking') {
+//     audioData = armUpAudioSequence[currentAudioIndex];
+//     useArmUpImages = true;
+//     console.log(`Playing arm up audio ${currentAudioIndex}:`, audioData.file);
+//   } 
+//   else {
+//     audioData = audioSequence[currentAudioIndex];
+//   }
+  
+//   if (audioRef.current) {
+//     audioRef.current.pause();
+//     audioRef.current = null;
+//   }
+  
+//   // Create new audio object
+//   audioRef.current = new Audio(audioData.file);
+  
+//   // Special handling for the final arm-up audio (11-alex.mp3)
+//   const isLastArmUpAudio = stage === 'armUpTalking' && 
+//                           currentAudioIndex === armUpAudioSequence.length - 1;
+  
+//   // Start mouth animation BEFORE playing audio for better sync
+//   if (isLastArmUpAudio) {
+//     console.log("Playing final arm-up audio with improved speech syncing");
+//     startSlowerTalkingAnimation(audioData.duration, useArmUpImages);
+    
+//     // Brief delay to ensure animation is running
+//     setTimeout(() => {
+//       if (audioRef.current) {
+//         // Preload audio for smoother start
+//         audioRef.current.preload = "auto";
+        
+//         // If browser supports the AudioContext API, we can analyze the audio
+//         try {
+//           if (typeof window !== 'undefined' && window.AudioContext) {
+//             const audioContext = new window.AudioContext();
+//             const source = audioContext.createMediaElementSource(audioRef.current);
+//             const analyser = audioContext.createAnalyser();
+//             source.connect(analyser);
+//             analyser.connect(audioContext.destination);
+            
+//             // This could be used for advanced audio analysis if needed
+//             // We can implement more sophisticated sync if required
+//           }
+//         } catch (e) {
+//           console.log(`${e}: AudioContext not available for advanced sync`);
+//         }
+        
+//         // Play audio with improved error handling
+//         audioRef.current.play().catch(err => {
+//           console.error("Error playing audio:", err);
+//         });
+//       }
+//     }, 100); // Slightly longer delay for final speech
+//   } else {
+//     // For regular audio
+//     startTalkingAnimation(audioData.duration, useArmUpImages);
+    
+//     // Small delay for regular talking
+//     setTimeout(() => {
+//       if (audioRef.current) {
+//         audioRef.current.play().catch(err => {
+//           console.error("Error playing audio:", err);
+//         });
+//       }
+//     }, 50);
+//   }
+  
+//   // Add shared onended handler for audio
+//   if (audioRef.current) {
+//     // Handle when audio ends
+//     audioRef.current.onended = () => {
+//       // Different handling based on which audio sequence we're in
+//       if (stage === 'continueTalking') {
+//         // For continueTalking stage - NO DELAY between audio clips
+//         if (currentAudioIndex < continueAudioSequence.length - 1) {
+//           setCurrentAudioIndex(prev => prev + 1);
+//         } else {
+//           // After continuing talking, go back to static
+//           setStage('static');
+//           startStaticAnimation();
+//         }
+//       } else if (stage === 'armUpTalking') {
+//         // For arm-up talking stage
+//         if (currentAudioIndex < armUpAudioSequence.length - 1) {
+//           console.log(`Moving to next arm-up audio: ${currentAudioIndex + 1}`);
+//           setCurrentAudioIndex(prev => prev + 1);
+//         } else {
+//           // After final arm-up talking, go to final static pose with a longer delay
+//           console.log("Final arm-up audio completed, transitioning to finalStatic");
+          
+//           // Stop any ongoing animations before transition
+//           stopTalkingAnimation();
+          
+//           setTimeout(() => {
+//             setStage('finalStatic');
+//             startFinalStaticPose();
+//           }, 500); // Slightly longer delay for smoother transition
+//         }
+//       } else {
+//         // Original audio sequence - keep the existing 500ms delay
+//         setTimeout(() => {
+//           if (currentAudioIndex < audioSequence.length - 1) {
+//             setCurrentAudioIndex(prev => prev + 1);
+//           } else {
+//             // This is the last audio - move to final walking
+//             setStage('finalWalking');
+//             startWalkingAnimation();
+//           }
+//         }, 500); // Maintained pause between audio clips for the first talking sequence
+//       }
+//     };
+//   }
+// };
+
+//NEW
+const playCurrentAudio = async () => {
   let audioData;
   let useArmUpImages = false;
-  
+
   // Determine which audio sequence to use based on the stage
   if (stage === 'continueTalking') {
     audioData = continueAudioSequence[currentAudioIndex];
-  } 
-  else if (stage === 'armUpTalking') {
+  } else if (stage === 'armUpTalking') {
     audioData = armUpAudioSequence[currentAudioIndex];
     useArmUpImages = true;
     console.log(`Playing arm up audio ${currentAudioIndex}:`, audioData.file);
-  } 
-  else {
+  } else {
     audioData = audioSequence[currentAudioIndex];
   }
-  
+
+  // Stop any currently playing audio
   if (audioRef.current) {
     audioRef.current.pause();
     audioRef.current = null;
   }
-  
-  // Create new audio object
-  audioRef.current = new Audio(audioData.file);
-  
+
   // Special handling for the final arm-up audio (11-alex.mp3)
-  const isLastArmUpAudio = stage === 'armUpTalking' && 
-                          currentAudioIndex === armUpAudioSequence.length - 1;
-  
+  const isLastArmUpAudio =
+    stage === 'armUpTalking' && currentAudioIndex === armUpAudioSequence.length - 1;
+
   // Start mouth animation BEFORE playing audio for better sync
   if (isLastArmUpAudio) {
-    console.log("Playing final arm-up audio with improved speech syncing");
+    console.log('Playing final arm-up audio with improved speech syncing');
     startSlowerTalkingAnimation(audioData.duration, useArmUpImages);
-    
-    // Brief delay to ensure animation is running
-    setTimeout(() => {
-      if (audioRef.current) {
-        // Preload audio for smoother start
-        audioRef.current.preload = "auto";
-        
-        // If browser supports the AudioContext API, we can analyze the audio
-        try {
-          if (typeof window !== 'undefined' && window.AudioContext) {
-            const audioContext = new window.AudioContext();
-            const source = audioContext.createMediaElementSource(audioRef.current);
-            const analyser = audioContext.createAnalyser();
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            
-            // This could be used for advanced audio analysis if needed
-            // We can implement more sophisticated sync if required
-          }
-        } catch (e) {
-          console.log(`${e}: AudioContext not available for advanced sync`);
-        }
-        
-        // Play audio with improved error handling
-        audioRef.current.play().catch(err => {
-          console.error("Error playing audio:", err);
-        });
+
+    // Brief delay to ensure animation is running before playing
+    setTimeout(async () => {
+      try {
+        await playAudio(audioData.file, 1.0);
+      } catch (err) {
+        console.error('Error playing audio:', err);
       }
-    }, 100); // Slightly longer delay for final speech
+    }, 100);
   } else {
     // For regular audio
     startTalkingAnimation(audioData.duration, useArmUpImages);
-    
+
     // Small delay for regular talking
-    setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.play().catch(err => {
-          console.error("Error playing audio:", err);
-        });
+    setTimeout(async () => {
+      try {
+        await playAudio(audioData.file, 1.0);
+      } catch (err) {
+        console.error('Error playing audio:', err);
       }
     }, 50);
   }
-  
-  // Add shared onended handler for audio
-  if (audioRef.current) {
-    // Handle when audio ends
-    audioRef.current.onended = () => {
-      // Different handling based on which audio sequence we're in
-      if (stage === 'continueTalking') {
-        // For continueTalking stage - NO DELAY between audio clips
-        if (currentAudioIndex < continueAudioSequence.length - 1) {
-          setCurrentAudioIndex(prev => prev + 1);
-        } else {
-          // After continuing talking, go back to static
-          setStage('static');
-          startStaticAnimation();
-        }
-      } else if (stage === 'armUpTalking') {
-        // For arm-up talking stage
-        if (currentAudioIndex < armUpAudioSequence.length - 1) {
-          console.log(`Moving to next arm-up audio: ${currentAudioIndex + 1}`);
-          setCurrentAudioIndex(prev => prev + 1);
-        } else {
-          // After final arm-up talking, go to final static pose with a longer delay
-          console.log("Final arm-up audio completed, transitioning to finalStatic");
-          
-          // Stop any ongoing animations before transition
-          stopTalkingAnimation();
-          
-          setTimeout(() => {
-            setStage('finalStatic');
-            startFinalStaticPose();
-          }, 500); // Slightly longer delay for smoother transition
-        }
+
+  // Handle when audio ends
+  setTimeout(() => {
+    if (stage === 'continueTalking') {
+      // For continueTalking stage - NO DELAY between audio clips
+      if (currentAudioIndex < continueAudioSequence.length - 1) {
+        setCurrentAudioIndex((prev) => prev + 1);
       } else {
-        // Original audio sequence - keep the existing 500ms delay
-        setTimeout(() => {
-          if (currentAudioIndex < audioSequence.length - 1) {
-            setCurrentAudioIndex(prev => prev + 1);
-          } else {
-            // This is the last audio - move to final walking
-            setStage('finalWalking');
-            startWalkingAnimation();
-          }
-        }, 500); // Maintained pause between audio clips for the first talking sequence
+        setStage('static');
+        startStaticAnimation();
       }
-    };
-  }
+    } else if (stage === 'armUpTalking') {
+      // For arm-up talking stage
+      if (currentAudioIndex < armUpAudioSequence.length - 1) {
+        console.log(`Moving to next arm-up audio: ${currentAudioIndex + 1}`);
+        setCurrentAudioIndex((prev) => prev + 1);
+      } else {
+        console.log('Final arm-up audio completed, transitioning to finalStatic');
+
+        // Stop any ongoing animations before transition
+        stopTalkingAnimation();
+
+        setTimeout(() => {
+          setStage('finalStatic');
+          startFinalStaticPose();
+        }, 500);
+      }
+    } else {
+      // Original audio sequence - keep the existing 500ms delay
+      setTimeout(() => {
+        if (currentAudioIndex < audioSequence.length - 1) {
+          setCurrentAudioIndex((prev) => prev + 1);
+        } else {
+          setStage('finalWalking');
+          startWalkingAnimation();
+        }
+      }, 500);
+    }
+  }, audioData.duration);
 };
 
 
@@ -614,7 +709,7 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
     setStage('static');
     
     // Store the final position in a ref so it can be used by the static component
-    const finalTransform = (document.querySelector('.side-moving-alex') as HTMLElement)?.style.transform;
+    const finalTransform = document.querySelector('.side-moving-alex')?.style.transform;
     if (finalTransform) {
       // Apply the exact same transform to the static component
       const staticElement = document.querySelector('.static-alex');

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { playAudio } from '../../utils/audioHandler'; // Import audio utility
 import Image from 'next/image';
 
 interface WalkingCrisProps {
@@ -319,43 +320,82 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
     }
   };
 
-  // Play the current audio file
-  const playCurrentAudio = () => {
+  // Play the current audio file OLD
+  // const playCurrentAudio = () => {
+  //   if (currentAudioIndex >= audioSequence.length) {
+  //     // Start the final walking sequence
+  //     setStage('finalWalking');
+  //     startWalkingAnimation();
+  //     return;
+  //   }
+    
+  //   const audioData = audioSequence[currentAudioIndex];
+    
+  //   if (audioRef.current) {
+  //     audioRef.current.pause();
+  //     audioRef.current = null;
+  //   }
+    
+  //   // Create and play audio
+  //   audioRef.current = new Audio(audioData.file);
+    
+  //   // Start talking animation for the exact duration of the audio
+  //   startTalkingAnimation(audioData.duration);
+    
+  //   // Handle when audio ends
+  //   audioRef.current.onended = () => {
+  //     // Move to next audio after a pause
+  //     setTimeout(() => {
+  //       if (currentAudioIndex < audioSequence.length - 1) {
+  //         setCurrentAudioIndex(prev => prev + 1);
+  //       } else {
+  //         // After the last audio, move to final walking
+  //         setStage('finalWalking');
+  //         startWalkingAnimation();
+  //       }
+  //     }, 1000); // 1 second pause between audio clips
+  //   };
+    
+  //   audioRef.current.play().catch(console.error);
+  // };
+
+  //NEW
+  const playCurrentAudio = async () => {
     if (currentAudioIndex >= audioSequence.length) {
       // Start the final walking sequence
       setStage('finalWalking');
       startWalkingAnimation();
       return;
     }
-    
+  
     const audioData = audioSequence[currentAudioIndex];
-    
+  
+    // Stop any currently playing audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    
-    // Create and play audio
-    audioRef.current = new Audio(audioData.file);
-    
+  
     // Start talking animation for the exact duration of the audio
     startTalkingAnimation(audioData.duration);
-    
+  
+    try {
+      // Play the audio using `playAudio` for better browser handling
+      await playAudio(audioData.file, 1.0);
+    } catch (error) {
+      console.error(`Error playing audio: ${audioData.file}`, error);
+    }
+  
     // Handle when audio ends
-    audioRef.current.onended = () => {
-      // Move to next audio after a pause
-      setTimeout(() => {
-        if (currentAudioIndex < audioSequence.length - 1) {
-          setCurrentAudioIndex(prev => prev + 1);
-        } else {
-          // After the last audio, move to final walking
-          setStage('finalWalking');
-          startWalkingAnimation();
-        }
-      }, 1000); // 1 second pause between audio clips
-    };
-    
-    audioRef.current.play().catch(console.error);
+    setTimeout(() => {
+      if (currentAudioIndex < audioSequence.length - 1) {
+        setCurrentAudioIndex((prev) => prev + 1);
+      } else {
+        // After the last audio, move to final walking
+        setStage('finalWalking');
+        startWalkingAnimation();
+      }
+    }, audioData.duration + 200); // Added small buffer for smooth transition
   };
 
   // Handle audio playback when in talking stage
