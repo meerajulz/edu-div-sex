@@ -16,6 +16,7 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({ onSelectActivity }) =
   const [activeIndex, setActiveIndex] = useState(0);
   const [moveAudio, setMoveAudio] = useState<HTMLAudioElement | null>(null);
   const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState<ContainerSize>({
     width: 600,
