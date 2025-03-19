@@ -614,7 +614,7 @@ const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean =
     setStage('static');
     
     // Store the final position in a ref so it can be used by the static component
-    const finalTransform = document.querySelector('.side-moving-alex')?.style.transform;
+    const finalTransform = (document.querySelector('.side-moving-alex') as HTMLElement)?.style.transform;
     if (finalTransform) {
       // Apply the exact same transform to the static component
       const staticElement = document.querySelector('.static-alex');
