@@ -16,7 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				email: {},
 				password: {},
 			},
-			authorize: async (credentials, request) => {
+			authorize: async (credentials) => {
 				try {
 					let user = null;
 
@@ -50,7 +50,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ url, baseUrl }) {
+		async redirect({ baseUrl }) {
 			// After successful sign in, redirect to evaluation form
 			return `${baseUrl}/home`;
 		},

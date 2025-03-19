@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Add framer-motion
+import { motion } from 'framer-motion'; // Add framer-motion
 import AnimatedDoor from '../AnimatedDoor/page';
 import WindowBirds from '../WindowBirds/page';
 import Backpack from '../Backpack/page';
@@ -14,17 +14,9 @@ interface BackgroundProps {
   onExitComplete?: () => void; // Callback when exit animation completes
 }
 
-interface Position {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  bottom?: number;
-}
-
 const RoomBackground: React.FC<BackgroundProps> = ({ 
   imagePath, 
-  debug = false, 
+  //debug = false, 
   isExiting = false,
   onExitComplete 
 }) => {

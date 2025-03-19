@@ -87,7 +87,7 @@ const Dashboard: React.FC = () => {
           <div className="absolute inset-0 z-5 bg-gradient-to-b from-blue-300 to-blue-100">
             {/* Add additional sky elements if needed */}
             <AnimatedSky />
-            <BirdsSoaring count={5} />
+            {/* <BirdsSoaring count={5} /> */}
           </div>
         )}
 

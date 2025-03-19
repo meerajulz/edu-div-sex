@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 
 interface KidsDisappearAnimationProps {
   shouldStartAnimation: boolean;
@@ -21,7 +21,6 @@ const KidsDisappearAnimation: React.FC<KidsDisappearAnimationProps> = ({
   onAlexDisappear
 }) => {
   const [animationStage, setAnimationStage] = useState<'initial' | 'cris' | 'dani' | 'noa' | 'alex' | 'complete'>('initial');
-  const [flashEffect, setFlashEffect] = useState(false);
   
   // Refs for audio
   const soundRef = useRef<HTMLAudioElement | null>(null);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import FullAlex from '../FullAlex/page';
@@ -27,10 +27,7 @@ const AnimatedDoor = () => {
   const [isDaniGone, setIsDaniGone] = useState(false);
   const [isNoaGone, setIsNoaGone] = useState(false);
   const [isAlexGone, setIsAlexGone] = useState(false);
-  
-  // States for Alex's animations
-  const [alexContinues, setAlexContinues] = useState(false);
-  
+    
   const [audio] = useState(
     typeof window !== 'undefined' ? new Audio('/ui-sound/cabinet-door-open.mp3') : null
   );
@@ -40,9 +37,6 @@ const AnimatedDoor = () => {
     typeof window !== 'undefined' ? new Audio('/ui-sound/cabinet-door-open.mp3') : null
   );
 
-  const [alexDisappearSound] = useState(
-    typeof window !== 'undefined' ? new Audio('/ui-sound/whoosh.mp3') : null
-  );
 
   // Flag for tracking if kids disappear animation has started
   const [kidsDisappearStarted, setKidsDisappearStarted] = useState(false);
