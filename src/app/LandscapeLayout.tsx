@@ -13,13 +13,13 @@ const LandscapeLayout = ({ children }: LandscapeLayoutProps) => {
     setIsClient(true);
     
     // Optional: Lock screen to landscape if supported by the browser
-    if (typeof window !== 'undefined' && window.screen?.orientation?.lock) {
+    if (typeof window !== 'undefined' && (window.screen.orientation as any)?.lock) {
       try {
-        window.screen.orientation.lock('landscape').catch(() => {
+        (window.screen.orientation as any)?.lock?.('landscape').catch(() => {
           // Silently fail if not supported or permission denied
           console.log('Could not lock screen orientation');
         });
-      } catch (error) {
+      } catch (_) {
         console.log('Orientation API not supported');
       }
     }
