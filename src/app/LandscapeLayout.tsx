@@ -6,10 +6,8 @@ interface LandscapeLayoutProps {
   children: React.ReactNode;
 }
 
-// Define a type for the screen orientation API
-interface ScreenOrientationLock {
-  lock(orientation: string): Promise<void>;
-}
+// Define a more specific type for the lock function
+type LockFunction = (orientation: string) => Promise<void>;
 
 const LandscapeLayout = ({ children }: LandscapeLayoutProps) => {
   const [isClient, setIsClient] = useState(false);
@@ -19,18 +17,18 @@ const LandscapeLayout = ({ children }: LandscapeLayoutProps) => {
     
     // Optional: Lock screen to landscape if supported by the browser
     if (typeof window !== 'undefined') {
-      // Check if the orientation API exists and has a lock method
-      const screenOrientation = window.screen?.orientation as unknown;
-      const hasLockMethod = 
-        screenOrientation !== null && 
-        screenOrientation !== undefined &&
-        typeof (screenOrientation as { lock?: Function }).lock === 'function';
+      // Check if the orientation API exists
+      const screenOrientation = window.screen?.orientation;
       
-      if (hasLockMethod) {
+      // Check if lock method exists and is a function
+      if (screenOrientation && 
+          typeof screenOrientation === 'object' && 
+          'lock' in screenOrientation && 
+          typeof screenOrientation.lock === 'function') {
+        
         try {
-          // Safely cast to our interface only after runtime check
-          const orientationWithLock = screenOrientation as ScreenOrientationLock;
-          orientationWithLock.lock('landscape').catch(() => {
+          // Call the lock method
+          screenOrientation.lock('landscape').catch(() => {
             // Silently fail if permission denied
             console.log('Could not lock screen orientation');
           });
