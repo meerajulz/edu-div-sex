@@ -27,6 +27,9 @@ const AnimatedDoor = () => {
   const [isDaniGone, setIsDaniGone] = useState(false);
   const [isNoaGone, setIsNoaGone] = useState(false);
   const [isAlexGone, setIsAlexGone] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [alexContinues, setAlexContinues] = useState(false);
     
   const [audio] = useState(
     typeof window !== 'undefined' ? new Audio('/ui-sound/cabinet-door-open.mp3') : null
