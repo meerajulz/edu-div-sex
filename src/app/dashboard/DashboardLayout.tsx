@@ -6,7 +6,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function Layout({ children }: DashboardLayoutProps) {
   // You can fetch user data here or pass it through context
   const userName = "User"; // Replace with actual user data fetching
 

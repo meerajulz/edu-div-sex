@@ -9,8 +9,6 @@ const BirdsFlying: React.FC<{ count?: number }> = ({ count = 5 }) => {
     { fromLeft: boolean; startX: string; endX: string; startY: string; endY: string; isDiagonal: boolean }[]
   >([]);
   const [isVisible, setIsVisible] = useState(false);
-  const birdSoundRef = useRef<HTMLAudioElement | null>(null);
-  const soundIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -29,39 +27,11 @@ const BirdsFlying: React.FC<{ count?: number }> = ({ count = 5 }) => {
 
     setBirdPositions(positions);
 
-    // Initialize bird sound
-    birdSoundRef.current = new Audio('/ui-sound/bird.mp3');
-    if (birdSoundRef.current) {
-      birdSoundRef.current.volume = 0.5;
-      birdSoundRef.current.loop = true;
-    }
-
     // Initialize intersection observer
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           setIsVisible(entry.isIntersecting);
-          if (entry.isIntersecting) {
-            // Play sound when birds come into view
-            if (birdSoundRef.current) {
-              birdSoundRef.current.play().catch(console.error);
-              
-              // Start volume variations
-              soundIntervalRef.current = setInterval(() => {
-                if (birdSoundRef.current) {
-                  birdSoundRef.current.volume = Math.random() * 0.15 + 0.05;
-                }
-              }, 2000);
-            }
-          } else {
-            // Stop sound when birds are out of view
-            if (birdSoundRef.current) {
-              birdSoundRef.current.pause();
-              if (soundIntervalRef.current) {
-                clearInterval(soundIntervalRef.current);
-              }
-            }
-          }
         });
       },
       {
@@ -76,13 +46,6 @@ const BirdsFlying: React.FC<{ count?: number }> = ({ count = 5 }) => {
 
     // Cleanup
     return () => {
-      if (birdSoundRef.current) {
-        birdSoundRef.current.pause();
-        birdSoundRef.current = null;
-      }
-      if (soundIntervalRef.current) {
-        clearInterval(soundIntervalRef.current);
-      }
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
@@ -117,4 +80,5 @@ const BirdsFlying: React.FC<{ count?: number }> = ({ count = 5 }) => {
     </div>
   );
 };
+
 export default BirdsFlying;

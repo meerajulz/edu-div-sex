@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import RootLayout from '../layout';
 import AnimatedSky from '../components/AnimatedSky/page';
-import BirdsFlying from '../components/BirdsFlying/BirdsFlying';
 import OrbitalCarousel from '../components/OrbitalCarousel/index'; // Make sure this path is correct
 import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
 import RoomBackground from '../components/RoomBackground/RoomBackground';
@@ -68,7 +67,7 @@ const Dashboard: React.FC = () => {
       <div className='relative min-h-screen'>
         {/* Birds in the background */}
         <div className="absolute inset-0 z-0">
-          <BirdsFlying count={1} />
+          {/* <BirdsFlying count={1} /> */}
         </div>
 
         {/* Room background with exit animation */}
