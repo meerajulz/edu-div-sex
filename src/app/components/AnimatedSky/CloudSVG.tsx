@@ -1,7 +1,5 @@
 import React from 'react';
 import { CloudSVGProps } from './types';
-import Nube1 from './svg/nube-1.svg';
-import Nube2 from './svg/nube-2.svg';
 
 
 export const CloudSVG: React.FC<CloudSVGProps> = ({ className, variant = 1 }) => {
