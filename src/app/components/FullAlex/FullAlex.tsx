@@ -479,76 +479,54 @@ const playCurrentAudio = async () => {
     audioRef.current = null;
   }
 
-  // Special handling for the final arm-up audio (11-alex.mp3)
-  const isLastArmUpAudio =
-    stage === 'armUpTalking' && currentAudioIndex === armUpAudioSequence.length - 1;
+  try {
+    // Start talking animation BEFORE playing audio for better sync
+    if (stage === 'armUpTalking' && currentAudioIndex === armUpAudioSequence.length - 1) {
+      console.log('Playing final arm-up audio with improved speech syncing');
+      startSlowerTalkingAnimation(audioData.duration, useArmUpImages);
+    } else {
+      startTalkingAnimation(audioData.duration, useArmUpImages);
+    }
 
-  // Start mouth animation BEFORE playing audio for better sync
-  if (isLastArmUpAudio) {
-    console.log('Playing final arm-up audio with improved speech syncing');
-    startSlowerTalkingAnimation(audioData.duration, useArmUpImages);
+    // Play audio and wait for it to finish
+    await playAudio(audioData.file, 1.0);
+    await waitDuration(audioData.duration);
 
-    // Brief delay to ensure animation is running before playing
-    setTimeout(async () => {
-      try {
-        await playAudio(audioData.file, 1.0);
-      } catch (err) {
-        console.error('Error playing audio:', err);
-      }
-    }, 100);
-  } else {
-    // For regular audio
-    startTalkingAnimation(audioData.duration, useArmUpImages);
-
-    // Small delay for regular talking
-    setTimeout(async () => {
-      try {
-        await playAudio(audioData.file, 1.0);
-      } catch (err) {
-        console.error('Error playing audio:', err);
-      }
-    }, 50);
+  } catch (err) {
+    console.error(`Error playing audio: ${audioData.file}. Waiting instead.`);
+    await waitDuration(audioData.duration);
   }
 
-  // Handle when audio ends
-  setTimeout(() => {
-    if (stage === 'continueTalking') {
-      // For continueTalking stage - NO DELAY between audio clips
-      if (currentAudioIndex < continueAudioSequence.length - 1) {
-        setCurrentAudioIndex((prev) => prev + 1);
-      } else {
-        setStage('static');
-        startStaticAnimation();
-      }
-    } else if (stage === 'armUpTalking') {
-      // For arm-up talking stage
-      if (currentAudioIndex < armUpAudioSequence.length - 1) {
-        console.log(`Moving to next arm-up audio: ${currentAudioIndex + 1}`);
-        setCurrentAudioIndex((prev) => prev + 1);
-      } else {
-        console.log('Final arm-up audio completed, transitioning to finalStatic');
-
-        // Stop any ongoing animations before transition
-        stopTalkingAnimation();
-
-        setTimeout(() => {
-          setStage('finalStatic');
-          startFinalStaticPose();
-        }, 500);
-      }
+  // Handle next steps after audio completes
+  if (stage === 'continueTalking') {
+    if (currentAudioIndex < continueAudioSequence.length - 1) {
+      setCurrentAudioIndex((prev) => prev + 1);
     } else {
-      // Original audio sequence - keep the existing 500ms delay
-      setTimeout(() => {
-        if (currentAudioIndex < audioSequence.length - 1) {
-          setCurrentAudioIndex((prev) => prev + 1);
-        } else {
-          setStage('finalWalking');
-          startWalkingAnimation();
-        }
-      }, 500);
+      setStage('static');
+      startStaticAnimation();
     }
-  }, audioData.duration);
+  } else if (stage === 'armUpTalking') {
+    if (currentAudioIndex < armUpAudioSequence.length - 1) {
+      console.log(`Moving to next arm-up audio: ${currentAudioIndex + 1}`);
+      setCurrentAudioIndex((prev) => prev + 1);
+    } else {
+      console.log('Final arm-up audio completed, transitioning to finalStatic');
+      stopTalkingAnimation();
+      await waitDuration(500);
+      setStage('finalStatic');
+      startFinalStaticPose();
+    }
+  } else {
+    if (currentAudioIndex < audioSequence.length - 1) {
+      await waitDuration(500);
+      setCurrentAudioIndex((prev) => prev + 1);
+    } else {
+      setStage('finalWalking');
+      startWalkingAnimation();
+    }
+  }
 };
+
 
 
 const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean = false) => {

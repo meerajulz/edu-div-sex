@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { playAudio } from '../../utils/audioHandler'; // Import the new audio handler
+import { playAudio, waitDuration } from '../../utils/audioHandler'; // Import the new audio handler
 import Image from 'next/image';
 
 interface WalkingDaniProps {
@@ -284,42 +284,45 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
   // };
 
   //NEW
-const playCurrentAudio = async () => {
-  if (currentAudioIndex >= audioSequence.length) {
-    setStage('finalWalking');
-    startWalkingAnimation();
-    return;
-  }
-
-  const audioData = audioSequence[currentAudioIndex];
-
-  // ✅ Stop any currently playing audio safely
-  if (audioRef.current) {
-    try {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    } catch (error) {
-      console.warn("Error pausing previous audio:", error);
+  const playCurrentAudio = async () => {
+    if (currentAudioIndex >= audioSequence.length) {
+      setStage('finalWalking');
+      startWalkingAnimation();
+      return;
     }
-  }
-
-  try {
-    await playAudio(audioData.file); // ✅ Ensure playback starts before moving forward
-    startTalkingAnimation(audioData.duration);
-  } catch (error) {
-    console.error("Audio playback error in playCurrentAudio:", error);
-  }
-
-  // Handle when audio ends
-  setTimeout(() => {
+  
+    const audioData = audioSequence[currentAudioIndex];
+  
+    // ✅ Stop any currently playing audio safely
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch (error) {
+        console.warn("Error pausing previous audio:", error);
+      }
+    }
+  
+    try {
+      // ✅ Ensure playback starts before animations
+      await playAudio(audioData.file, 1.0);
+      startTalkingAnimation(audioData.duration);
+  
+      // ✅ Ensure proper synchronization
+      await waitDuration(audioData.duration);
+    } catch (error) {
+      console.error(`Audio playback error: ${audioData.file}. Waiting instead.`, error);
+      await waitDuration(audioData.duration);
+    }
+  
+    // Handle when audio ends
     if (currentAudioIndex < audioSequence.length - 1) {
       setCurrentAudioIndex(prev => prev + 1);
     } else {
       setStage('finalWalking');
       startWalkingAnimation();
     }
-  }, audioData.duration + 200);
-};
+  };
   
 
 

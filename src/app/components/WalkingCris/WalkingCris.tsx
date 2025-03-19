@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { playAudio } from '../../utils/audioHandler'; // Import audio utility
+import { playAudio, waitDuration } from '../../utils/audioHandler'; // Import audio utility
 import Image from 'next/image';
 
 interface WalkingCrisProps {
@@ -376,26 +376,26 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
       audioRef.current = null;
     }
   
-    // Start talking animation for the exact duration of the audio
-    startTalkingAnimation(audioData.duration);
-  
     try {
-      // Play the audio using `playAudio` for better browser handling
+      // Start talking animation BEFORE playing audio for better sync
+      startTalkingAnimation(audioData.duration);
+  
+      // Play audio and wait for it to finish
       await playAudio(audioData.file, 1.0);
+      await waitDuration(audioData.duration);
     } catch (error) {
-      console.error(`Error playing audio: ${audioData.file}`, error);
+      console.error(`Error playing audio: ${audioData.file}. Waiting instead.`, error);
+      await waitDuration(audioData.duration);
     }
   
-    // Handle when audio ends
-    setTimeout(() => {
-      if (currentAudioIndex < audioSequence.length - 1) {
-        setCurrentAudioIndex((prev) => prev + 1);
-      } else {
-        // After the last audio, move to final walking
-        setStage('finalWalking');
-        startWalkingAnimation();
-      }
-    }, audioData.duration + 200); // Added small buffer for smooth transition
+    // Handle next steps after audio completes
+    if (currentAudioIndex < audioSequence.length - 1) {
+      setCurrentAudioIndex((prev) => prev + 1);
+    } else {
+      // After the last audio, move to final walking
+      setStage('finalWalking');
+      startWalkingAnimation();
+    }
   };
 
   // Handle audio playback when in talking stage
