@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import RootLayout from '../layout';
 import AnimatedSky from '../components/AnimatedSky/page';
-import BirdsFlying from '../components/BirdsFlying/page';
+import BirdsFlying from '../components/BirdsFlying/BirdsFlying';
 import OrbitalCarousel from '../components/OrbitalCarousel/page'; // Make sure this path is correct
 import FloatingMenu from '../components/FloatingMenu/page';
 import RoomBackground from '../components/RoomBackground/page';
