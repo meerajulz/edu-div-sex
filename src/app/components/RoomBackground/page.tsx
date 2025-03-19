@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; // Add framer-motion
 import AnimatedDoor from '../AnimatedDoor/page';
-import WindowBirds from '../WindowBirds/page';
+import WindowBirds from '../WindowBirds/WindowBirds';
 import Backpack from '../Backpack/Backpack';
-import Table from '../Table/page';
+import Table from '../Table/Table';
 
 interface BackgroundProps {
   imagePath: string;

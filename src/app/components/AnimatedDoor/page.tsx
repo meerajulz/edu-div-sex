@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import FullAlex from '../FullAlex/page';
-import WalkingCris from '../WalkingCris/page';
-import WalkingDani from '../WalkingDani/page';
-import WalkingNoa from '../WalkingNoa/page';
+import FullAlex from '../FullAlex/FullAlex';
+import WalkingCris from '../WalkingCris/WalkingCris';
+import WalkingDani from '../WalkingDani/WalkingDani';
+import WalkingNoa from '../WalkingNoa/WalkingNoa';
 import KidsDisappearAnimation from '../KidsDisappearAnimation/page';
 
 const AnimatedDoor = () => {
