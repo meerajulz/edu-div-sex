@@ -39,9 +39,9 @@ const FullAlex: React.FC<FullAlexProps> = ({
   const [stage, setStage] = useState<AlexStage>('initial');
   const [hasStartedSequence, setHasStartedSequence] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isCurrentAudioPlaying, setIsCurrentAudioPlaying] = useState(false);
-  const [alexOpacity, setAlexOpacity] = useState(1); // Track opacity for fade out
-
+  
   // Add sound effect for Alex disappearing
   const [disappearSound] = useState(
     typeof window !== 'undefined' ? new Audio('/ui-sound/whoosh.mp3') : null
@@ -57,9 +57,6 @@ const FullAlex: React.FC<FullAlexProps> = ({
   
   // Current image state
   const [currentImage, setCurrentImage] = useState(talkingExpressions.eyeOpenMouthClose);
-  
-  // Position state for side movement
-  const [position, setPosition] = useState({ left: '40%', top: '175%', scale: 8 });
   
   // Clean up all animations and audio
   const cleanupAnimations = () => {
@@ -387,8 +384,8 @@ const playCurrentAudio = () => {
             // This could be used for advanced audio analysis if needed
             // We can implement more sophisticated sync if required
           }
-        } catch (e) {
-          console.log("AudioContext not available for advanced sync");
+        } catch (e: any) {
+          console.log(e, "AudioContext not available for advanced sync");
         }
         
         // Play audio with improved error handling
@@ -458,74 +455,6 @@ const playCurrentAudio = () => {
   }
 };
 
-// Slower talking animation specifically for the longer final audio (11-alex.mp3)
-// const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean = false) => {
-//   // Clear any existing animations
-//   cleanupAnimations();
-  
-//   // Set current state to playing
-//   setIsCurrentAudioPlaying(true);
-  
-//   // Choose the appropriate expression set
-//   const expressionSet = useArmUpImages ? armUpTalkingExpressions : talkingExpressions;
-  
-//   // Mouth animation (slower - 250ms for more deliberate speech pattern)
-//   mouthIntervalRef.current = setInterval(() => {
-//     setCurrentImage(prevImage => {
-//       // Make sure we're using the correct expressions
-//       if ((useArmUpImages && !isFromExpressionSet(prevImage, 'armUp')) || 
-//           (!useArmUpImages && !isFromExpressionSet(prevImage, 'talking'))) {
-//         return expressionSet.eyeOpenMouthOpen;
-//       }
-      
-//       // Determine current eye state
-//       const eyesOpen = hasOpenEyes(prevImage);
-      
-//       // Toggle mouth state
-//       const mouthOpen = hasMouthOpen(prevImage);
-      
-//       if (mouthOpen) {
-//         return eyesOpen ? expressionSet.eyeOpenMouthClose : expressionSet.eyeCloseMouthClose;
-//       } else {
-//         return eyesOpen ? expressionSet.eyeOpenMouthOpen : expressionSet.eyeCloseMouthOpen;
-//       }
-//     });
-//   }, 250); // Slower mouth movement for a more measured, deliberate speech pattern
-  
-//   // Eye animation (slower - 400ms with natural blinking - same as regular talking)
-//   eyeIntervalRef.current = setInterval(() => {
-//     setCurrentImage(prevImage => {
-//       // Make sure we're using the correct expressions
-//       if ((useArmUpImages && !isFromExpressionSet(prevImage, 'armUp')) || 
-//           (!useArmUpImages && !isFromExpressionSet(prevImage, 'talking'))) {
-//         return expressionSet.eyeOpenMouthOpen;
-//       }
-      
-//       // Determine current mouth state
-//       const mouthOpen = hasMouthOpen(prevImage);
-      
-//       // Toggle eye state with higher probability of open eyes
-//       const eyesOpen = hasOpenEyes(prevImage);
-      
-//       // Natural blinking pattern: 15% chance of changing eye state
-//       if (Math.random() < 0.15) {
-//         if (eyesOpen) {
-//           return mouthOpen ? expressionSet.eyeCloseMouthOpen : expressionSet.eyeCloseMouthClose;
-//         } else {
-//           return mouthOpen ? expressionSet.eyeOpenMouthOpen : expressionSet.eyeOpenMouthClose;
-//         }
-//       }
-      
-//       // If no blink occurs, keep the current eye state
-//       return prevImage;
-//     });
-//   }, 400);
-  
-//   // Set timeout to end animation exactly when audio ends plus buffer
-//   animationTimeoutRef.current = setTimeout(() => {
-//     stopTalkingAnimation();
-//   }, duration + 300); // Adding buffer time to ensure animation covers full audio
-// };
 
 const startSlowerTalkingAnimation = (duration: number, useArmUpImages: boolean = false) => {
   // Clear any existing animations
