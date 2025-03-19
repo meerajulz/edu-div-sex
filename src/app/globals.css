@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add this to your globals.css file */
 
 /* Lock orientation for mobile/tablet */
 @media screen and (max-width: 1024px) {
