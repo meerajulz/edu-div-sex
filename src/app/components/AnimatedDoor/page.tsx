@@ -7,7 +7,7 @@ import FullAlex from '../FullAlex/FullAlex';
 import WalkingCris from '../WalkingCris/WalkingCris';
 import WalkingDani from '../WalkingDani/WalkingDani';
 import WalkingNoa from '../WalkingNoa/WalkingNoa';
-import KidsDisappearAnimation from '../KidsDisappearAnimation/page';
+import KidsDisappearAnimation from '../KidsDisappearAnimation/KidsDisappearAnimation';
 
 const AnimatedDoor = () => {
   const [isOpen, setIsOpen] = useState(false);

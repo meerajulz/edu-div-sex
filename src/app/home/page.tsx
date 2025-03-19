@@ -6,8 +6,8 @@ import RootLayout from '../layout';
 import AnimatedSky from '../components/AnimatedSky/page';
 import BirdsFlying from '../components/BirdsFlying/BirdsFlying';
 import OrbitalCarousel from '../components/OrbitalCarousel/page'; // Make sure this path is correct
-import FloatingMenu from '../components/FloatingMenu/page';
-import RoomBackground from '../components/RoomBackground/page';
+import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
+import RoomBackground from '../components/RoomBackground/RoomBackground';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
