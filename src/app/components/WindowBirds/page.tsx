@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import BirdAnimation from '../BirdAnimation/page';
+import BirdAnimation from '../BirdAnimation/BirdAnimation';
 
 const WindowBirds: React.FC<{ count?: number }> = ({ count = 3 }) => {
   const [birdPositions, setBirdPositions] = useState<

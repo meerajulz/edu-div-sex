@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import BirdAnimation from '../BirdAnimation/page';
+import BirdAnimation from '../BirdAnimation/BirdAnimation';
 
 const BirdsFlying: React.FC<{ count?: number }> = ({ count = 5 }) => {
   const [birdPositions, setBirdPositions] = useState<

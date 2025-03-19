@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import BirdAnimation from '../BirdAnimation/page';
+import BirdAnimation from '../BirdAnimation/BirdAnimation';
 
 const BirdsSoaring: React.FC = () => {
   const [bird1StartY, setBird1StartY] = useState(0);
