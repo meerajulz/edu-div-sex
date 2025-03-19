@@ -4,7 +4,7 @@ interface HeaderProps {
   userName: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ userName }) => {
+const Header: React.FC<HeaderProps> = () => {
   return (
     <div className='bg-pink-600 text-white p-4 flex justify-between items-center'>
       <div className='flex items-center space-x-4'>
