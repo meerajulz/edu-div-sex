@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Bird1 from './svg/bird-1.svg';
-import Bird2 from './svg/bird-2.svg';
-import Bird1Reversed from './svg/bird-1-reversed.svg';
-import Bird2Reversed from './svg/bird-2-reversed.svg';
 
 const BirdAnimation: React.FC<{ flip?: boolean }> = ({ flip = false }) => {
   const [flap, setFlap] = useState(true);
 
+  // Define paths to the SVG files - these are just strings, not objects with .src
+  const Bird1 = '/svg/birds/bird-1.svg';
+  const Bird2 = '/svg/birds/bird-2.svg';
+  const Bird1Reversed = '/svg/birds/bird-1-reversed.svg';
+  const Bird2Reversed = '/svg/birds/bird-2-reversed.svg';
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setFlap((prev) => !prev);
@@ -53,7 +55,7 @@ const BirdAnimation: React.FC<{ flip?: boolean }> = ({ flip = false }) => {
       }}
     >
       <img
-        src={flap ? (flip ? Bird1Reversed.src : Bird1.src) : (flip ? Bird2Reversed.src : Bird2.src)}
+        src={flap ? (flip ? Bird1Reversed : Bird1) : (flip ? Bird2Reversed : Bird2)}
         alt="Flying Bird"
         className="w-16 h-auto"
       />
