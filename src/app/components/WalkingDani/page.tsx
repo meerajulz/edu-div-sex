@@ -13,6 +13,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
   const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'finalWalking' | 'done'>('initial');
   const [hasStartedSequence, setHasStartedSequence] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isCurrentAudioPlaying, setIsCurrentAudioPlaying] = useState(false);
   
   // Refs

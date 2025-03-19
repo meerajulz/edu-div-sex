@@ -384,8 +384,8 @@ const playCurrentAudio = () => {
             // This could be used for advanced audio analysis if needed
             // We can implement more sophisticated sync if required
           }
-        } catch (e: any) {
-          console.log(e, "AudioContext not available for advanced sync");
+        } catch (e) {
+          console.log(`${e}: AudioContext not available for advanced sync`);
         }
         
         // Play audio with improved error handling

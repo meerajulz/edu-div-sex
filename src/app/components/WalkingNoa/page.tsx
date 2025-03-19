@@ -14,6 +14,7 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
   const [stage, setStage] = useState<'initial' | 'hola' | 'walking' | 'talking' | 'finalWalking' | 'done' | 'continueTalking'>('initial');
   const [hasStartedSequence, setHasStartedSequence] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isCurrentAudioPlaying, setIsCurrentAudioPlaying] = useState(false);
   
   // Refs
