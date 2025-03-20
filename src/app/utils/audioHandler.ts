@@ -10,7 +10,32 @@ let currentlyPlaying: HTMLAudioElement | null = null;
  * @param volume Optional volume (0-1)
  * @returns Promise that resolves when audio begins playing or rejects on error
  */
+
+// Add this to audioHandler.ts
+let audioContext: AudioContext | null = null;
+
+// Initialize audio context on user interaction
+export const initAudioContext = () => {
+  if (!audioContext) {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContext = new AudioContextClass();
+      }
+    } catch (e) {
+      console.log('AudioContext not supported', e);
+    }
+  }
+  
+  return !!audioContext;
+};
+
+// Enhanced playAudio function
+// Enhanced playAudio function
 export const playAudio = (src: string, volume = 1.0): Promise<void> => {
+  // Try to initialize audio context if needed (mobile browsers require this on user gesture)
+  initAudioContext();
+  
   return new Promise((resolve, reject) => {
     try {
       // Stop any currently playing audio first
@@ -20,6 +45,7 @@ export const playAudio = (src: string, volume = 1.0): Promise<void> => {
           currentlyPlaying.currentTime = 0;
         } catch (e) {
           console.log(e, 'Error stopping previous audio');
+          // Ignore errors when stopping previous audio
         }
       }
 
@@ -32,41 +58,48 @@ export const playAudio = (src: string, volume = 1.0): Promise<void> => {
       }
 
       // Reset and set volume
-      audio.currentTime = 0;
-      audio.volume = volume;
+      try {
+        audio.currentTime = 0;
+        audio.volume = volume;
+      } catch (e) {
+       
+        console.log('Audio setup error:', e);
+        // Some browsers throw errors when setting currentTime before loading
+      }
       
       // Set as currently playing
       currentlyPlaying = audio;
 
-      // Use interaction state to determine playback approach
-      const playPromise = audio.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Successfully started playing
-            resolve();
-          })
-          .catch((error) => {
-            console.error(`Failed to play audio (${src}):`, error);
-            
-            // Common error in browsers - try a different approach
-            if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
-              // Consider the audio as "played" for animation purposes
-              console.log(`Audio ${src} blocked by browser policy, continuing animation`);
+      // Handle both promised and non-promised play() implementations
+      try {
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
               resolve();
-            } else {
-              reject(error);
-            }
-          });
-      } else {
-        // For older browsers that don't return a promise
-        resolve();
+            })
+            .catch((error) => {
+              console.warn(`Audio play failed (${src}):`, error);
+              
+              // For mobile browsers that block autoplay
+              if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+                resolve(); // Resolve anyway to continue animations
+              } else {
+                reject(error);
+              }
+            });
+        } else {
+          // For older browsers that don't return a promise
+          resolve();
+        }
+      } catch (playError) {
+        console.warn('Play error:', playError);
+        resolve(); // Always resolve to keep animations going
       }
     } catch (error) {
-      console.error('Error setting up audio:', error);
-      // Continue the flow even if audio fails
-      resolve();
+      console.error('Audio setup error:', error);
+      resolve(); // Always resolve to keep animations going
     }
   });
 };

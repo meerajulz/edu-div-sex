@@ -262,27 +262,27 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   // Initial "Hola" sequence
   const startHolaSequence = () => {
     setStage('hola');
-    
-    // Initial talking animation for "Hola"
+  
+    // Set initial talking animation for "Hola"
     setCurrentImage(talkingExpressions.eyeOpenMouthOpen);
     
-    // Play "Hola" audio
-    const audio = new Audio(audioSequence[0].file);
-    
-    // Start talking animation for the exact duration of "Hola"
+    // Start talking animation before playing audio
     startTalkingAnimation(audioSequence[0].duration);
     
-    audio.onended = () => {
-      // After "Hola", start walking
+    // Try to play audio but continue with animation regardless
+    playAudio(audioSequence[0].file, 1.0).catch(err => {
+      console.warn(`Non-critical audio error in Cris Hola: ${err}`);
+    });
+    
+    // Transition to walking after animation duration
+    setTimeout(() => {
       stopTalkingAnimation();
       
       setTimeout(() => {
         setStage('walking');
         startWalkingAnimation();
-      }, 500); // Small pause before walking
-    };
-    
-    audio.play().catch(console.error);
+      }, 200); // Small pause before walking
+    }, audioSequence[0].duration);
   };
 
   // Handle walking complete
@@ -321,43 +321,6 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   };
 
   // Play the current audio file OLD
-  // const playCurrentAudio = () => {
-  //   if (currentAudioIndex >= audioSequence.length) {
-  //     // Start the final walking sequence
-  //     setStage('finalWalking');
-  //     startWalkingAnimation();
-  //     return;
-  //   }
-    
-  //   const audioData = audioSequence[currentAudioIndex];
-    
-  //   if (audioRef.current) {
-  //     audioRef.current.pause();
-  //     audioRef.current = null;
-  //   }
-    
-  //   // Create and play audio
-  //   audioRef.current = new Audio(audioData.file);
-    
-  //   // Start talking animation for the exact duration of the audio
-  //   startTalkingAnimation(audioData.duration);
-    
-  //   // Handle when audio ends
-  //   audioRef.current.onended = () => {
-  //     // Move to next audio after a pause
-  //     setTimeout(() => {
-  //       if (currentAudioIndex < audioSequence.length - 1) {
-  //         setCurrentAudioIndex(prev => prev + 1);
-  //       } else {
-  //         // After the last audio, move to final walking
-  //         setStage('finalWalking');
-  //         startWalkingAnimation();
-  //       }
-  //     }, 1000); // 1 second pause between audio clips
-  //   };
-    
-  //   audioRef.current.play().catch(console.error);
-  // };
 
   //NEW
   const playCurrentAudio = async () => {
@@ -372,23 +335,31 @@ const WalkingCris: React.FC<WalkingCrisProps> = ({ shouldStartWalking, onComplet
   
     // Stop any currently playing audio
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch (error) {
+        console.warn("Error pausing previous audio:", error);
+      }
     }
   
     try {
-      // Start talking animation BEFORE playing audio for better sync
+      // Start talking animation BEFORE playing audio
       startTalkingAnimation(audioData.duration);
   
-      // Play audio and wait for it to finish
-      await playAudio(audioData.file, 1.0);
+      // Try playing the audio, but don't wait for it to complete
+      playAudio(audioData.file, 1.0).catch(err => {
+        console.warn(`Non-critical audio error for Cris: ${err}`);
+      });
+      
+      // Always wait for the animation duration regardless of audio playback
       await waitDuration(audioData.duration);
     } catch (error) {
-      console.error(`Error playing audio: ${audioData.file}. Waiting instead.`, error);
+      console.error(`Error in Cris playCurrentAudio: ${error}`);
       await waitDuration(audioData.duration);
     }
   
-    // Handle next steps after audio completes
+    // Handle next steps after animation completes
     if (currentAudioIndex < audioSequence.length - 1) {
       setCurrentAudioIndex((prev) => prev + 1);
     } else {
