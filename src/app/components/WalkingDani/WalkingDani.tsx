@@ -190,26 +190,26 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
   // };
 
   // Initial "Hola" sequence NEW
-  const startHolaSequence = async () => {
+  const startHolaSequence = () => {
     setStage('hola');
-  
+    
     // Set initial talking animation
     setCurrentImage(talkingExpressions.eyeCloseMouthOpen);
-  
-    // ✅ Ensure only one play request at a time
-    try {
-      await playAudio(audioSequence[0].file); // Wait for playback to start
-      startTalkingAnimation(audioSequence[0].duration); // Start talking animation after audio starts
-    } catch (error) {
-      console.error("Audio playback error in startHolaSequence:", error);
-    }
-  
-    // ✅ Wait for audio to finish before continuing
+    
+    // Start talking animation immediately
+    startTalkingAnimation(audioSequence[0].duration);
+    
+    // Try to play audio but don't depend on it
+    playAudio(audioSequence[0].file, 1.0).catch(err => {
+      console.warn(`Non-critical audio error in Dani Hola: ${err}`);
+    });
+    
+    // Wait for animation duration before transitioning
     setTimeout(() => {
       stopTalkingAnimation();
       setStage('walking');
       startWalkingAnimation();
-    }, audioSequence[0].duration + 200);
+    }, audioSequence[0].duration + 200); // Add slight buffer
   };
 
 
@@ -247,41 +247,6 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
   };
 
   // Play the current audio file PLD
-  // const playCurrentAudio = () => {
-  //   if (currentAudioIndex >= audioSequence.length) {
-  //     // Start the final walking sequence
-  //     setStage('finalWalking');
-  //     startWalkingAnimation();
-  //     return;
-  //   }
-    
-  //   const audioData = audioSequence[currentAudioIndex];
-    
-  //   if (audioRef.current) {
-  //     audioRef.current.pause();
-  //     audioRef.current = null;
-  //   }
-    
-  //   // Create and play audio
-  //   audioRef.current = new Audio(audioData.file);
-    
-  //   // Start talking animation for the exact duration of the audio
-  //   startTalkingAnimation(audioData.duration);
-    
-  //   // Handle when audio ends
-  //   audioRef.current.onended = () => {
-  //     // Move to next audio immediately without pause
-  //     if (currentAudioIndex < audioSequence.length - 1) {
-  //       setCurrentAudioIndex(prev => prev + 1);
-  //     } else {
-  //       // After the last audio, move to final walking
-  //       setStage('finalWalking');
-  //       startWalkingAnimation();
-  //     }
-  //   };
-    
-  //   audioRef.current.play().catch(console.error);
-  // };
 
   //NEW
   const playCurrentAudio = async () => {
@@ -293,7 +258,7 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
   
     const audioData = audioSequence[currentAudioIndex];
   
-    // ✅ Stop any currently playing audio safely
+    // Stop any currently playing audio safely
     if (audioRef.current) {
       try {
         audioRef.current.pause();
@@ -304,14 +269,18 @@ const WalkingDani: React.FC<WalkingDaniProps> = ({ shouldStartWalking, onComplet
     }
   
     try {
-      // ✅ Ensure playback starts before animations
-      await playAudio(audioData.file, 1.0);
+      // Start talking animation before audio
       startTalkingAnimation(audioData.duration);
   
-      // ✅ Ensure proper synchronization
+      // Try playing the audio, but don't block on errors
+      playAudio(audioData.file, 1.0).catch(err => {
+        console.warn(`Non-critical audio error for Dani: ${err}`);
+      });
+      
+      // Wait for animation duration
       await waitDuration(audioData.duration);
     } catch (error) {
-      console.error(`Audio playback error: ${audioData.file}. Waiting instead.`, error);
+      console.error(`Error in Dani playCurrentAudio: ${error}`);
       await waitDuration(audioData.duration);
     }
   

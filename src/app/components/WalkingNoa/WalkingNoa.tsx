@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { playAudio } from '../../utils/audioHandler';
+import { playAudio, waitDuration } from '../../utils/audioHandler';
 import Image from 'next/image';
 
 interface WalkingNoaProps {
@@ -198,49 +198,21 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
   };
 
   // Initial "Hola" sequence
-  // const startHolaSequence = () => {
-  //   setStage('hola');
-    
-  //   // Initial talking animation for "Hola"
-  //   setCurrentImage(talkingExpressions.eyeOpenMouthOpen);
-    
-  //   // Play "Hola" audio
-  //   const audio = new Audio(audioSequence[0].file);
-  //   audioRef.current = audio;
-    
-  //   // Start talking animation for the exact duration of "Hola"
-  //   startTalkingAnimation(audioSequence[0].duration);
-    
-  //   audio.onended = () => {
-  //     // After "Hola", start walking
-  //     stopTalkingAnimation();
-      
-  //     setTimeout(() => {
-  //       setStage('walking');
-  //       startWalkingAnimation();
-  //     }, 200); // Reduced pause before walking (from 500ms to 200ms)
-  //   };
-    
-  //   audio.play().catch(console.error);
-  // };
-  // Initial "Hola" sequence
-  const startHolaSequence = async () => {
+  const startHolaSequence = () => {
     setStage('hola');
-  
-    // ✅ Set initial talking animation
+    
+    // Set initial talking animation
     setCurrentImage(talkingExpressions.eyeOpenMouthOpen);
-  
-    try {
-      // ✅ Play audio and wait for it to start before proceeding
-      await playAudio(audioSequence[0].file);
-      
-      // ✅ Start talking animation only after playback is confirmed
-      startTalkingAnimation(audioSequence[0].duration);
-    } catch (error) {
-      console.error("Audio playback error in startHolaSequence:", error);
-    }
-  
-    // ✅ Wait for audio to finish before transitioning
+    
+    // Start talking animation for the exact duration of "Hola"
+    startTalkingAnimation(audioSequence[0].duration);
+    
+    // Try to play audio but don't depend on its success
+    playAudio(audioSequence[0].file, 1.0).catch(err => {
+      console.warn(`Non-critical audio error in Noa Hola: ${err}`);
+    });
+    
+    // Move to walking after the animation completes
     setTimeout(() => {
       stopTalkingAnimation();
       setStage('walking');
@@ -279,75 +251,33 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
   };
 
   // Play the current audio file
-  // const playCurrentAudio = () => {
-  //   // Determine which audio sequence to use based on the stage
-  //   let audioData;
-  //   let isLastAudio = false;
-    
-  //   if (stage === 'continueTalking') {
-  //     if (currentAudioIndex >= continueAudioSequence.length) {
-  //       // After continuing talking, go back to done stage
-  //       setStage('done');
-  //       return;
-  //     }
-  //     audioData = continueAudioSequence[currentAudioIndex];
-  //     isLastAudio = currentAudioIndex === continueAudioSequence.length - 1;
-  //   } else {
-  //     if (currentAudioIndex >= audioSequence.length) {
-  //       // Start the final walking sequence
-  //       setStage('finalWalking');
-  //       startWalkingAnimation();
-  //       return;
-  //     }
-  //     audioData = audioSequence[currentAudioIndex];
-  //     isLastAudio = currentAudioIndex === audioSequence.length - 1;
-  //   }
-    
-  //   if (audioRef.current) {
-  //     audioRef.current.pause();
-  //     audioRef.current = null;
-  //   }
-    
-  //   // Create and play audio
-  //   audioRef.current = new Audio(audioData.file);
-    
-  //   // Start talking animation for the exact duration of the audio
-  //   startTalkingAnimation(audioData.duration);
-    
-  //   // Handle when audio ends
-  //   audioRef.current.onended = () => {
-  //     if (stage === 'continueTalking') {
-  //       if (!isLastAudio) {
-  //         setCurrentAudioIndex(prev => prev + 1);
-  //       } else {
-  //         // After the last continue audio, go back to done stage
-  //         setStage('done');
-  //       }
-  //     } else {
-  //       // Regular talking sequence
-  //       if (!isLastAudio) {
-  //         setCurrentAudioIndex(prev => prev + 1);
-  //       } else {
-  //         // After the last audio, move to final walking
-  //         setStage('finalWalking');
-  //         startWalkingAnimation();
-  //       }
-  //     }
-  //   };
-    
-  //   audioRef.current.play().catch(console.error);
-  // };
+
   //NEw 
   const playCurrentAudio = async () => {
-    if (currentAudioIndex >= audioSequence.length) {
-      setStage('finalWalking');
-      startWalkingAnimation();
-      return;
+    // Determine which audio sequence to use based on the stage
+    let audioData;
+    let isLastAudio = false;
+    
+    if (stage === 'continueTalking') {
+      if (currentAudioIndex >= continueAudioSequence.length) {
+        // After continuing talking, go back to done stage
+        setStage('done');
+        return;
+      }
+      audioData = continueAudioSequence[currentAudioIndex];
+      isLastAudio = currentAudioIndex === continueAudioSequence.length - 1;
+    } else {
+      if (currentAudioIndex >= audioSequence.length) {
+        // Start the final walking sequence
+        setStage('finalWalking');
+        startWalkingAnimation();
+        return;
+      }
+      audioData = audioSequence[currentAudioIndex];
+      isLastAudio = currentAudioIndex === audioSequence.length - 1;
     }
   
-    const audioData = audioSequence[currentAudioIndex];
-  
-    // ✅ Stop any currently playing audio safely
+    // Stop any currently playing audio safely
     if (audioRef.current) {
       try {
         audioRef.current.pause();
@@ -358,23 +288,41 @@ const WalkingNoa: React.FC<WalkingNoaProps> = ({ shouldStartWalking, onComplete,
     }
   
     try {
-      await playAudio(audioData.file); // ✅ Ensure playback starts before animation
+      // Start talking animation
       startTalkingAnimation(audioData.duration);
+  
+      // Try playing audio without blocking on errors
+      playAudio(audioData.file, 1.0).catch(err => {
+        console.warn(`Non-critical audio error for Noa: ${err}`);
+      });
+      
+      // Wait for animation duration
+      await waitDuration(audioData.duration);
     } catch (error) {
-      console.error("Audio playback error in playCurrentAudio:", error);
+      console.error(`Error in Noa playCurrentAudio: ${error}`);
+      await waitDuration(audioData.duration);
     }
   
-    // ✅ Handle transition when audio ends
-    setTimeout(() => {
-      if (currentAudioIndex < audioSequence.length - 1) {
+    // Handle next step
+    if (stage === 'continueTalking') {
+      if (!isLastAudio) {
         setCurrentAudioIndex(prev => prev + 1);
       } else {
+        // After the last continue audio, go back to done stage
+        setStage('done');
+      }
+    } else {
+      // Regular talking sequence
+      if (!isLastAudio) {
+        setCurrentAudioIndex(prev => prev + 1);
+      } else {
+        // After the last audio, move to final walking
         setStage('finalWalking');
         startWalkingAnimation();
       }
-    }, audioData.duration + 200);
+    }
   };
-  
+
 
   // Handle audio playback when in talking stage
   useEffect(() => {

@@ -1,182 +1,234 @@
-// Cache audio instances to avoid repeated loading
-const audioCache: Record<string, HTMLAudioElement> = {};
+// utils/audioHandler.ts
+let audioContext: AudioContext | null = null;
+let initialized = false;
+const bufferCache: Record<string, AudioBuffer> = {};
+let currentSource: AudioBufferSourceNode | null = null;
 
-// Keep track of which audio is currently playing
-let currentlyPlaying: HTMLAudioElement | null = null;
-
-/**
- * Safely loads and plays audio with proper error handling
- * @param src Audio file path
- * @param volume Optional volume (0-1)
- * @returns Promise that resolves when audio begins playing or rejects on error
- */
-export const playAudio = (src: string, volume = 1.0): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    try {
-      // Stop any currently playing audio first
-      if (currentlyPlaying) {
-        try {
-          currentlyPlaying.pause();
-          currentlyPlaying.currentTime = 0;
-        } catch (e) {
-          console.log(e, 'Error stopping previous audio');
-        }
-      }
-
-      // Get or create audio element
-      let audio = audioCache[src];
-      if (!audio) {
-        audio = new Audio(src);
-        audio.preload = 'auto';
-        audioCache[src] = audio;
-      }
-
-      // Reset and set volume
-      audio.currentTime = 0;
-      audio.volume = volume;
-      
-      // Set as currently playing
-      currentlyPlaying = audio;
-
-      // Use interaction state to determine playback approach
-      const playPromise = audio.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Successfully started playing
-            resolve();
-          })
-          .catch((error) => {
-            console.error(`Failed to play audio (${src}):`, error);
-            
-            // Common error in browsers - try a different approach
-            if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
-              // Consider the audio as "played" for animation purposes
-              console.log(`Audio ${src} blocked by browser policy, continuing animation`);
-              resolve();
-            } else {
-              reject(error);
-            }
-          });
-      } else {
-        // For older browsers that don't return a promise
-        resolve();
-      }
-    } catch (error) {
-      console.error('Error setting up audio:', error);
-      // Continue the flow even if audio fails
-      resolve();
-    }
-  });
-};
+// Global audio element for fallback method
+let globalAudioElement: HTMLAudioElement | null = null;
 
 /**
- * Waits for the specified duration, useful for simulating audio playback
- * when actual audio can't be played
- * @param duration Time to wait in milliseconds
+ * Initialize audio system on first user interaction
+ * MUST be called directly from a user interaction event handler
  */
-export const waitDuration = (duration: number): Promise<void> => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, duration);
-  });
-};
-
-/**
- * Plays audio and returns a promise that completes after the audio finishes
- * or after the specified duration if audio fails to play
- * @param src Audio file path
- * @param duration Fallback duration in milliseconds
- * @param volume Optional volume (0-1)
- */
-export const playAudioAndWait = async (src: string, duration: number, volume = 1.0): Promise<void> => {
+export const initAudio = async (): Promise<boolean> => {
+  if (initialized) return true;
+  
   try {
-    // Try to play the audio
-    const audio = audioCache[src] || new Audio(src);
-    
-    if (!audioCache[src]) {
-      audio.preload = 'auto';
-      audioCache[src] = audio;
-    }
-    
-    // Stop any currently playing audio
-    if (currentlyPlaying) {
+    // Create AudioContext
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+   
+    if (AudioContextClass) {
+      audioContext = new AudioContextClass();
+      
+      // Create a silent audio buffer and play it to unblock audio
+      const buffer = audioContext.createBuffer(1, 1, 22050);
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+      
+      // Also create a global audio element and play a silent sound
+      globalAudioElement = new Audio();
+      globalAudioElement.autoplay = false;
+      globalAudioElement.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+      
       try {
-        currentlyPlaying.pause();
-        currentlyPlaying.currentTime = 0;
+        await globalAudioElement.play();
+        globalAudioElement.pause();
       } catch (e) {
-        console.log(e, 'Error stopping previous audio');
-        // Ignore errors when stopping
+        console.warn('Failed to play global audio element:', e);
+        // Ignore errors here
       }
+      
+      initialized = true;
+      console.log('Audio system initialized successfully');
+      return true;
+    }
+  } catch (e) {
+    console.warn('Failed to initialize audio system:', e);
+  }
+  
+  return false;
+};
+
+/**
+ * Pre-load audio files for faster playback
+ */
+export const preloadAudio = async (url: string): Promise<boolean> => {
+  try {
+    // Try AudioContext method first
+    if (audioContext) {
+      // Skip if already cached
+      if (bufferCache[url]) return true;
+      
+      // Fetch the audio file
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      // Decode the audio data
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      // Cache the decoded buffer
+      bufferCache[url] = audioBuffer;
+      return true;
     }
     
-    // Set up the audio
-    audio.currentTime = 0;
-    audio.volume = volume;
-    currentlyPlaying = audio;
-    
-    // Create a promise that resolves when audio ends
-    const playbackPromise = new Promise<void>((resolve) => {
-      const onEnded = () => {
-        audio.removeEventListener('ended', onEnded);
-        resolve();
+    // Fallback to audio element preloading
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      audio.preload = 'auto';
+      
+      const handleLoaded = () => {
+        audio.removeEventListener('canplaythrough', handleLoaded);
+        resolve(true);
       };
       
-      audio.addEventListener('ended', onEnded);
+      const handleError = () => {
+        audio.removeEventListener('error', handleError);
+        console.warn(`Failed to preload: ${url}`);
+        resolve(false);
+      };
       
-      // Also resolve after the duration as a fallback
-      setTimeout(() => {
-        audio.removeEventListener('ended', onEnded);
-        resolve();
-      }, duration + 200); // Add small buffer
+      audio.addEventListener('canplaythrough', handleLoaded);
+      audio.addEventListener('error', handleError);
+      
+      audio.src = url;
     });
-    
-    // Try to play
-    try {
-      await audio.play();
-    } catch (error) {
-      console.error(`Failed to play audio (${src}):`, error);
-      // Continue with the duration wait even if audio fails
-    }
-    
-    // Wait for either the audio to finish or the duration
-    return playbackPromise;
-  } catch (error) {
-    console.error('Audio playback error:', error);
-    // Wait for the specified duration as fallback
-    return waitDuration(duration);
+  } catch (e) {
+    console.warn(`Failed to preload audio: ${url}`, e);
+    return false;
   }
 };
 
 /**
- * Preloads multiple audio files
- * @param sources List of audio file paths
+ * Play audio with fallback mechanisms
  */
-export const preloadAudios = (sources: string[]): void => {
-  if (typeof window === 'undefined') return;
-  
-  sources.forEach(src => {
-    if (!audioCache[src]) {
-      const audio = new Audio();
-      audio.preload = 'auto';
-      audio.src = src;
-      audioCache[src] = audio;
+export const playAudio = async (url: string, volume = 1.0): Promise<boolean> => {
+  // Try to initialize audio context if needed
+  if (!initialized) {
+    try {
+      await initAudio();
+    } catch (e) {
+      console.warn('Audio initialization failed:', e);
+      // Ignore initialization errors here
     }
-  });
+  }
+  
+  // Try to play using AudioContext (preferred method)
+  if (audioContext && initialized) {
+    try {
+      // Stop any currently playing audio
+      if (currentSource) {
+        try {
+          currentSource.stop();
+          currentSource.disconnect();
+        } catch (e) {
+          console.warn('Error stopping previous audio:', e);
+          // Ignore errors when stopping
+        }
+        currentSource = null;
+      }
+      
+      // Get or load buffer
+      let buffer = bufferCache[url];
+      if (!buffer) {
+        // Try to load on-demand
+        const loaded = await preloadAudio(url);
+        if (!loaded) throw new Error('Failed to load audio');
+        buffer = bufferCache[url];
+      }
+      
+      // Create a new source and play it
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      
+      // Add volume control
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = volume;
+      
+      // Connect nodes
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Start playback
+      source.start(0);
+      currentSource = source;
+      
+      console.log(`Playing audio: ${url} (using AudioContext)`);
+      return true;
+    } catch (e) {
+      console.warn(`AudioContext playback failed for ${url}:`, e);
+      // Fall through to fallback method
+    }
+  }
+  
+  // Fallback to HTMLAudioElement (less reliable on mobile)
+  try {
+    if (!globalAudioElement) {
+      globalAudioElement = new Audio();
+    }
+    
+    globalAudioElement.src = url;
+    globalAudioElement.volume = volume;
+    globalAudioElement.currentTime = 0;
+    
+    await globalAudioElement.play();
+    console.log(`Playing audio: ${url} (using Audio element)`);
+    return true;
+  } catch (e) {
+    console.warn(`Audio playback failed completely for ${url}:`, e);
+    return false;
+  }
 };
 
 /**
- * Cleanup all audio resources
+ * Wait for a specified duration
+ */
+export const waitDuration = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+/**
+ * Preload multiple audio files
+ */
+export const preloadAudios = async (urls: string[]): Promise<void> => {
+  if (!initialized) {
+    // Try to initialize audio system if not already done
+    try {
+      await initAudio();
+    } catch (e) {
+      console.warn('Audio initialization failed during preload:', e);
+    }
+  }
+  
+  // Preload all audio files in parallel
+  await Promise.all(urls.map(url => preloadAudio(url).catch(() => false)));
+  console.log(`Preloaded ${urls.length} audio files`);
+};
+
+/**
+ * Clean up audio resources
  */
 export const cleanupAudio = (): void => {
-  if (currentlyPlaying) {
+  if (currentSource) {
     try {
-      currentlyPlaying.pause();
-      currentlyPlaying.currentTime = 0;
+      currentSource.stop();
+      currentSource.disconnect();
     } catch (e) {
+      console.warn('Failed to stop current audio source:', e);
       // Ignore errors
-      console.log(e, 'Error stopping previous audio');
     }
-    currentlyPlaying = null;
+    currentSource = null;
+  }
+  
+  if (globalAudioElement) {
+    try {
+      globalAudioElement.pause();
+      globalAudioElement.currentTime = 0;
+    } catch (e) {
+      console.warn('Failed to stop global audio element:', e);
+      // Ignore errors
+    }
   }
 };
