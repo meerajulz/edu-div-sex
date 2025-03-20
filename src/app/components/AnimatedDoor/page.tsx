@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { playAudio } from '../../utils/audioHandler'; // ✅ Import audio utility
+import { initAudio, playAudio, preloadAudios } from '../../utils/audioHandler';
 import FullAlex from '../FullAlex/FullAlex';
 import WalkingCris from '../WalkingCris/WalkingCris';
 import WalkingDani from '../WalkingDani/WalkingDani';
@@ -35,12 +35,76 @@ const AnimatedDoor = () => {
   // ✅ Flag for tracking if kids disappear animation has started
   const [kidsDisappearStarted, setKidsDisappearStarted] = useState(false);
 
-  const handleDoorClick = async () => {
-    if (!isOpen) {
-      setIsOpen(true);
-      await playAudio('/ui-sound/cabinet-door-open.mp3'); // ✅ Use safe playback
+  // Add a preloading state
+  const [isAudioInitialized, setIsAudioInitialized] = useState(false);
+
+    // Add this effect to preload audio files when possible
+  useEffect(() => {
+    const preloadAllAudio = async () => {
+      if (isAudioInitialized) {
+        // Preload all audio files for the entire sequence
+        const audioFiles = [
+          '/ui-sound/cabinet-door-open.mp3',
+          '/ui-sound/cabinet-door-close.mp3',
+          '/ui-sound/whoosh.mp3',
+          '/audio/alex/intro/1-alex.mp3',
+          '/audio/alex/intro/2-alex.mp3',
+          // Add all other audio files here
+        ];
+        
+        await preloadAudios(audioFiles);
+        console.log('Audio files preloaded');
+      }
+    };
+    
+    preloadAllAudio();
+  }, [isAudioInitialized]);
+
+
+// More robust handleDoorClick function
+const handleDoorClick = async () => {
+  if (!isOpen) {
+    // Set the door to open immediately, don't wait for audio initialization
+    setIsOpen(true);
+    
+    // Then try to initialize audio (but don't block the UI)
+    if (!isAudioInitialized) {
+      try {
+        const initialized = await Promise.race([
+          initAudio(),
+          // Add a short timeout to prevent blocking
+          new Promise(resolve => setTimeout(() => resolve(false), 1000))
+        ]);
+        setIsAudioInitialized(Boolean(initialized));
+       
+        console.log(`Audio initialized: ${initialized}`);
+      } catch (err) {
+        console.warn('Audio initialization error:', err);
+        // Continue anyway
+      }
     }
-  };
+    
+    // Play the door sound (after door is already opening)
+    playAudio('/ui-sound/cabinet-door-open.mp3').catch(err => {
+      console.warn('Door open audio error:', err);
+    });
+    
+    // Add haptic feedback for mobile devices (optional)
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate(50);
+      } catch (e) {
+        console.log('Vibration error:', e);
+        // Ignore vibration errors
+      }
+    }
+  }
+};
+
+useEffect(() => {
+  console.log(`Door state changed: isOpen=${isOpen}`);
+}, [isOpen]);
+
 
   // ✅ Function to close the door with safe audio playback
   const closeDoor = async () => {
