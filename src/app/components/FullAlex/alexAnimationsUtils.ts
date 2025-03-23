@@ -86,8 +86,8 @@ export const audioSequence: AudioItem[] = [
 ];
 
 export const continueAudioSequence: AudioItem[] = [
-  { file: '/audio/alex/continue/1-alex.mp3', duration: 2000 }, // First audio after kids disappear
-  { file: '/audio/alex/continue/2-alex.mp3', duration: 3000 }
+  { file: '/audio/alex/intro/1-alex.mp3', duration: 2000 }, // First audio after kids disappear
+  { file: '/audio/alex/intro/2-alex.mp3', duration: 3000 }
 ];
 
 export const armUpAudioSequence: AudioItem[] = [
