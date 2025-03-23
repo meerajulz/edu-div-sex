@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { initAudio, playAudio, preloadAudios } from '../../utils/audioHandler';
+import { initAudio, playAudio, preloadAudiosWithProgress } from '../../utils/audioHandler';
 import FullAlex from '../FullAlex/FullAlex';
 import WalkingCris from '../WalkingCris/WalkingCris';
 import WalkingDani from '../WalkingDani/WalkingDani';
@@ -39,26 +39,41 @@ const AnimatedDoor = () => {
   const [isAudioInitialized, setIsAudioInitialized] = useState(false);
 
     // Add this effect to preload audio files when possible
-  useEffect(() => {
-    const preloadAllAudio = async () => {
-      if (isAudioInitialized) {
-        // Preload all audio files for the entire sequence
-        const audioFiles = [
-          '/ui-sound/cabinet-door-open.mp3',
-          '/ui-sound/cabinet-door-close.mp3',
-          '/ui-sound/whoosh.mp3',
-          '/audio/alex/intro/1-alex.mp3',
-          '/audio/alex/intro/2-alex.mp3',
-          // Add all other audio files here
-        ];
-        
-        await preloadAudios(audioFiles);
-        console.log('Audio files preloaded');
-      }
-    };
+    useEffect(() => {
+      const preloadAllAudio = async () => {
+        if (isAudioInitialized) {
+          const audioFiles = [
+            '/audio/alex/intro/1-alex.mp3',
+            '/audio/alex/intro/2-alex.mp3',
+            '/audio/alex/intro/3-alex.mp3',
+            '/audio/alex/intro/4-alex.mp3',
+            '/audio/alex/intro/5-alex.mp3',
+            '/audio/alex/intro/6-alex.mp3',
+            '/audio/alex/intro/7-alex.mp3',
+            '/audio/alex/intro/8-alex.mp3',
+            '/audio/alex/intro/9-alex.mp3',
+            '/audio/alex/intro/10-alex.mp3',
+            '/audio/alex/intro/11-alex.mp3',
+            '/audio/cris/intro/1-cris.mp3',
+            '/audio/cris/intro/2-cris.mp3',
+            '/audio/cris/intro/3-cris.mp3',
+            '/audio/dani/hola.mp3',
+            '/audio/dani/dani-2.mp3',
+            '/audio/dani/dani-3.mp3',
+            '/audio/noa/hola.mp3',
+            '/audio/noa/noa-2.mp3',
+            '/audio/noa/noa-3.mp3',
+            '/ui-sound/cabinet-door-open.mp3',
+            '/ui-sound/whoosh.mp3',
+          ];
+          
+          await preloadAudiosWithProgress(audioFiles, () => {});
+          console.log('Audio files preloaded');
+        }
+      };
     
-    preloadAllAudio();
-  }, [isAudioInitialized]);
+      preloadAllAudio();
+    }, [isAudioInitialized]);
 
 
 // More robust handleDoorClick function
