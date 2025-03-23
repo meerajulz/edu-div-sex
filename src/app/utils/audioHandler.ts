@@ -10,7 +10,9 @@ export const initAudio = async (): Promise<boolean> => {
   if (initialized) return true;
 
   try {
+ 
     const AudioContextClass =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       window.AudioContext || (window as any).webkitAudioContext;
 
     if (AudioContextClass) {

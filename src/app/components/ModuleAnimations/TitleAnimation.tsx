@@ -2,7 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { playAudio, preloadAudioFiles } from '../../utils/audioPlayer';
+import { 
+  playAudio, 
+  preloadAudioFiles,
+  initAudio
+} from '../../utils/audioPlayer';
 
 interface TitleAnimationProps {
   activityNumber: number | string;
@@ -20,7 +24,10 @@ const TitleAnimation: React.FC<TitleAnimationProps> = ({
   enableVoice = true
 }) => {
   const [animationComplete, setAnimationComplete] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [titleVisible, setTitleVisible] = useState(false);
+  const [audioPlayed, setAudioPlayed] = useState(false);
   
   // Generate title text based on activity number or use custom title if provided
   const titleText = customTitle || `Actividad ${activityNumber}`;
@@ -28,30 +35,54 @@ const TitleAnimation: React.FC<TitleAnimationProps> = ({
   // Generate audio file path based on activity number
   const titleAudioSrc = `/audio/actividad-${activityNumber}.mp3`;
 
-  // Preload audio file when component mounts
+  // Init and preload audio when component mounts
   useEffect(() => {
     if (enableVoice) {
-      preloadAudioFiles([titleAudioSrc]);
+      const setupAudio = async () => {
+        // Initialize audio system
+        try {
+          await initAudio();
+          await preloadAudioFiles([titleAudioSrc]);
+          console.log('Audio initialization and preloading complete for TitleAnimation');
+        } catch (e) {
+          console.warn('Audio setup error:', e);
+        }
+      };
+      
+      setupAudio();
     }
   }, [enableVoice, titleAudioSrc]);
 
-  // First animation step - show title and play title audio
+  // Animation and audio playback effect
   useEffect(() => {
-    // Short delay before showing the title (once animation reaches center)
+    let audioTimer: NodeJS.Timeout;
+    
+    // After 2 seconds, title should be centered - attempt to play audio
     const titleTimer = setTimeout(() => {
       setTitleVisible(true);
       
       // Play the title audio if voice is enabled
-      if (enableVoice) {
-        playAudio(titleAudioSrc);
+      if (enableVoice && !audioPlayed) {
+        // Try multiple times in case the audio system isn't ready yet
+        const attemptPlay = async () => {
+          console.log('Attempting to play title audio');
+          const success = await playAudio(titleAudioSrc);
+          
+          if (success) {
+            console.log('Title audio played successfully');
+            setAudioPlayed(true);
+          } else {
+            console.warn('Failed to play title audio, will retry');
+            // Retry after a short delay
+            audioTimer = setTimeout(attemptPlay, 500);
+          }
+        };
+        
+        attemptPlay();
       }
-    }, 2000); // After 2 seconds, title should be centered
+    }, 2000);
     
-    return () => clearTimeout(titleTimer);
-  }, [titleText, enableVoice, titleAudioSrc]);
-
-  // Second animation step - complete animation
-  useEffect(() => {
+    // Second animation step - complete animation
     const animationTimer = setTimeout(() => {
       setAnimationComplete(true);
       
@@ -61,8 +92,12 @@ const TitleAnimation: React.FC<TitleAnimationProps> = ({
       }
     }, duration);
     
-    return () => clearTimeout(animationTimer);
-  }, [duration, onAnimationComplete]);
+    return () => {
+      clearTimeout(titleTimer);
+      clearTimeout(animationTimer);
+      if (audioTimer) clearTimeout(audioTimer);
+    };
+  }, [titleAudioSrc, enableVoice, duration, onAnimationComplete, audioPlayed]);
 
   return (
     <>
