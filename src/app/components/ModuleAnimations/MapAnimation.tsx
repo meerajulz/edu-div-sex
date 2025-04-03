@@ -26,7 +26,8 @@ const MapAnimation: React.FC<MapAnimationProps> = ({
 }) => {
   const [animationComplete, setAnimationComplete] = useState(false);
   const [soundPlayed, setSoundPlayed] = useState(false);
-  // eslint-disable-next-line no-unused-vars
+  
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mapVisible, setMapVisible] = useState(false);
 
   // Init and preload audio when component mounts
