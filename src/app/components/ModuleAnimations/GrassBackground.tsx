@@ -1,153 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { playAudio, cleanupAudio } from '../../utils/audioPlayer';
-
-// Bunny component for animations
-interface BunnyProps {
-  isVisible?: boolean;
-  treesAnimationComplete?: boolean;
-  zIndex?: number;
-  initialDelay?: number;
-  className?: string;
-}
-
-const Bunny: React.FC<BunnyProps> = ({
-  isVisible = false,
-  treesAnimationComplete = false,
-  zIndex = 30,
-  initialDelay = 0.2,
-  className = '',
-}) => {
-  // Only show bunny if both component is visible and trees are done animating
-  const shouldShowBunny = isVisible && treesAnimationComplete;
-  
-  // First animation: Bunny hops up and down in front of tree
-  const bunnyFirstAppearance = {
-    hidden: {
-      y: 100,
-      opacity: 0,
-    },
-    visible: {
-      y: [100, 0, 20, 0], // Hop up from below, then small bounce
-      opacity: 1,
-      transition: {
-        type: 'spring',
-        damping: 10,
-        stiffness: 80,
-        delay: initialDelay,
-        duration: 1, // Shorter duration for quicker first animation
-      },
-    },
-    exit: {
-      y: 100,
-      opacity: 0,
-      transition: {
-        duration: 0.3,
-      },
-    },
-  };
-  
-  // Second animation: Bunny appears on left side and moves diagonally
-  const bunnySecondAppearance = {
-    hidden: {
-      x: -100,
-      y: 50,
-      opacity: 0,
-    },
-    visible: {
-      x: [-100, 0], // Move from left side
-      y: [50, 0], // Move diagonally upward
-      opacity: 1,
-      transition: {
-        type: 'spring',
-        damping: 12,
-        stiffness: 70, // Slightly higher stiffness for quicker movement
-        delay: initialDelay + 1, // Start after first animation
-        duration: 1, // Shortened duration
-      },
-    },
-  };
-
-  // Mobile responsive sizes
-  const getBunnySize = () => {
-    return {
-      height: '120px',
-      width: '100px',
-    };
-  };
-
-  const bunnySize = getBunnySize();
-
-  return (
-    <>
-      {shouldShowBunny && (
-        <>
-          {/* First bunny appearance - bottom right, in front of tree */}
-          <motion.div
-            className={`pointer-events-none absolute ${className}`}
-            style={{
-              position: 'absolute',
-              right: '18%', // Position near the tree on the right
-              bottom: '-1%', // Just above the bottom
-              zIndex,
-            }}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={bunnyFirstAppearance}
-          >
-            <div
-              className="relative md:scale-110 lg:scale-125"
-              style={{
-                height: bunnySize.height,
-                width: bunnySize.width,
-              }}
-            >
-              <Image
-                src="/svg/actividad1/bunny.svg"
-                alt="Bunny"
-                fill
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
-          </motion.div>
-
-          {/* Second bunny appearance - left side, diagonal movement */}
-          <motion.div
-            className={`pointer-events-none absolute ${className}`}
-            style={{
-              position: 'absolute',
-              left: '-1%', // Left side of screen
-              bottom: '30%', // Middle-bottom area
-              zIndex,
-            }}
-            initial="hidden"
-            animate="visible"
-            variants={bunnySecondAppearance}
-          >
-            <div
-              className="relative md:scale-110 lg:scale-125"
-              style={{
-                height: bunnySize.height,
-                width: bunnySize.width,
-              }}
-            >
-              <Image
-                src="/svg/actividad1/bunny.svg"
-                alt="Bunny"
-                fill
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
-          </motion.div>
-        </>
-      )}
-    </>
-  );
-};
+import Bunny from './Bunny'; // Assuming Bunny is in its own file
+import Ardilla from './Ardilla'; // Import the Ardilla component
 
 // Tree subcomponent with correct TypeScript types and animation complete callback
 interface TreeProps {
@@ -249,13 +107,17 @@ interface GrassBackgroundProps {
   onEnterComplete?: () => void;
   enableSound?: boolean;
   soundSrc?: string;
+  showArdilla?: boolean;      // Add prop to control ardilla visibility
+  onArdillaComplete?: () => void; // Add callback for ardilla animation completion
 }
 
 const GrassBackground: React.FC<GrassBackgroundProps> = ({
   isVisible = false,
   onEnterComplete,
   enableSound = true,
-  soundSrc = '/audio/birds.mp3'
+  soundSrc = '/audio/birds.mp3',
+  showArdilla = false,       // Set default to false
+  onArdillaComplete,         // Add ardilla callback
 }) => {
   // Use useState with explicit types and safe initial values for SSR
   const [containerDimensions, setContainerDimensions] = useState({ width: 1, height: 1 });
@@ -263,6 +125,7 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   const [soundPlaying, setSoundPlaying] = useState(false);
   const [isGrassAnimationComplete, setIsGrassAnimationComplete] = useState(false);
   const [isTreesAnimationComplete, setIsTreesAnimationComplete] = useState(false);
+  const [isBunnyShown, setIsBunnyShown] = useState(false);
   // Add client-side rendering guard
   const [hasMounted, setHasMounted] = useState(false);
   const aspectRatio = 16 / 9;
@@ -271,6 +134,18 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   useEffect(() => {
     setHasMounted(true);
   }, []);
+
+  // Effect to track when bunny has been shown
+  useEffect(() => {
+    if (isTreesAnimationComplete && isVisible) {
+      // After 3 seconds, the bunny will have been shown
+      const bunnyTimer = setTimeout(() => {
+        setIsBunnyShown(true);
+      }, 3000);
+      
+      return () => clearTimeout(bunnyTimer);
+    }
+  }, [isTreesAnimationComplete, isVisible]);
 
   // Play bird sounds when the component becomes visible
   useEffect(() => {
@@ -409,8 +284,8 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
 
   // Determine tree sizes and positions based on container dimensions
   const getTreeProps = () => {
-    const isMobile = hasMounted && browserDimensions.width < 890;
-    const isTablet = hasMounted && browserDimensions.width >= 891 && browserDimensions.width < 1200;
+    const isMobile = hasMounted && browserDimensions.width < 768;
+    const isTablet = hasMounted && browserDimensions.width >= 768 && browserDimensions.width < 1024;
     
     // Using the specified positioning
     // Distant tree (smaller, on the left)
@@ -439,6 +314,14 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   };
   
   const { distantTree, closeTree } = getTreeProps();
+
+  // Handler for ardilla animation completion
+  const handleArdillaComplete = () => {
+    console.log("Ardilla animation would be completed in GrassBackground");
+    if (onArdillaComplete) {
+      onArdillaComplete();
+    }
+  };
 
   return (
     <div className="fixed inset-0 overflow-hidden">
@@ -511,7 +394,19 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
                 treesAnimationComplete={isTreesAnimationComplete}
                 zIndex={35} // Higher than trees to be in front
                 initialDelay={0.2} // Short delay after trees finish
+                browserWidth={browserDimensions.width} // Pass browser width to Bunny
               />
+              
+              {/* Ardilla (squirrel) animation - runs after bunny has been shown */}
+              {showArdilla && (
+                <Ardilla
+                  isVisible={isVisible}
+                  bunnyShown={isBunnyShown}
+                  zIndex={35} // Same z-index as bunny
+                  initialDelay={1} // Delay after bunny shown state is triggered
+                  browserWidth={browserDimensions.width} // Pass browser width
+                />
+              )}
             </motion.div>
           </div>
           
