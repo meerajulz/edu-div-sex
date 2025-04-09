@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { playAudio, cleanupAudio } from '../../utils/audioPlayer';
@@ -109,6 +109,7 @@ interface GrassBackgroundProps {
   soundSrc?: string;
   showArdilla?: boolean;      // Add prop to control ardilla visibility
   onArdillaComplete?: () => void; // Add callback for ardilla animation completion
+  onBunnyAppeared?: () => void; // Add callback for tracking bunny appearances
 }
 
 const GrassBackground: React.FC<GrassBackgroundProps> = ({
@@ -118,6 +119,7 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   soundSrc = '/audio/birds.mp3',
   showArdilla = false,       // Set default to false
   onArdillaComplete,         // Add ardilla callback
+  onBunnyAppeared,           // Add bunny callback
 }) => {
   // Use useState with explicit types and safe initial values for SSR
   const [containerDimensions, setContainerDimensions] = useState({ width: 1, height: 1 });
@@ -129,6 +131,9 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   // Add client-side rendering guard
   const [hasMounted, setHasMounted] = useState(false);
   const aspectRatio = 16 / 9;
+  
+  // Create a ref to track bunny appearances
+  const bunnyAppearancesRef = useRef(0);
 
   // Set mounted flag after component mounts on client
   useEffect(() => {
@@ -141,11 +146,19 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
       // After 3 seconds, the bunny will have been shown
       const bunnyTimer = setTimeout(() => {
         setIsBunnyShown(true);
+        
+        // Increment bunny appearances and notify parent
+        bunnyAppearancesRef.current += 1;
+        console.log(`Bunny has been shown ${bunnyAppearancesRef.current} times`);
+        
+        if (onBunnyAppeared) {
+          onBunnyAppeared();
+        }
       }, 3000);
       
       return () => clearTimeout(bunnyTimer);
     }
-  }, [isTreesAnimationComplete, isVisible]);
+  }, [isTreesAnimationComplete, isVisible, onBunnyAppeared]);
 
   // Play bird sounds when the component becomes visible
   useEffect(() => {
@@ -277,6 +290,12 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
     }
   };
 
+  // Function to handle Bunny animation completion
+  const handleBunnyAnimationComplete = () => {
+    // This function would be called when the bunny animation completes
+    console.log("Bunny animation completed");
+  };
+
   // Function to handle when tree animations are complete
   const handleTreesAnimationComplete = () => {
     setIsTreesAnimationComplete(true);
@@ -317,7 +336,7 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
 
   // Handler for ardilla animation completion
   const handleArdillaComplete = () => {
-    console.log("Ardilla animation would be completed in GrassBackground");
+    console.log("Ardilla animation completed in GrassBackground");
     if (onArdillaComplete) {
       onArdillaComplete();
     }
@@ -395,18 +414,18 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
                 zIndex={35} // Higher than trees to be in front
                 initialDelay={0.2} // Short delay after trees finish
                 browserWidth={browserDimensions.width} // Pass browser width to Bunny
+               
               />
               
-              {/* Ardilla (squirrel) animation - runs after bunny has been shown */}
-              {showArdilla && (
-                <Ardilla
-                  isVisible={isVisible}
-                  bunnyShown={isBunnyShown}
-                  zIndex={35} // Same z-index as bunny
-                  initialDelay={1} // Delay after bunny shown state is triggered
-                  browserWidth={browserDimensions.width} // Pass browser width
-                />
-              )}
+              {/* Ardilla (squirrel) animation - runs after bunny has been shown and when showArdilla is true */}
+              <Ardilla
+                isVisible={isVisible && showArdilla}
+                bunnyShown={isBunnyShown}
+                zIndex={35} // Same z-index as bunny
+                initialDelay={1} // Delay after bunny shown state is triggered
+                browserWidth={browserDimensions.width} // Pass browser width
+               // onAnimationComplete={handleArdillaComplete} // Add animation complete handler
+              />
             </motion.div>
           </div>
           

@@ -12,6 +12,7 @@ interface ArdillaProps {
   initialDelay?: number;
   className?: string;
   browserWidth?: number;
+  
 }
 
 const Ardilla: React.FC<ArdillaProps> = ({

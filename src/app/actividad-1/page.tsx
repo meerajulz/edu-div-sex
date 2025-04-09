@@ -33,42 +33,25 @@ const GrassBackground = dynamic(
   { ssr: false }
 );
 
-// Import the ardilla component
-const Ardilla = dynamic(
-  () => import('../components/ModuleAnimations/Ardilla'),
-  { ssr: false }
-);
-
-// Import the new Alex animation component
-const SimpleAlex = dynamic(
-  () => import('../components/ModuleAnimations/SimpleAlex'),
-  { ssr: false }
-);
-
 export default function Aventura1Page() {
   // Add hydration-safe flag
   const [isHydrated, setIsHydrated] = useState(false);
   
   // Animation states
-  const [currentStep, setCurrentStep] = useState<
-    'loading' | 'title' | 'map' | 'clouds' | 'transitioning' | 'grass' | 'animals' | 'content'
-  >('loading');
+  const [currentStep, setCurrentStep] = useState<'loading' | 'title' | 'map' | 'clouds' | 'transitioning' | 'grass' | 'content'>('loading');
   
   // Exit animation states
   const [isCloudsExiting, setIsCloudsExiting] = useState(false);
   const [isGrassVisible, setIsGrassVisible] = useState(false);
   
-  // Animal animation states
-  const [isArdillaRunning, setIsArdillaRunning] = useState(false);
-  
-  // Alex animation states
-  const [isAlexVisible, setIsAlexVisible] = useState(false);
-  const [isAlexComplete, setIsAlexComplete] = useState(false);
-  
   // Audio states
   const [userInteractionReceived, setUserInteractionReceived] = useState(false);
   const [needsInteraction, setNeedsInteraction] = useState(false);
   const [audioInitialized, setAudioInitialized] = useState(false);
+  
+  // Add state to track bunny appearances
+  const [bunnyAppearanceCount, setBunnyAppearanceCount] = useState(0);
+  const [showArdilla, setShowArdilla] = useState(false);
   
   // Set hydrated flag after initial render
   useEffect(() => {
@@ -150,6 +133,19 @@ export default function Aventura1Page() {
     }
   }, [needsInteraction, userInteractionReceived, isHydrated]);
   
+  // Handle bunny appearance tracking
+  const handleBunnyAppeared = () => {
+    const newCount = bunnyAppearanceCount + 1;
+    console.log(`Bunny has appeared ${newCount} times`);
+    setBunnyAppearanceCount(newCount);
+    
+    // After second appearance, show the ardilla
+    if (newCount === 2) {
+      console.log("Second bunny appearance detected - showing ardilla next");
+      setShowArdilla(true);
+    }
+  };
+  
   // Animation completion handlers
   const handleTitleComplete = () => {
     console.log("Title animation complete");
@@ -188,32 +184,16 @@ export default function Aventura1Page() {
   
   const handleGrassEnterComplete = () => {
     console.log("Grass enter animation complete");
-    // After grass appears and animation completes, start animal animations
-    setTimeout(() => {
-      setCurrentStep('animals');
-      
-      // Start ardilla running after a delay to give bunny time to appear
-      setTimeout(() => {
-        setIsArdillaRunning(true);
-        
-        // Show Alex after the ardillas are about halfway across the screen
-        // The ardilla animation takes about 5-6 seconds to cross the screen
-        setTimeout(() => {
-          setIsAlexVisible(true);
-        }, 2500); // Show Alex halfway through the ardilla run
-      }, 4000); // Increased delay to match bunny's natural animation timing
-    }, 500);
-  };
-  
-  // Handle when Alex animation completes
-  const handleAlexComplete = () => {
-    console.log("Alex animation complete");
-    setIsAlexComplete(true);
-    
-    // Move to content display after Alex completes his animation
+    // After grass appears and animation completes, we can show the content
     setTimeout(() => {
       setCurrentStep('content');
     }, 800);
+  };
+
+  // Handle ardilla animation completion
+  const handleArdillaComplete = () => {
+    console.log("Ardilla animation complete");
+    // Add any actions you want to happen after the squirrels run across
   };
 
   // Simplified loading state during server-side rendering and early hydration
@@ -289,36 +269,17 @@ export default function Aventura1Page() {
           )}
           
           {/* Grass scene appears WHILE clouds are exiting */}
-          {(isGrassVisible || currentStep === 'transitioning' || 
-             currentStep === 'grass' || currentStep === 'animals' || 
-             currentStep === 'content') && (
+          {(isGrassVisible || currentStep === 'transitioning' || currentStep === 'grass' || currentStep === 'content') && (
             <GrassBackground 
               isVisible={true}
               // Only play bird sounds after clouds are gone
-              enableSound={currentStep !== 'transitioning'}
+              enableSound={currentStep === 'grass' || currentStep === 'content'}
               soundSrc="/audio/birds.mp3"
               onEnterComplete={handleGrassEnterComplete}
-              // Show Ardilla (bunny appears automatically via the isBunnyShown state)
-              showArdilla={currentStep === 'animals' || currentStep === 'content'}
-            />
-          )}
-          
-          {/* Ardilla component */}
-          {(currentStep === 'animals' || currentStep === 'content') && isArdillaRunning && (
-            <Ardilla
-              isVisible={true}
-              bunnyShown={true}
-              zIndex={35}
-              browserWidth={typeof window !== 'undefined' ? window.innerWidth : 1200}
-            />
-          )}
-          
-          {/* Alex appears while ardillas are running */}
-          {isAlexVisible && (
-            <SimpleAlex
-              isVisible={true}
-              ardillaRunning={isArdillaRunning}
-              onAnimationComplete={handleAlexComplete}
+              // Pass the new props for bunny tracking and ardilla animation
+              onBunnyAppeared={handleBunnyAppeared}
+              showArdilla={showArdilla}
+              onArdillaComplete={handleArdillaComplete}
             />
           )}
           
@@ -348,10 +309,9 @@ export default function Aventura1Page() {
           <div>currentStep: {currentStep}</div>
           <div>isCloudsExiting: {isCloudsExiting ? 'true' : 'false'}</div>
           <div>isGrassVisible: {isGrassVisible ? 'true' : 'false'}</div>
-          <div>isArdillaRunning: {isArdillaRunning ? 'true' : 'false'}</div>
-          <div>isAlexVisible: {isAlexVisible ? 'true' : 'false'}</div>
-          <div>isAlexComplete: {isAlexComplete ? 'true' : 'false'}</div>
           <div>isHydrated: {isHydrated ? 'true' : 'false'}</div>
+          <div>bunnyAppearanceCount: {bunnyAppearanceCount}</div>
+          <div>showArdilla: {showArdilla ? 'true' : 'false'}</div>
         </div>
       )}
     </div>
