@@ -49,6 +49,10 @@ export default function Aventura1Page() {
   const [needsInteraction, setNeedsInteraction] = useState(false);
   const [audioInitialized, setAudioInitialized] = useState(false);
   
+  // Add state to track bunny appearances
+  const [bunnyAppearanceCount, setBunnyAppearanceCount] = useState(0);
+  const [showArdilla, setShowArdilla] = useState(false);
+  
   // Set hydrated flag after initial render
   useEffect(() => {
     setIsHydrated(true);
@@ -129,6 +133,19 @@ export default function Aventura1Page() {
     }
   }, [needsInteraction, userInteractionReceived, isHydrated]);
   
+  // Handle bunny appearance tracking
+  const handleBunnyAppeared = () => {
+    const newCount = bunnyAppearanceCount + 1;
+    console.log(`Bunny has appeared ${newCount} times`);
+    setBunnyAppearanceCount(newCount);
+    
+    // After second appearance, show the ardilla
+    if (newCount === 2) {
+      console.log("Second bunny appearance detected - showing ardilla next");
+      setShowArdilla(true);
+    }
+  };
+  
   // Animation completion handlers
   const handleTitleComplete = () => {
     console.log("Title animation complete");
@@ -171,6 +188,12 @@ export default function Aventura1Page() {
     setTimeout(() => {
       setCurrentStep('content');
     }, 800);
+  };
+
+  // Handle ardilla animation completion
+  const handleArdillaComplete = () => {
+    console.log("Ardilla animation complete");
+    // Add any actions you want to happen after the squirrels run across
   };
 
   // Simplified loading state during server-side rendering and early hydration
@@ -253,6 +276,10 @@ export default function Aventura1Page() {
               enableSound={currentStep === 'grass' || currentStep === 'content'}
               soundSrc="/audio/birds.mp3"
               onEnterComplete={handleGrassEnterComplete}
+              // Pass the new props for bunny tracking and ardilla animation
+              onBunnyAppeared={handleBunnyAppeared}
+              showArdilla={showArdilla}
+              onArdillaComplete={handleArdillaComplete}
             />
           )}
           
@@ -283,6 +310,8 @@ export default function Aventura1Page() {
           <div>isCloudsExiting: {isCloudsExiting ? 'true' : 'false'}</div>
           <div>isGrassVisible: {isGrassVisible ? 'true' : 'false'}</div>
           <div>isHydrated: {isHydrated ? 'true' : 'false'}</div>
+          <div>bunnyAppearanceCount: {bunnyAppearanceCount}</div>
+          <div>showArdilla: {showArdilla ? 'true' : 'false'}</div>
         </div>
       )}
     </div>
