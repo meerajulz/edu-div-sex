@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
@@ -12,6 +12,7 @@ interface BunnyProps {
   initialDelay?: number;
   className?: string;
   browserWidth?: number;
+  onAnimationComplete?: () => void;
 }
 
 const Bunny: React.FC<BunnyProps> = ({
@@ -21,48 +22,114 @@ const Bunny: React.FC<BunnyProps> = ({
   initialDelay = 0.2,
   className = '',
   browserWidth = 1200,
+  onAnimationComplete,
 }) => {
   // State to track which position the bunny should be in
   const [bunnyPosition, setBunnyPosition] = useState<'hidden' | 'right' | 'left'>('hidden');
   const shouldShowBunny = isVisible && treesAnimationComplete;
   
+  // Refs to track animation state and prevent duplicate notifications
+  const hasCalledCallbackRef = useRef(false);
+  const animationTimersRef = useRef<NodeJS.Timeout[]>([]);
+  const completedAppearancesRef = useRef(0);
+  const isBunnyFinishedRef = useRef(false);
+  
+  // Clear all timers function for cleanup
+  const clearAllTimers = () => {
+    animationTimersRef.current.forEach(timer => {
+      clearTimeout(timer);
+    });
+    animationTimersRef.current = [];
+  };
+  
   // Effect to handle the bunny position sequence
   useEffect(() => {
-    if (!shouldShowBunny) {
+    // If bunny is not supposed to be shown or has already finished, do nothing
+    if (!shouldShowBunny || isBunnyFinishedRef.current) {
       setBunnyPosition('hidden');
+      clearAllTimers();
       return;
     }
     
-    // Initial appearance on the right
-    const initialTimer = setTimeout(() => {
-      setBunnyPosition('right');
-    }, initialDelay * 1000);
+    // Reset tracking
+    completedAppearancesRef.current = 0;
+    hasCalledCallbackRef.current = false;
     
-    // After a few seconds, disappear and reappear on the left
-    const leftTimer = setTimeout(() => {
-      setBunnyPosition('hidden');
-      
-      // Short delay before appearing on the left
-      setTimeout(() => {
-        setBunnyPosition('left');
+    const runBunnyAnimation = () => {
+      // Stop if we've already completed 3 appearances
+      if (completedAppearancesRef.current >= 3) {
+        console.log("Bunny animation completed 3 times. Stopping.");
+        isBunnyFinishedRef.current = true;
+        setBunnyPosition('hidden');
+        clearAllTimers();
         
-        // After a few more seconds, go back to the right
-        setTimeout(() => {
+        // Call onAnimationComplete if it hasn't been called yet
+        if (onAnimationComplete && !hasCalledCallbackRef.current) {
+          onAnimationComplete();
+          hasCalledCallbackRef.current = true;
+        }
+        return;
+      }
+      
+      // Initial appearance on the right
+      const timer1 = setTimeout(() => {
+        setBunnyPosition('right');
+        console.log("Bunny appears on right");
+        
+        // After a few seconds, disappear and reappear on the left
+        const timer2 = setTimeout(() => {
           setBunnyPosition('hidden');
+          console.log("Bunny hides");
           
-          // Short delay before reappearing on the right
-          setTimeout(() => {
-            setBunnyPosition('right');
+          // Short delay before appearing on the left
+          const timer3 = setTimeout(() => {
+            setBunnyPosition('left');
+            console.log("Bunny appears on left");
+            
+            // After a few more seconds, go back to hidden
+            const timer4 = setTimeout(() => {
+              setBunnyPosition('hidden');
+              console.log("Bunny hides again");
+              
+              // Increment completed appearances
+              completedAppearancesRef.current += 1;
+              
+              // If we've completed 3 appearances, stop
+              if (completedAppearancesRef.current >= 3) {
+                console.log("Bunny animation completed 3 times. Stopping.");
+                isBunnyFinishedRef.current = true;
+                clearAllTimers();
+                
+                // Call onAnimationComplete if it hasn't been called yet
+                if (onAnimationComplete && !hasCalledCallbackRef.current) {
+                  onAnimationComplete();
+                  hasCalledCallbackRef.current = true;
+                }
+                return;
+              }
+              
+              // Continue animation if not completed 3 times
+              runBunnyAnimation();
+            }, 3000);
+            
+            animationTimersRef.current.push(timer4);
           }, 500);
+          
+          animationTimersRef.current.push(timer3);
         }, 3000);
-      }, 500);
-    }, 3000);
-    
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(leftTimer);
+        
+        animationTimersRef.current.push(timer2);
+      }, initialDelay * 1000);
+      
+      animationTimersRef.current.push(timer1);
     };
-  }, [shouldShowBunny, initialDelay]);
+    
+    // Start the first animation cycle
+    runBunnyAnimation();
+    
+    // Cleanup when component unmounts
+    return clearAllTimers;
+  }, [shouldShowBunny, initialDelay, onAnimationComplete]);
   
   // Bunny right side animation (by the tree)
   const bunnyRightVariants = {
@@ -163,6 +230,11 @@ const Bunny: React.FC<BunnyProps> = ({
 
   const bunnySize = getBunnySize();
   const leftPosition = getLeftPosition();
+
+  // If bunny has finished its 3 appearances, render nothing
+  if (isBunnyFinishedRef.current) {
+    return null;
+  }
 
   return (
     <>
