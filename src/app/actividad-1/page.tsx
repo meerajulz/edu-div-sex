@@ -12,7 +12,7 @@ import {
   initAudio,
   cleanupAudio
 } from '../utils/audioPlayer';
-
+import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
 // Import animation components with no SSR to prevent hydration issues
 const TitleAnimation = dynamic(
   () => import('../components/ModuleAnimations/TitleAnimation'),
@@ -270,6 +270,10 @@ useEffect(() => {
     <div className="relative min-h-screen">
       {/* Sky background - remains visible throughout */}
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-blue-300 to-blue-100" />
+
+      <div className="absolute top-0 right-0 z-50 flex">
+        <FloatingMenu />
+      </div>
       
       {/* User interaction prompt for audio */}
       {needsInteraction && !userInteractionReceived && (
