@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { playAudio } from '../../utils/audioPlayer';
-import ArrowButton3D from './ArrowButton3D';
+//import ArrowButton3D from './ArrowButton3D';
 
 interface ActivityLabel {
   id: number;
@@ -47,6 +47,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
   customActivities,
 }) => {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasAnimated, setHasAnimated] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const labelDropSoundsPlayed = useRef<boolean[]>([false, false, false, false]);
@@ -173,7 +174,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
 
   const handleClick = (activity: ActivityLabel) => {
     if (!activity.isActive) return;
-    playAudio('/audio/click-aventura.mp3').catch(console.warn);
+    playAudio('/audio/labels/descubiriendo-mi-cuerpo.mp3').catch(console.warn);
     if (onLabelClick) {
       onLabelClick(activity.id, activity.url);
     } else {
@@ -196,9 +197,9 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
 
   if (!isVisible || !isReady) return null;
 
-  const lastActive = activities
-    .filter(activity => activity.isActive)
-    .sort((a, b) => b.id - a.id)[0];
+  // const lastActive = activities
+  //   .filter(activity => activity.isActive)
+  //   .sort((a, b) => b.id - a.id)[0];
 
   const containerPositionClass = `absolute ${containerPosition.top ? `top-${containerPosition.top}` : ''} ${containerPosition.left ? `left-${containerPosition.left}` : ''} ${containerPosition.transform ? `transform ${containerPosition.transform}` : ''}`;
 
@@ -279,7 +280,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
 
             {/* Render the Arrow near the last active activity */}
            
-            {lastActive && hasAnimated && (
+            {/* {lastActive && hasAnimated && (
               <ArrowButton3D
                 visible={true}
                 x={lastActive.xPosition || 0}
@@ -289,7 +290,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
                 rotateX={lastActive.rotateX}
                 rotateY={lastActive.rotateY}
               />
-            )}
+            )} */}
 
           </div>
         </div>

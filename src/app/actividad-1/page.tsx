@@ -40,11 +40,6 @@ const ActivityLabels = dynamic(
   { ssr: false }
 );
 
-// Import the new ArrowButton component
-// const ArrowButton = dynamic(
-//   () => import('../components/ModuleAnimations/ArrowButton'),
-//   { ssr: false }
-// );
 
 export default function Aventura1Page() {
   // Add hydration-safe flag
@@ -118,7 +113,6 @@ export default function Aventura1Page() {
 useEffect(() => {
   if (isHydrated) {
     console.log("Current step:", currentStep);
-    //console.log("ArrowButton available:", typeof ArrowButton !== 'undefined');
     console.log("ShowArrow state:", showArrow);
   }
 }, [isHydrated, currentStep, showArrow]);

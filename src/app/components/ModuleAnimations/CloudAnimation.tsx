@@ -79,7 +79,7 @@ const CloudAnimation: React.FC<CloudAnimationProps> = ({
     // Left to right clouds (foreground)
     { 
       id: 'cloud0-fg-ltr', 
-      src: '/svg/actividad1/cloud_0.svg',
+      src: '/svg/actividad1/cloud_3.svg',
       initialX: '-20vw', 
       finalX: '40vw', // Stops in viewport
       y: '30vh', 
@@ -119,7 +119,7 @@ const CloudAnimation: React.FC<CloudAnimationProps> = ({
     // Mid-layer clouds (reduced)
     { 
       id: 'cloud1-mid-ltr', 
-      src: '/svg/actividad1/cloud_1.svg',
+      src: '/svg/actividad1/cloud_3.svg',
       initialX: '-15vw', 
       finalX: '55vw', 
       y: '25vh', 
