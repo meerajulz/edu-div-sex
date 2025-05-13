@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion} from 'framer-motion';
 import Image from 'next/image';
 import { playAudio, cleanupAudio } from '../../utils/audioPlayer';
 import Bunny from './Bunny'; // Assuming Bunny is in its own file
@@ -109,7 +109,7 @@ interface GrassBackgroundProps {
   enableSound?: boolean;
   soundSrc?: string;
   showArdilla?: boolean;      // Add prop to control ardilla visibility
-  onArdillaComplete?: () => void; // Add callback for ardilla animation completion
+  // onArdillaComplete?: () => void; // Add callback for ardilla animation completion
   onBunnyAppeared?: () => void; // Add callback for tracking bunny appearances
   onAlexComplete?: () => void; // Add callback for Alex animation completion
 }
@@ -120,7 +120,6 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   enableSound = true,
   soundSrc = '/audio/birds.mp3',
   showArdilla = false,       // Set default to false
-  onArdillaComplete,         // Add ardilla callback
   onBunnyAppeared,           // Add bunny callback
   onAlexComplete,            // Add Alex callback
 }) => {
@@ -177,7 +176,7 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
       alexTimerRef.current = setTimeout(() => {
         console.log("Showing Alex with delay after ardilla");
         setShowAlex(true);
-      }, 2500); // Delay Alex longer than before to avoid overlap
+      }, 1000); // Delay Alex longer than before to avoid overlap
       
       return () => {
         if (alexTimerRef.current) {
@@ -371,13 +370,6 @@ const GrassBackground: React.FC<GrassBackgroundProps> = ({
   
   const { distantTree, closeTree } = getTreeProps();
 
-  // Handler for ardilla animation completion
-  const handleArdillaComplete = () => {
-    console.log("Ardilla animation completed in GrassBackground");
-    if (onArdillaComplete) {
-      onArdillaComplete();
-    }
-  };
 
   return (
     <div className="fixed inset-0 overflow-hidden">

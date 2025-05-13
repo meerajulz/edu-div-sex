@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -33,6 +34,18 @@ const GrassBackground = dynamic(
   { ssr: false }
 );
 
+// Import ActivityLabels component
+const ActivityLabels = dynamic(
+  () => import('../components/ModuleAnimations/ActivityLabels'),
+  { ssr: false }
+);
+
+// Import the new ArrowButton component
+// const ArrowButton = dynamic(
+//   () => import('../components/ModuleAnimations/ArrowButton'),
+//   { ssr: false }
+// );
+
 export default function Aventura1Page() {
   // Add hydration-safe flag
   const [isHydrated, setIsHydrated] = useState(false);
@@ -52,6 +65,18 @@ export default function Aventura1Page() {
   // Add state to track bunny appearances
   const [bunnyAppearanceCount, setBunnyAppearanceCount] = useState(0);
   const [showArdilla, setShowArdilla] = useState(false);
+  
+  // Add state to track when Alex is talking and when to show activity labels
+  const [isAlexTalking, setIsAlexTalking] = useState(false);
+  
+  //ignore this for now with typescript momnent
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showActivityLabels, setShowActivityLabels] = useState(true);
+  
+  // Add state to track the arrow button
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showArrow, setShowArrow] = useState(true);
+  const [activeActivityId, setActiveActivityId] = useState(1); // Current active activity ID
   
   // Set hydrated flag after initial render
   useEffect(() => {
@@ -87,6 +112,18 @@ export default function Aventura1Page() {
     
     checkAudioCompatibility();
   }, [isHydrated]);
+
+
+  // At the beginning of your component
+useEffect(() => {
+  if (isHydrated) {
+    console.log("Current step:", currentStep);
+    //console.log("ArrowButton available:", typeof ArrowButton !== 'undefined');
+    console.log("ShowArrow state:", showArrow);
+  }
+}, [isHydrated, currentStep, showArrow]);
+
+
   
   // Handle user interaction for audio
   const handleUserInteraction = async () => {
@@ -135,16 +172,31 @@ export default function Aventura1Page() {
   
   // Handle bunny appearance tracking
   const handleBunnyAppeared = () => {
-    const newCount = bunnyAppearanceCount + 1;
-    console.log(`Bunny has appeared ${newCount} times`);
-    setBunnyAppearanceCount(newCount);
+    console.log("Bunny has appeared");
+    setBunnyAppearanceCount(1);
     
-    // After second appearance, show the ardilla
-    if (newCount === 2) {
-      console.log("Second bunny appearance detected - showing ardilla next");
-      setShowArdilla(true);
-    }
+    // Show ardilla after the single bunny appearance
+    console.log("Showing ardilla after bunny appearance");
+    setShowArdilla(true);
   };
+  
+  // Handle Alex talking state
+  // const handleAlexStartTalking = () => {
+  //   console.log("Alex has started talking");
+  //   setIsAlexTalking(true);
+    
+  //   // Show activity labels with a slight delay
+  //   setTimeout(() => {
+  //     console.log("Showing activity labels");
+  //     setShowActivityLabels(true);
+      
+  //     // Show arrow after activity labels with a delay
+  //     setTimeout(() => {
+  //       console.log("Showing arrow button");
+  //       setShowArrow(true);
+  //     }, 1500); // Delay arrow appearance after labels
+  //   }, 800); // Slight delay to let Alex start talking first
+  // };
   
   // Animation completion handlers
   const handleTitleComplete = () => {
@@ -190,11 +242,21 @@ export default function Aventura1Page() {
     }, 800);
   };
 
-  // Handle ardilla animation completion
-  const handleArdillaComplete = () => {
-    console.log("Ardilla animation complete");
-    // Add any actions you want to happen after the squirrels run across
+  
+  // Handle Alex animation completion
+  const handleAlexComplete = () => {
+    console.log("Alex animation complete");
+    setIsAlexTalking(false);
+    // No need to hide activity labels - they remain visible
   };
+  
+  // Handle activity label clicks
+  const handleActivityLabelClick = (id: number, url: string) => {
+    console.log(`Clicked on activity ${id} with URL: ${url}`);
+    setActiveActivityId(id); // Update active activity for arrow positioning
+    // Here you could navigate or perform other actions
+  };
+  
 
   // Simplified loading state during server-side rendering and early hydration
   if (!isHydrated || currentStep === 'loading') {
@@ -270,29 +332,34 @@ export default function Aventura1Page() {
           
           {/* Grass scene appears WHILE clouds are exiting */}
           {(isGrassVisible || currentStep === 'transitioning' || currentStep === 'grass' || currentStep === 'content') && (
-            <GrassBackground 
-              isVisible={true}
-              // Only play bird sounds after clouds are gone
-              enableSound={currentStep === 'grass' || currentStep === 'content'}
-              soundSrc="/audio/birds.mp3"
-              onEnterComplete={handleGrassEnterComplete}
-              // Pass the new props for bunny tracking and ardilla animation
-              onBunnyAppeared={handleBunnyAppeared}
-              showArdilla={showArdilla}
-              onArdillaComplete={handleArdillaComplete}
-            />
-          )}
+            <>
+              <GrassBackground 
+                isVisible={true}
+                // Only play bird sounds after clouds are gone
+                enableSound={currentStep === 'grass' || currentStep === 'content'}
+                soundSrc="/audio/birds.mp3"
+                onEnterComplete={handleGrassEnterComplete}
+                // Pass the new props for bunny tracking and ardilla animation
+                onBunnyAppeared={handleBunnyAppeared}
+                showArdilla={showArdilla}
+               // onArdillaComplete={handleArdillaComplete}
+                onAlexComplete={handleAlexComplete}
+              />
+
           
-          {/* Content appears on top of grass scene */}
-          {currentStep === 'content' && (
-            <div className="relative z-40 w-full min-h-screen flex items-center justify-center">
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-xl max-w-4xl">
-                <h2 className="text-2xl font-bold text-blue-600 mb-4">Descubriendo Mi Cuerpo</h2>
-                <p className="text-gray-700">
-                  Aquí irá el contenido principal de la actividad 1.
-                </p>
-              </div>
-            </div>
+              
+              {/* Activity Labels that appear while Alex is talking */}
+              {/* Only show when we're in grass or content step */}
+              {(currentStep === 'grass' || currentStep === 'content') && (
+                <>
+                  <ActivityLabels 
+                    isVisible={showActivityLabels}
+                    onLabelClick={handleActivityLabelClick}
+                  />
+          
+                </>
+              )}
+            </>
           )}
         </>
       )}
@@ -312,6 +379,10 @@ export default function Aventura1Page() {
           <div>isHydrated: {isHydrated ? 'true' : 'false'}</div>
           <div>bunnyAppearanceCount: {bunnyAppearanceCount}</div>
           <div>showArdilla: {showArdilla ? 'true' : 'false'}</div>
+          <div>isAlexTalking: {isAlexTalking ? 'true' : 'false'}</div>
+          <div>showActivityLabels: {showActivityLabels ? 'true' : 'false'}</div>
+          <div>showArrow: {showArrow ? 'true' : 'false'}</div>
+          <div>activeActivityId: {activeActivityId}</div>
         </div>
       )}
     </div>
