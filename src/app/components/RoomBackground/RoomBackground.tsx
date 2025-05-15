@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; // Add framer-motion
 import AnimatedDoor from '../AnimatedDoor/page';
-import WindowBirds from '../WindowBirds/WindowBirds';
-import Backpack from '../Backpack/Backpack';
+import WindowBirds from '../WindowBirdsOLD/WindowBirds';
+import Backpack from '../BackpackOLD/Backpack';
 import Table from '../Table/Table';
 
 interface BackgroundProps {
