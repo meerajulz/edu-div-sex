@@ -19,6 +19,8 @@ const Dashboard: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [audioPreloadProgress, setAudioPreloadProgress] = useState(0);
+
+
   
   // For development only
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');

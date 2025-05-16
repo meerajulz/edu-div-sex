@@ -46,7 +46,7 @@ const FloatingMenu = () => {
 			id: "home",
 			icon1: "/svg/menu/home1.svg",
 			icon2: "/svg/menu/home2.svg",
-			href: "#",
+			href: "/home",
 			sound: "/ui-sound/click.mp3",
 		},
 		{

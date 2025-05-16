@@ -49,6 +49,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   debug = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
@@ -185,7 +186,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   const doorPromptStyle = {
     position: 'absolute' as const,
     left: `${POSITIONS.door.left + 2}%`,
-    top: `${POSITIONS.door.top - 5}%`,
+    top: `${(POSITIONS.door.top ?? 0) - 5}%`,
     width: '150px',
     transform: 'translateX(-25%)',
     zIndex: 25,

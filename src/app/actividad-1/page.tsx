@@ -1,281 +1,154 @@
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import React, { useEffect, useRef, useState } from 'react';
+import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
 import { 
   markUserInteraction, 
   needsInteractionForAudio,
-  isIOS,
-  isIPad,
-  isSafari,
   initAudio,
   cleanupAudio
 } from '../utils/audioPlayer';
-import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
-// Import animation components with no SSR to prevent hydration issues
-const TitleAnimation = dynamic(
-  () => import('../components/ModuleAnimations/TitleAnimation'),
-  { ssr: false }
-);
+import dynamic from 'next/dynamic';
+import { motion } from 'framer-motion';
 
-const MapAnimation = dynamic(
-  () => import('../components/ModuleAnimations/MapAnimation'),
-  { ssr: false }
-);
-
-const CloudAnimation = dynamic(
-  () => import('../components/ModuleAnimations/CloudAnimation'),
-  { ssr: false }
-);
-
-const GrassBackground = dynamic(
-  () => import('../components/ModuleAnimations/GrassBackground'),
-  { ssr: false }
-);
-
-// Import ActivityLabels component
-const ActivityLabels = dynamic(
-  () => import('../components/ModuleAnimations/ActivityLabels'),
-  { ssr: false }
-);
-
+const ActivityLabels = dynamic(() => import('../components/ModuleAnimations/ActivityLabels'), { ssr: false });
+const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
+const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAlex'), { ssr: false });
+const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
 
 export default function Aventura1Page() {
-  // Add hydration-safe flag
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   const [isHydrated, setIsHydrated] = useState(false);
-  
-  // Animation states
-  const [currentStep, setCurrentStep] = useState<'loading' | 'title' | 'map' | 'clouds' | 'transitioning' | 'grass' | 'content'>('loading');
-  
-  // Exit animation states
-  const [isCloudsExiting, setIsCloudsExiting] = useState(false);
-  const [isGrassVisible, setIsGrassVisible] = useState(false);
-  
-  // Audio states
-  const [userInteractionReceived, setUserInteractionReceived] = useState(false);
-  const [needsInteraction, setNeedsInteraction] = useState(false);
-  const [audioInitialized, setAudioInitialized] = useState(false);
-  
-  // Add state to track bunny appearances
-  const [bunnyAppearanceCount, setBunnyAppearanceCount] = useState(0);
+  const [videoEnded, setVideoEnded] = useState(false);
   const [showArdilla, setShowArdilla] = useState(false);
-  
-  // Add state to track when Alex is talking and when to show activity labels
-  const [isAlexTalking, setIsAlexTalking] = useState(false);
-  
-  //ignore this for now with typescript momnent
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showActivityLabels, setShowActivityLabels] = useState(true);
-  
-  // Add state to track the arrow button
+  const [showAlex, setShowAlex] = useState(false);
+  const [showActivityLabels, setShowActivityLabels] = useState(false);
+  const [showSun, setShowSun] = useState(false);
+  const [needsInteraction, setNeedsInteraction] = useState(false);
+  const [userInteractionReceived, setUserInteractionReceived] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showArrow, setShowArrow] = useState(true);
-  const [activeActivityId, setActiveActivityId] = useState(1); // Current active activity ID
-  
-  // Set hydrated flag after initial render
+  const [audioInitialized, setAudioInitialized] = useState(false);
+
+
+  const [canPlayVideo, setCanPlayVideo] = useState(false);
+
+
+//RESPONSIVENEES
+
+const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
+const aspectRatio = 16 / 9;
+
+useEffect(() => {
+  const updateDimensions = () => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    setBrowserDimensions({ width: vw, height: vh });
+
+    let width = vw;
+    let height = width / aspectRatio;
+
+    if (height < vh) {
+      height = vh;
+      width = height * aspectRatio;
+    }
+
+    setContainerDimensions({ width, height });
+  };
+
+  updateDimensions();
+  window.addEventListener('resize', updateDimensions);
+  return () => window.removeEventListener('resize', updateDimensions);
+}, []);
+
+const containerStyle = {
+  width: `${containerDimensions.width}px`,
+  height: `${containerDimensions.height}px`,
+  left: `${(browserDimensions.width - containerDimensions.width) / 2}px`,
+  top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
+};
+
+//END RESPONSIVENES  
+
   useEffect(() => {
     setIsHydrated(true);
-    // Only after hydration is complete, move to the title step
-    setCurrentStep('title');
-  }, []);
-  
-  // Check browser compatibility and initialize audio
-  useEffect(() => {
-    // Skip during server-side rendering
-    if (!isHydrated) return;
-    
-    const checkAudioCompatibility = async () => {
-      console.log('Checking audio compatibility...');
-      console.log(`Browser detection: iOS: ${isIOS()}, iPad: ${isIPad()}, Safari: ${isSafari()}`);
-      
-      // Determine if we need user interaction
-      const needsInteract = needsInteractionForAudio();
-      setNeedsInteraction(needsInteract);
-      
-      if (!needsInteract) {
-        // Try to initialize audio automatically if no interaction is needed
+
+    const checkAudio = async () => {
+      const needs = needsInteractionForAudio();
+      setNeedsInteraction(needs);
+
+      if (!needs) {
         try {
-          const initialized = await initAudio();
-          setAudioInitialized(initialized);
-          console.log(`Auto audio initialization: ${initialized}`);
+          const success = await initAudio();
+          setAudioInitialized(success);
         } catch (e) {
-          console.warn('Auto audio initialization failed:', e);
+          console.warn('Audio auto init failed:', e);
         }
       }
     };
-    
-    checkAudioCompatibility();
-  }, [isHydrated]);
 
+    checkAudio();
+  }, []);
 
-  // At the beginning of your component
-useEffect(() => {
-  if (isHydrated) {
-    console.log("Current step:", currentStep);
-    console.log("ShowArrow state:", showArrow);
-  }
-}, [isHydrated, currentStep, showArrow]);
-
-
-  
-  // Handle user interaction for audio
-  const handleUserInteraction = async () => {
-    console.log("User interaction received");
-    
-    // Mark that we've received interaction
-    markUserInteraction();
-    setUserInteractionReceived(true);
-    setNeedsInteraction(false);
-    
-    // Try to initialize audio after user interaction
-    try {
-      const initialized = await initAudio();
-      setAudioInitialized(initialized);
-      console.log(`Audio initialized after interaction: ${initialized}`);
-    } catch (e) {
-      console.warn('Audio initialization failed after interaction:', e);
-    }
-  };
-  
-  // Set up document-wide event listeners for interaction
   useEffect(() => {
-    // Skip during server-side rendering
-    if (!isHydrated) return;
-    
-    // Only set up listeners if we need interaction and haven't received it yet
-    if (needsInteraction && !userInteractionReceived) {
-      console.log("Setting up document interaction listeners");
-      
-      const documentInteractionHandler = () => {
-        handleUserInteraction();
-        // Clean up listeners after first interaction
-        document.removeEventListener('click', documentInteractionHandler);
-        document.removeEventListener('touchstart', documentInteractionHandler);
-      };
-      
-      document.addEventListener('click', documentInteractionHandler);
-      document.addEventListener('touchstart', documentInteractionHandler);
-      
-      return () => {
-        document.removeEventListener('click', documentInteractionHandler);
-        document.removeEventListener('touchstart', documentInteractionHandler);
-      };
-    }
-  }, [needsInteraction, userInteractionReceived, isHydrated]);
-  
-  // Handle bunny appearance tracking
-  const handleBunnyAppeared = () => {
-    console.log("Bunny has appeared");
-    setBunnyAppearanceCount(1);
-    
-    // Show ardilla after the single bunny appearance
-    console.log("Showing ardilla after bunny appearance");
-    setShowArdilla(true);
-  };
-  
-  // Handle Alex talking state
-  // const handleAlexStartTalking = () => {
-  //   console.log("Alex has started talking");
-  //   setIsAlexTalking(true);
-    
-  //   // Show activity labels with a slight delay
-  //   setTimeout(() => {
-  //     console.log("Showing activity labels");
-  //     setShowActivityLabels(true);
-      
-  //     // Show arrow after activity labels with a delay
-  //     setTimeout(() => {
-  //       console.log("Showing arrow button");
-  //       setShowArrow(true);
-  //     }, 1500); // Delay arrow appearance after labels
-  //   }, 800); // Slight delay to let Alex start talking first
-  // };
-  
-  // Animation completion handlers
-  const handleTitleComplete = () => {
-    console.log("Title animation complete");
-    setCurrentStep('map');
-  };
-  
-  const handleMapComplete = () => {
-    console.log("Map animation complete");
-    setCurrentStep('clouds');
-  };
-  
-  const handleCloudsComplete = () => {
-    console.log("Clouds animation complete - starting exit animation");
-    setIsGrassVisible(true);
+    if (!isHydrated || !needsInteraction || userInteractionReceived) return;
 
-    // Small delay before clouds exit to let grass start appearing
-    setTimeout(() => {
-      setIsCloudsExiting(true);
-    }, 300);
-  };
-  
-  const handleCloudsExitComplete = () => {
-    console.log("Clouds exit animation complete");
-    // Clean up any audio from clouds scene
+    const onClick = () => {
+      markUserInteraction();
+      setUserInteractionReceived(true);
+      setNeedsInteraction(false);
+
+      initAudio()
+        .then(setAudioInitialized)
+        .catch(err => console.warn('Audio init failed after interaction', err));
+
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('touchstart', onClick);
+    };
+
+    document.addEventListener('click', onClick);
+    document.addEventListener('touchstart', onClick);
+
+    return () => {
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('touchstart', onClick);
+    };
+  }, [isHydrated, needsInteraction, userInteractionReceived]);
+
+  const handleVideoEnd = () => {
     cleanupAudio();
-    // Change to transitioning step to set up grass scene
-    setCurrentStep('transitioning');
-    // Reset for future animations if needed
-    setIsCloudsExiting(false);
-    
-    // After a short delay to ensure smooth transition
+    setVideoEnded(true);
+
     setTimeout(() => {
-      setCurrentStep('grass');
+      setShowArdilla(true);
     }, 100);
-  };
-  
-  const handleGrassEnterComplete = () => {
-    console.log("Grass enter animation complete");
-    // After grass appears and animation completes, we can show the content
+
     setTimeout(() => {
-      setCurrentStep('content');
-    }, 800);
+      setShowAlex(true);
+    }, 1800);
+
+    setTimeout(() => {
+      setShowActivityLabels(true);
+      setShowSun(true);
+    }, 0);
   };
 
-  
-  // Handle Alex animation completion
-  const handleAlexComplete = () => {
-    console.log("Alex animation complete");
-    setIsAlexTalking(false);
-    // No need to hide activity labels - they remain visible
-  };
-  
-  // Handle activity label clicks
-  const handleActivityLabelClick = (id: number, url: string) => {
-    console.log(`Clicked on activity ${id} with URL: ${url}`);
-    setActiveActivityId(id); // Update active activity for arrow positioning
-    // Here you could navigate or perform other actions
-  };
-  
 
-  // Simplified loading state during server-side rendering and early hydration
-  if (!isHydrated || currentStep === 'loading') {
-    return (
-      <div className="relative min-h-screen">
-        <div className="fixed inset-0 z-0 bg-gradient-to-b from-blue-300 to-blue-100" />
-        <div className="fixed inset-0 z-10 flex items-center justify-center">
-          <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-xl shadow-lg">
-            <h1 className="text-2xl font-bold text-blue-600">Cargando aventura...</h1>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const characterSlideVariants = {
+    hidden: { x: '-100%', opacity: 0 },
+    visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 100, damping: 20 } }
+  };
 
   return (
-    <div className="relative min-h-screen">
-      {/* Sky background - remains visible throughout */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-blue-300 to-blue-100" />
+    <div className="relative min-h-screen overflow-hidden">
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-blue-300 to-blue-100" />
 
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
-      
-      {/* User interaction prompt for audio */}
+
+
       {needsInteraction && !userInteractionReceived && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-xl shadow-xl max-w-xs text-center">
@@ -283,104 +156,84 @@ useEffect(() => {
             <p className="mb-4">Para escuchar los sonidos, por favor toca en cualquier lugar de la pantalla.</p>
             <button 
               className="bg-orange-500 text-white font-bold py-3 px-6 rounded-full"
-              onClick={handleUserInteraction}
+              onClick={() => {
+                markUserInteraction();
+                setUserInteractionReceived(true);
+                initAudio().then(setAudioInitialized);
+                setCanPlayVideo(true); // ✅ unlock video playback
+              }}
             >
               Comenzar
             </button>
           </div>
         </div>
       )}
-      
-      {/* 
-        Show animations and content if either:
-        1. We don't need interaction for this browser
-        2. We needed interaction and received it
-      */}
-      {(!needsInteraction || userInteractionReceived) && (
-        <>
-          {/* Render only the current animation step */}
-          {currentStep === 'title' && (
-            <TitleAnimation 
-              activityNumber={1}
-              onAnimationComplete={handleTitleComplete} 
-              enableVoice={true}
-            />
-          )}
-          
-          {currentStep === 'map' && (
-            <MapAnimation 
-              onAnimationComplete={handleMapComplete}
-              enableSound={true}
-              mapSrc="/svg/actividad1/mapa.svg"
-              soundSrc="/audio/map-rotation.mp3"
-              duration={4000}
-            />
-          )}
-          
-          {(currentStep === 'clouds' || (currentStep === 'transitioning' && isCloudsExiting)) && (
-            <CloudAnimation 
-              onAnimationComplete={handleCloudsComplete}
-              onExitComplete={handleCloudsExitComplete}
-              enableSound={true}
-              soundSrc="/audio/wind-ambient.mp3"
-              duration={10000}
-              isExiting={isCloudsExiting}
-            />
-          )}
-          
-          {/* Grass scene appears WHILE clouds are exiting */}
-          {(isGrassVisible || currentStep === 'transitioning' || currentStep === 'grass' || currentStep === 'content') && (
-            <>
-              <GrassBackground 
-                isVisible={true}
-                // Only play bird sounds after clouds are gone
-                enableSound={currentStep === 'grass' || currentStep === 'content'}
-                soundSrc="/audio/birds.mp3"
-                onEnterComplete={handleGrassEnterComplete}
-                // Pass the new props for bunny tracking and ardilla animation
-                onBunnyAppeared={handleBunnyAppeared}
-                showArdilla={showArdilla}
-               // onArdillaComplete={handleArdillaComplete}
-                onAlexComplete={handleAlexComplete}
-              />
 
-          
-              
-              {/* Activity Labels that appear while Alex is talking */}
-              {/* Only show when we're in grass or content step */}
-              {(currentStep === 'grass' || currentStep === 'content') && (
-                <>
-                  <ActivityLabels 
-                    isVisible={showActivityLabels}
-                    onLabelClick={handleActivityLabelClick}
-                  />
-          
-                </>
-              )}
-            </>
-          )}
-        </>
+    <div className="absolute" style={containerStyle}>
+      {!videoEnded && (!needsInteraction || canPlayVideo) ? (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover z-10"
+          src="/video/INTRO_ACTIVIDAD-1.mp4"
+          autoPlay
+          playsInline
+          muted={needsInteraction && !userInteractionReceived}
+          onEnded={handleVideoEnd}
+        />
+      ) : (
+        <img
+          src="/image/INTRO_MODULO-1.jpg"
+          alt="Background"
+          className="absolute inset-0 w-full h-full object-cover z-10"
+        />
       )}
-      
-      {/* Debug info overlay - visible only in development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-0 left-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[1000]">
-          <div>iOS: {isIOS() ? 'true' : 'false'}</div>
-          <div>iPad: {isIPad() ? 'true' : 'false'}</div>
-          <div>Safari: {isSafari() ? 'true' : 'false'}</div>
-          <div>needsInteraction: {needsInteraction ? 'true' : 'false'}</div>
-          <div>userInteractionReceived: {userInteractionReceived ? 'true' : 'false'}</div>
-          <div>audioInitialized: {audioInitialized ? 'true' : 'false'}</div>
-          <div>currentStep: {currentStep}</div>
-          <div>isCloudsExiting: {isCloudsExiting ? 'true' : 'false'}</div>
-          <div>isGrassVisible: {isGrassVisible ? 'true' : 'false'}</div>
-          <div>isHydrated: {isHydrated ? 'true' : 'false'}</div>
-          <div>bunnyAppearanceCount: {bunnyAppearanceCount}</div>
-          <div>showArdilla: {showArdilla ? 'true' : 'false'}</div>
-          <div>isAlexTalking: {isAlexTalking ? 'true' : 'false'}</div>
-          <div>showActivityLabels: {showActivityLabels ? 'true' : 'false'}</div>
-          <div>showArrow: {showArrow ? 'true' : 'false'}</div>
-          <div>activeActivityId: {activeActivityId}</div>
+      </div>
+
+      {videoEnded && (
+        <div className="">
+
+          {showArdilla && (
+            <div>
+            
+            <motion.div
+              className="absolute bottom-6 left-6 z-40 w-[260px] h-[260px]"
+              initial="hidden"
+              animate="visible"
+              variants={characterSlideVariants}
+            >
+              <Ardilla isVisible={true} bunnyShown={true} zIndex={50} browserWidth={1200} />
+            </motion.div>
+              
+            </div>
+
+          )}
+
+          {showAlex && (
+            <motion.div
+              className="absolute bottom-[-30%] left-[-40%] z-40 w-[50%] h-full pointer-events-none"
+              animate="visible"
+              variants={characterSlideVariants}
+            >
+              <SimpleAlex isVisible={true} />
+            </motion.div>
+          )}
+          {showActivityLabels && (
+            <div className="w-full px-6 pb-6 z-30 flex justify-center">
+              <ActivityLabels 
+                isVisible={true}
+                onLabelClick={(id, url) => {
+                  console.log(`Clicked on activity ${id}: ${url}`);
+                }}
+              />
+            </div>
+          )}
+
+          {showSun && (
+            <div className="absolute top-0 left-0 z-30 w-full h-[300px]">
+              <SunGif />
+            </div>
+          )}
+
         </div>
       )}
     </div>
