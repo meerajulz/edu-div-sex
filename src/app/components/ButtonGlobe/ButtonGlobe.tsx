@@ -19,7 +19,7 @@ interface ButtonGlobeProps {
 
 const ButtonGlobe: React.FC<ButtonGlobeProps> = ({
   onButtonClick,
-  position = { top: '50%', left: '50%' },
+  position = { top: '10%', left: '40%' },
   isVisible = true,
   className = ""
 }) => {
@@ -50,16 +50,16 @@ const ButtonGlobe: React.FC<ButtonGlobeProps> = ({
   const positionStyles = {
     position: 'absolute' as const,
     ...position,
-    transform: position.top === '50%' && position.left === '50%'
-      ? 'translate(-50%, -50%)'
-      : undefined,
+    // transform: position.top === '10%' && position.left === '30%'
+    //   ? 'translate(-10%, -30%)'
+    //   : undefined,
   };
 
   if (!isVisible) return null;
 
   return (
     <motion.div
-      className={`z-40 ${className}`}
+      className={`z-50 ${className}`}
       style={positionStyles}
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -71,16 +71,17 @@ const ButtonGlobe: React.FC<ButtonGlobeProps> = ({
           alt="Globe Background"
           width={300}
           height={300}
-          className="object-contain"
+          className="object-contain w-full h-full"
           priority
         />
 
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <motion.div
-            animate={isAnimating ? {
-              scale: [1, 1.3, 1],
-              rotate: [0, -360],
-            } : {}}
+            key={isAnimating ? 'animating' : 'idle'}
+            animate={{
+              scale: isAnimating ? [1, 1.3, 1] : 1,
+              rotate: isAnimating ? [0, -360] : 0
+            }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton
