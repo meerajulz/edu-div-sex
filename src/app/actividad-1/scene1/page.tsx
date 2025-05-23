@@ -7,6 +7,9 @@ import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import ButtonGlobe from '../../components/ButtonGlobe/ButtonGlobe';
+import Cris from '../../components/Cris/Cris';
+import JuegoUno from './JuegoUno/JuegoUno';
+
 import Image from 'next/image';
 
 export default function Scene1Page() {
@@ -15,6 +18,8 @@ export default function Scene1Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [showCris, setShowCris] = useState(true);
+  const [showJuegoUno, setShowJuegoUno] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -92,6 +97,9 @@ export default function Scene1Page() {
 
   const handleGlobeButtonClick = () => {
     console.log('Globe button clicked - ready for next page navigation');
+    setShowJuegoUno(true);
+    // setShowCris(false);
+   
   };
 
   const pageVariants = {
@@ -196,11 +204,17 @@ export default function Scene1Page() {
                 alt="Escena 1 Background"
                 className="absolute inset-0 w-full h-full object-cover z-10"
               />
-              <ButtonGlobe
-                onButtonClick={handleGlobeButtonClick}
-                position={{ top: '10%', left: '30%' }}
-                isVisible={true}
-              />
+              <div className="absolute  inset-0">
+                <ButtonGlobe
+                  onButtonClick={handleGlobeButtonClick}
+                  isVisible={true}
+                />
+                <Cris isVisible={showCris} />
+              </div>
+              <JuegoUno 
+                onClose={() => {
+                setShowJuegoUno(false)}}
+                isVisible={showJuegoUno} />
             </>
           )}
         </div>
