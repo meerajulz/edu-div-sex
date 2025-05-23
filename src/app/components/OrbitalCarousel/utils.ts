@@ -75,7 +75,7 @@ export const getDefaultItems = () => [
     label: "Actividad 2",
     url: "/actividad-2",
     svgPath: "/svg/menu/orbital/activity2-intimidad.svg",
-    isUnlocked: true
+    isUnlocked: false
   },
   {
     id: 3,
