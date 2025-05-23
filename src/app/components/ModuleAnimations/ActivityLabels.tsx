@@ -59,7 +59,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       title: "Descubriendo Mi Cuerpo",
       activeImage: "/svg/menu-actividad/cartell-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
-      url: "/actividad-1/scene/",
+      url: "/actividad-1/scene1/",
       soundUrl: "/audio/whoosh.mp3",
       xPosition: -60,
       yPosition: 280,
