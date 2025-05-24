@@ -1,55 +1,44 @@
 'use client';
 
-import React, { useState } from 'react';
-import { DndContext, useDroppable, useDraggable } from '@dnd-kit/core';
+import React, { useEffect, useState } from 'react';
+import { 
+  DndContext,
+  TouchSensor,
+  MouseSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  useDraggable,
+  PointerSensor
+ } from '@dnd-kit/core';
 import Image from 'next/image';
 import { bodyParts } from './config';
+import DraggablePart from './DraggablePart';
+import DropZone from './DropZone';
+import CongratsOverlay from './CongratsOverlay';
 
 interface JuegoUnoProps {
   isVisible: boolean;
   onClose: () => void;
 }
 
-const DropZone = ({ id, position, isMatched }: any) => {
-  const { setNodeRef } = useDroppable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      className={`absolute w-16 h-16 rounded-full transition-all duration-300 ${
-        isMatched ? 'bg-green-400/50 border-2 border-white' : 'bg-white/20 border border-white/30'
-      }`}
-      style={{ top: position.top, left: position.left }}
-    />
-  );
-};
-
-const DraggablePart = ({ id, image }: any) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{
-        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-      }}
-      className="cursor-grab"
-    >
-      <Image
-        src={image}
-        alt={id}
-        width={60}
-        height={60}
-        className="object-contain"
-        style={{ height: 'auto' }}
-      />
-    </div>
-  );
-};
-
 const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
   const [matchedParts, setMatchedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);
+
+  const mouseSensor = useSensor(MouseSensor);
+  const touchSensor = useSensor(TouchSensor);
+  const sensors = useSensors(mouseSensor, touchSensor);
+  const pointerSensor = useSensor(PointerSensor);
+  const [showCongrats, setShowCongrats] = useState(false);
+
+  // Detect when all parts are matched
+  useEffect(() => {
+    if (matchedParts.length === bodyParts.length) {
+      setShowCongrats(true);
+    }
+  }, [matchedParts]);
+
 
   const handleDragEnd = (event: any) => {
     const { over, active } = event;
@@ -58,7 +47,7 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
     if (over.id === active.id) {
       setMatchedParts((prev) => [...prev, active.id]);
       setFeedback('ok');
-      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+     // new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
     } else {
       setFeedback('wrong');
       new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
@@ -76,8 +65,8 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
   if (!isVisible) return null;
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
         <div className="relative w-[90%] h-[90%] bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
           {/* Close Button */}
@@ -111,7 +100,7 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
           <div className="absolute left-0 top-0 z-10 h-full w-24 flex flex-col items-center justify-center space-y-4 bg-black/10 p-2">
             {bodyParts.map((part) =>
               !matchedParts.includes(part.id) && (
-                <DraggablePart key={part.id} id={part.id} image={part.image} />
+                <DraggablePart key={part.id} id={part.id} image={part.image} sound={part.sound}/>
               )
             )}
           </div>
@@ -138,9 +127,14 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
             </div>
           )}
         </div>
+     {showCongrats && (
+  <CongratsOverlay onComplete={() => setShowCongrats(false)} />
+)}
       </div>
     </DndContext>
   );
 };
 
 export default JuegoUno;
+
+
