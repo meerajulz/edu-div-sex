@@ -64,6 +64,7 @@ const Cris: React.FC<CrisProps> = ({
         }
         alt="Cris"
         fill
+        unoptimized
         className="object-contain"
         priority
       />
