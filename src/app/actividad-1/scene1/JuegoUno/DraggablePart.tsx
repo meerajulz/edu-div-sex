@@ -1,6 +1,6 @@
 // 'use client';
 import Image from 'next/image';
-import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
 
 interface DraggablePartProps {
   id: string;

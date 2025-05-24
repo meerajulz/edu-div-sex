@@ -8,7 +8,7 @@ interface DropZoneProps {
   isMatched: boolean;
 }
 
-const DropZone = ({ id, position, isMatched }: any) => {
+const DropZone: React.FC<DropZoneProps> = ({ id, position, isMatched }) => {
   const { setNodeRef } = useDroppable({ id });
   return (
     <div

@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   DndContext,
   TouchSensor,
   MouseSensor,
   useSensor,
   useSensors,
-  useDroppable,
-  useDraggable,
-  PointerSensor
+  DragEndEvent
  } from '@dnd-kit/core';
 import Image from 'next/image';
 import { boyBodyParts, girlBodyParts } from './config';
@@ -23,13 +22,16 @@ interface JuegoUnoProps {
 }
 
 const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
+
+  const router = useRouter();
+
   const [matchedParts, setMatchedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);
 
   const mouseSensor = useSensor(MouseSensor);
   const touchSensor = useSensor(TouchSensor);
   const sensors = useSensors(mouseSensor, touchSensor);
-  const pointerSensor = useSensor(PointerSensor);
+
   const [showCongrats, setShowCongrats] = useState(false);
 
   //GENDER GAME
@@ -55,10 +57,11 @@ useEffect(() => {
       } else {
         // Optionally, handle game complete
         onClose(); // or a new overlay
+          router.push('/actividad-1/scene2');
       }
     }, 2500);
   }
-}, [matchedParts]);
+}, [matchedParts, gender, onClose, router, bodyParts.length]);
 
 useEffect(() => {
   if (isVisible) {
@@ -70,21 +73,38 @@ useEffect(() => {
 }, [isVisible]);
 
 
-  const handleDragEnd = (event: any) => {
-    const { over, active } = event;
-    if (!over) return;
+  // const handleDragEnd = (event: any) => {
+  //   const { over, active } = event;
+  //   if (!over) return;
 
-    if (over.id === active.id) {
-      setMatchedParts((prev) => [...prev, active.id]);
-      setFeedback('ok');
-      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
-    } else {
-      setFeedback('wrong');
-      new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
-    }
+  //   if (over.id === active.id) {
+  //     setMatchedParts((prev) => [...prev, active.id]);
+  //     setFeedback('ok');
+  //     new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+  //   } else {
+  //     setFeedback('wrong');
+  //     new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
+  //   }
 
-    setTimeout(() => setFeedback(null), 1000);
-  };
+  //   setTimeout(() => setFeedback(null), 1000);
+  // };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+  const { over, active } = event;
+  if (!over) return;
+
+  if (over.id === active.id) {
+    setMatchedParts((prev) => [...prev, String(active.id)]);
+    setFeedback('ok');
+    new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+  } else {
+    setFeedback('wrong');
+    new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
+  }
+
+  setTimeout(() => setFeedback(null), 1000);
+};
+
 
   const handleClose = () => {
     setMatchedParts([]);
