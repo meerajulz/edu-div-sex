@@ -1,4 +1,4 @@
-export const bodyParts = [
+export const sharedParts = [
   {
     id: 'BRAZO',
     label: 'Brazo',
@@ -41,13 +41,13 @@ export const bodyParts = [
         sound: '/audio/actividad-1/escena_1/elements/Pecho.mp3',
     position: { top: '44%', left: '45%' }
   },
-  {
-    id: 'PENIS',
-    label: 'penis',
-    image: '/image/escena_1/juego/PENIS.png',
-        sound: '/audio/actividad-1/escena_1/elements/Pene.mp3',
-    position: { top: '64%', left: '45%' }
-  },
+  // {
+  //   id: 'PENIS',
+  //   label: 'penis',
+  //   image: '/image/escena_1/juego/PENIS.png',
+  //       sound: '/audio/actividad-1/escena_1/elements/Pene.mp3',
+  //   position: { top: '64%', left: '45%' }
+  // },
     {
     id: 'PIE',
     label: 'pie',
@@ -63,3 +63,28 @@ export const bodyParts = [
     position: { top: '70%', left: '59%' }
   }
 ];
+
+export const boyBodyParts = [
+    ...sharedParts,
+  // All common parts...
+  {
+    id: 'PENIS',
+    label: 'Pene',
+    image: '/image/escena_1/juego/PENIS.png',
+    sound: '/audio/actividad-1/escena_1/elements/Pene.mp3',
+    position: { top: '64%', left: '45%' }
+  },
+];
+
+export const girlBodyParts = [
+    ...sharedParts,
+  // All common parts...
+  {
+    id: 'VULVA',
+    label: 'Vulva',
+    image: '/image/escena_1/juego/VULVA.png',
+    sound: '/audio/actividad-1/escena_1/elements/Vulva.mp3',
+    position: { top: '64%', left: '45%' }
+  },
+];
+
