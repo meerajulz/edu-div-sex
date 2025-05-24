@@ -12,7 +12,7 @@ import {
   PointerSensor
  } from '@dnd-kit/core';
 import Image from 'next/image';
-import { bodyParts } from './config';
+import { boyBodyParts, girlBodyParts } from './config';
 import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
 import CongratsOverlay from './CongratsOverlay';
@@ -32,12 +32,42 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
   const pointerSensor = useSensor(PointerSensor);
   const [showCongrats, setShowCongrats] = useState(false);
 
+  //GENDER GAME
+  const [gender, setGender] = useState<'boy' | 'girl'>('boy');
+
+  const bodyParts = gender === 'boy' ? boyBodyParts : girlBodyParts;
+  const characterImage = gender === 'boy'
+    ? '/image/escena_1/juego/BOY.png'
+    : '/image/escena_1/juego/GIRL.png';
+
   // Detect when all parts are matched
-  useEffect(() => {
-    if (matchedParts.length === bodyParts.length) {
-      setShowCongrats(true);
-    }
-  }, [matchedParts]);
+useEffect(() => {
+  if (matchedParts.length === bodyParts.length) {
+    setShowCongrats(true);
+
+    setTimeout(() => {
+      setShowCongrats(false);
+
+      // Switch to the next level
+      if (gender === 'boy') {
+        setGender('girl');
+        setMatchedParts([]);
+      } else {
+        // Optionally, handle game complete
+        onClose(); // or a new overlay
+      }
+    }, 2500);
+  }
+}, [matchedParts]);
+
+useEffect(() => {
+  if (isVisible) {
+    setGender('boy');
+    setMatchedParts([]);
+    setFeedback(null);
+    setShowCongrats(false);
+  }
+}, [isVisible]);
 
 
   const handleDragEnd = (event: any) => {
@@ -47,7 +77,7 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
     if (over.id === active.id) {
       setMatchedParts((prev) => [...prev, active.id]);
       setFeedback('ok');
-     // new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
     } else {
       setFeedback('wrong');
       new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
@@ -79,13 +109,13 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
 
           {/* Baby image */}
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/image/escena_1/juego/BOY.png"
-              alt="Baby"
-              layout="fill"
-              objectFit="contain"
-              priority
-            />
+          <Image
+            src={characterImage}
+            alt={gender === 'boy' ? 'Boy' : 'Girl'}
+            layout="fill"
+            objectFit="contain"
+            priority
+          />
             {bodyParts.map((part) => (
               <DropZone
                 key={part.id}
