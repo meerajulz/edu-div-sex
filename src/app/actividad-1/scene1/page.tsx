@@ -18,6 +18,7 @@ export default function Scene1Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showCris, setShowCris] = useState(true);
   const [showJuegoUno, setShowJuegoUno] = useState(false);
 

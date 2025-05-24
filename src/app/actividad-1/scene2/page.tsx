@@ -1,11 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 export default function Scene2Page() {
-  const router = useRouter();
 
   const handleJugarClick = () => {
     console.log('Start Scene 2 game');
