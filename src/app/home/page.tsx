@@ -105,7 +105,7 @@ const Dashboard: React.FC = () => {
         <div className='relative min-h-screen'>
           <div className='absolute inset-0 z-10'>
             <VideoBackground 
-              videoPath='/video/HOME_8.mp4'
+              videoPath='/video/HOME.mp4'
               backgroundImagePath='/svg/HOME_1.svg'
               isExiting={isExiting}
               onExitComplete={handleExitComplete}

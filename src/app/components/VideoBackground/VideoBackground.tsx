@@ -342,7 +342,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
           )}
 
           {/* Volume Controls */}
-          {isPlaying && (
+          {/* {isPlaying && (
             <div className="absolute bottom-4 right-4 z-50 bg-black/60 rounded-lg p-2 flex items-center space-x-2">
               <button onClick={toggleMute} className="text-white hover:text-blue-300 transition p-1">
                 {isMuted ? (
@@ -368,7 +368,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
                 className="w-24 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
               />
             </div>
-          )}
+          )} */}
 
           {videoError && (
             <div className="absolute inset-0 z-100 flex items-center justify-center bg-black/50">

@@ -11,9 +11,8 @@ interface SimpleAlexProps {
 }
 
 const dialogues = [
-  { path: '/audio/alex/intro/1-alex.mp3', duration: 1800 },
-  { path: '/audio/alex/intro/juego/ahora-jugamos.mp3', duration: 2500 },
-  { path: '/audio/alex/intro/juego/click-actividad.mp3', duration: 2000 }
+  { path: '/audio/alex/alex-1.mp3', duration: 1800 },
+  { path: '/audio/alex/alex-2.mp3', duration: 2000 },
 ];
 
 const SimpleAlex: React.FC<SimpleAlexProps> = ({
@@ -33,7 +32,7 @@ const SimpleAlex: React.FC<SimpleAlexProps> = ({
     if (mouthIntervalRef.current) return;
     mouthIntervalRef.current = setInterval(() => {
       setIsMouthOpen(prev => !prev);
-    }, 200);
+    }, 350);
   };
 
   const stopMouthMovement = () => {
