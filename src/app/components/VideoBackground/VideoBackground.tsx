@@ -56,8 +56,8 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   const [videoError, setVideoError] = useState<string | null>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
-  const [volume, setVolume] = useState(0.7);
-  const [isMuted, setIsMuted] = useState(false);
+  //const [volume, setVolume] = useState(0.7);
+  // const [isMuted, setIsMuted] = useState(false);
 
   const aspectRatio = 16 / 9;
 
@@ -148,13 +148,13 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.volume = isMuted ? 0 : volume;
-    }
-  }, [volume, isMuted]);
+  // useEffect(() => {
+  //   if (videoRef.current) {
+  //     videoRef.current.volume = isMuted ? 0 : volume;
+  //   }
+  // }, [volume, isMuted]);
 
-  const toggleMute = () => setIsMuted(!isMuted);
+ // const toggleMute = () => setIsMuted(!isMuted);
 
   useEffect(() => {
     if (isExiting && onExitComplete) {
