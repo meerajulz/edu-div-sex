@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
 import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
-import { 
-  markUserInteraction, 
+import {
+  markUserInteraction,
   needsInteractionForAudio,
   initAudio,
   cleanupAudio
@@ -13,18 +12,18 @@ import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import AnimatedSky from '../components/AnimatedSky/page';
+import JugarButton from '../components/JugarButton/JugarButton';
 
 const ActivityLabels = dynamic(() => import('../components/ModuleAnimations/ActivityLabels'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
 const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAlex'), { ssr: false });
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
 
+
+
 export default function Aventura1Page() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const [isHydrated, setIsHydrated] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showArdilla, setShowArdilla] = useState(false);
   const [showAlex, setShowAlex] = useState(false);
@@ -32,19 +31,16 @@ export default function Aventura1Page() {
   const [showSun, setShowSun] = useState(false);
   const [needsInteraction, setNeedsInteraction] = useState(false);
   const [userInteractionReceived, setUserInteractionReceived] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [audioInitialized, setAudioInitialized] = useState(false);
   const [canPlayVideo, setCanPlayVideo] = useState(false);
-  
-  // Exit animation states
+
   const [isExiting, setIsExiting] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
-  //RESPONSIVENESS
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
-
+  
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     const updateDimensions = () => {
       const vw = window.innerWidth;
@@ -67,6 +63,22 @@ export default function Aventura1Page() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
+  //BUTTON
+  
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const playSound = () => {
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+  };
+
+  //
+
   const containerStyle = {
     width: `${containerDimensions.width}px`,
     height: `${containerDimensions.height}px`,
@@ -74,122 +86,137 @@ export default function Aventura1Page() {
     top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
   };
 
-  //END RESPONSIVENESS  
+useEffect(() => {
+  const checkAudio = async () => {
+    const needs = needsInteractionForAudio();
+    setNeedsInteraction(needs);
 
-  useEffect(() => {
-    setIsHydrated(true);
-
-    const checkAudio = async () => {
-      const needs = needsInteractionForAudio();
-      setNeedsInteraction(needs);
-
-      if (!needs) {
-        try {
-          const success = await initAudio();
-          setAudioInitialized(success);
-        } catch (e) {
-          console.warn('Audio auto init failed:', e);
-        }
+    if (!needs) {
+      try {
+        await initAudio();
+      } catch (e) {
+        console.warn('Audio auto init failed:', e);
       }
-    };
+    }
+  };
 
-    checkAudio();
-  }, []);
-
-  useEffect(() => {
-    if (!isHydrated || !needsInteraction || userInteractionReceived) return;
-
-    const onClick = () => {
-      markUserInteraction();
-      setUserInteractionReceived(true);
-      setNeedsInteraction(false);
-
-      initAudio()
-        .then(setAudioInitialized)
-        .catch(err => console.warn('Audio init failed after interaction', err));
-
-      document.removeEventListener('click', onClick);
-      document.removeEventListener('touchstart', onClick);
-    };
-
-    document.addEventListener('click', onClick);
-    document.addEventListener('touchstart', onClick);
-
-    return () => {
-      document.removeEventListener('click', onClick);
-      document.removeEventListener('touchstart', onClick);
-    };
-  }, [isHydrated, needsInteraction, userInteractionReceived]);
+  checkAudio();
+}, []);
 
   const handleVideoEnd = () => {
     cleanupAudio();
     setVideoEnded(true);
-
-    setTimeout(() => {
-      setShowArdilla(true);
-    }, 100);
-
-    setTimeout(() => {
-      setShowAlex(true);
-    }, 1800);
-
+    setTimeout(() => setShowArdilla(true), 100);
+    setTimeout(() => setShowAlex(true), 1800);
     setTimeout(() => {
       setShowActivityLabels(true);
       setShowSun(true);
     }, 0);
   };
 
-  // Handle activity selection with exit animation
   const handleActivitySelect = (id: number, url: string) => {
-    console.log(`Activity selected: ${id}, URL: ${url}`);
-    
-    // Stop video if playing
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
-    
-    // Cleanup audio to stop any sounds
+
     cleanupAudio();
-    
     setIsExiting(true);
     setPendingNavigation(url);
+
+    if (bgMusicRef.current) {
+      try {
+        bgMusicRef.current.pause();
+        bgMusicRef.current.currentTime = 0;
+      } catch (e) {
+        console.warn('Failed to stop background music:', e);
+      }
+    }
+
   };
 
-  // Handle exit animation complete
   const handleExitComplete = () => {
     if (pendingNavigation) {
       router.push(pendingNavigation);
     }
   };
 
-  const characterSlideVariants = {
-    hidden: { x: '-100%', opacity: 0 },
-    visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 100, damping: 20 } }
+  const handleJugarClick = () => {
+
+    console.log('Start Scene 2 game');
+    if (isAnimating) return;
+
+    setIsAnimating(true);
+    playSound();
+
+    setTimeout(() => {
+      setIsAnimating(false);
+     // handleJugarClick();
+    }, 800);
+
+    markUserInteraction();
+    setUserInteractionReceived(true);
+    setNeedsInteraction(false);
+
+    // Start background music
+    const music = new Audio('/audio/Softy.mp3');
+    music.loop = true;
+    music.volume = 0.5;
+    music.play().catch(console.warn);
+    bgMusicRef.current = music;
+
+    //initAudio().then(setAudioInitialized).catch(console.warn);
+    setCanPlayVideo(true);
   };
 
-  // Exit animation variants
   const exitVariants = {
     exit: {
-      y: '-120vh', // Move further up
-      opacity: 0, // Add fade out
-      transition: {
-        duration: 1.5,
-        ease: 'easeInOut'
-      }
+      y: '-120vh',
+      opacity: 0,
+      transition: { duration: 1.5, ease: 'easeInOut' }
     }
   };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-blue-300 to-blue-100" />
+      {/* Only show animated background and button BEFORE video */}
+      {!videoEnded && (!canPlayVideo || needsInteraction) && (
+        <>
+          <div className="absolute inset-0 z-50 bg-gradient-to-b from-indigo-400 via-yellow-200 to-purple-300" />
 
-      {/* Animated sky for exit transition */}
-      {isExiting && (
-        <div className="absolute inset-0 z-5 bg-gradient-to-b from-blue-300 to-blue-100">
-          <AnimatedSky />
-        </div>
+          {/* Floating bubbles */}
+          <div className="absolute inset-0 z-50">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-white/10"
+                style={{
+                  width: Math.random() * 60 + 20,
+                  height: Math.random() * 60 + 20,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [0, -20, 0],
+                  x: [0, Math.random() * 20 - 10, 0],
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: Math.random() * 3 + 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="absolute inset-0 z-50 flex items-center justify-center">
+            <motion.div animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}} transition={{ duration: 0.8, ease: 'easeInOut' }}>
+            <JugarButton text='Actividad Uno' onClick={handleJugarClick} />
+            </motion.div>
+          </div>
+        </>
       )}
 
       {/* Floating menu */}
@@ -197,37 +224,14 @@ export default function Aventura1Page() {
         <FloatingMenu />
       </div>
 
-      {/* User interaction prompt */}
-      {needsInteraction && !userInteractionReceived && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-xl shadow-xl max-w-xs text-center">
-            <h3 className="text-xl font-bold mb-4">¡Toca la pantalla!</h3>
-            <p className="mb-4">Para escuchar los sonidos, por favor toca en cualquier lugar de la pantalla.</p>
-            <button 
-              className="bg-orange-500 text-white font-bold py-3 px-6 rounded-full"
-              onClick={() => {
-                markUserInteraction();
-                setUserInteractionReceived(true);
-                initAudio().then(setAudioInitialized);
-                setCanPlayVideo(true);
-              }}
-            >
-              Comenzar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main content with exit animation */}
       <motion.div
         className="absolute inset-0"
         variants={exitVariants}
         animate={isExiting ? 'exit' : 'initial'}
         onAnimationComplete={isExiting ? handleExitComplete : undefined}
       >
-        {/* Video/Background container */}
         <div className="absolute" style={containerStyle}>
-          {!videoEnded && (!needsInteraction || canPlayVideo) ? (
+          {!videoEnded && canPlayVideo ? (
             <video
               ref={videoRef}
               className="absolute inset-0 w-full h-full object-cover z-10"
@@ -241,34 +245,32 @@ export default function Aventura1Page() {
             <Image
               src="/image/INTRO_MODULO-1.jpg"
               width={containerDimensions.width}
-              height={containerDimensions.height} 
+              height={containerDimensions.height}
               alt="Background"
               className="absolute inset-0 w-full h-full object-cover z-10"
             />
           )}
         </div>
 
-        {/* Characters and activity labels */}
         {videoEnded && (
-          <div className="">
+          <>
             {showArdilla && (
-              <div>
-                <motion.div
-                  className="absolute bottom-6 left-6 z-40 w-[260px] h-[260px]"
-                  initial="hidden"
-                  animate="visible"
-                  variants={characterSlideVariants}
-                >
-                  <Ardilla isVisible={true} bunnyShown={true} zIndex={50} browserWidth={1200} />
-                </motion.div>
-              </div>
+              <motion.div
+                className="absolute bottom-6 left-6 z-40 w-[260px] h-[260px]"
+                initial={{ x: '-100%', opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+              >
+                <Ardilla isVisible={true} bunnyShown={true} zIndex={50} browserWidth={1200} />
+              </motion.div>
             )}
 
             {showAlex && (
               <motion.div
                 className="absolute bottom-[-30%] left-[-40%] z-40 w-[50%] h-full pointer-events-none"
-                animate="visible"
-                variants={characterSlideVariants}
+                animate={{ x: 0, opacity: 1 }}
+                initial={{ x: '-100%', opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
               >
                 <SimpleAlex isVisible={true} />
               </motion.div>
@@ -276,10 +278,7 @@ export default function Aventura1Page() {
 
             {showActivityLabels && (
               <div className="w-full px-6 pb-6 z-30 flex justify-center">
-                <ActivityLabels 
-                  isVisible={true}
-                  onLabelClick={handleActivitySelect}
-                />
+                <ActivityLabels isVisible={true} onLabelClick={handleActivitySelect} />
               </div>
             )}
 
@@ -288,7 +287,7 @@ export default function Aventura1Page() {
                 <SunGif />
               </div>
             )}
-          </div>
+          </>
         )}
       </motion.div>
     </div>

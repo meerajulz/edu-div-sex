@@ -45,9 +45,13 @@ export const isChromiumBased = (): boolean => {
   return /Chrome/.test(navigator.userAgent) || /CriOS/.test(navigator.userAgent);
 };
 
+// export const needsInteractionForAudio = (): boolean => {
+//   // All iOS devices and Safari need interaction
+//   return (isIOS() || isIPad() || isSafari()) && !hasUserInteraction;
+// };
 export const needsInteractionForAudio = (): boolean => {
-  // All iOS devices and Safari need interaction
-  return (isIOS() || isIPad() || isSafari()) && !hasUserInteraction;
+  // Force interaction required for ALL browsers
+  return !hasUserInteraction;
 };
 
 // ========== Audio Context Handling ==========
