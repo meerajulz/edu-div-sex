@@ -6,7 +6,7 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState } from 'react';
 
 
-export default function Scene3Page() {
+export default function Scene5Page() {
 
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -43,7 +43,7 @@ export default function Scene3Page() {
       transition={{ duration: 1 }}
     >
       {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-400 via-blue-200 to-green-300 z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-400 via-blue-200 to-blue-300 z-0" />
 
       {/* Floating bubbles */}
       <div className="absolute inset-0 z-10">
