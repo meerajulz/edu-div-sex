@@ -117,7 +117,7 @@ useEffect(() => {
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
-        <div className="relative w-[90%] h-[90%] bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
+        <div className="relative w-[90%] h-[90%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
           {/* Close Button */}
           <button
@@ -128,15 +128,17 @@ useEffect(() => {
           </button>
 
           {/* Baby image */}
-          <div className="absolute inset-0 z-0">
-          <Image
-            src={characterImage}
-            alt={gender === 'boy' ? 'Boy' : 'Girl'}
-            layout="fill"
-            objectFit="contain"
-            priority
-          />
-            {bodyParts.map((part) => (
+          <div className="absolute inset-0 z-0 lex items-center justify-center">
+ 
+            <div className="relative w-full max-w-md mx-auto aspect-[3/4]">
+              <Image
+                src={characterImage}
+                alt={gender === 'boy' ? 'Boy' : 'Girl'}
+                fill
+                className="object-contain"
+                priority
+              />
+                          {bodyParts.map((part) => (
               <DropZone
                 key={part.id}
                 id={part.id}
@@ -144,6 +146,8 @@ useEffect(() => {
                 isMatched={matchedParts.includes(part.id)}
               />
             ))}
+            </div>
+
           </div>
 
           {/* Sidebar with draggable parts */}
