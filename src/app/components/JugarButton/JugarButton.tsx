@@ -28,7 +28,7 @@ const JugarButton: React.FC<JugarButtonProps> = ({
 
   return (
     <motion.button
-      className={`bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full shadow-2xl transform transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed ${sizeClasses[size]} ${className}`}
+      className={`bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold rounded-full shadow-2xl transform transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed ${sizeClasses[size]} ${className}`}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.6 }}

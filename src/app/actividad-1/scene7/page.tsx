@@ -1,14 +1,59 @@
 'use client';
 
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import { useState } from 'react';
-
 
 export default function Scene7Page() {
-
+  const router = useRouter();
+  const videoRef = useRef(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
+  const aspectRatio = 16 / 9;
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      setBrowserDimensions({ width: vw, height: vh });
+
+      let width = vw;
+      let height = width / aspectRatio;
+
+      if (height < vh) {
+        height = vh;
+        width = height * aspectRatio;
+      }
+
+      setContainerDimensions({ width, height });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  const handleJugarClick = () => {
+    setShowVideo(true);
+  };
+
+  const handleVideoEnd = () => {
+    const audio = new Audio('/audio/button/Bright.mp3');
+    audio.volume = 0.7;
+    audio.play().catch(console.warn);
+    setVideoEnded(true);
+  };
 
   const playSound = () => {
     try {
@@ -20,20 +65,35 @@ export default function Scene7Page() {
     }
   };
 
-  const handleJugarClick = () => {
-    console.log('Start Scene 2 game');
+  const handleButtonClick = () => {
     if (isAnimating) return;
-
     setIsAnimating(true);
     playSound();
 
     setTimeout(() => {
       setIsAnimating(false);
-     // handleJugarClick();
+      handleJugarClick();
     }, 800);
   };
 
-  
+  const handleBackClick = () => {
+    router.push('/actividad-1');
+  };
+
+  const containerStyle = {
+    width: `${containerDimensions.width}px`,
+    height: `${containerDimensions.height}px`,
+    left: `${(browserDimensions.width - containerDimensions.width) / 2}px`,
+    top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
+  };
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-pink-300 to-yellow-300 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -42,10 +102,8 @@ export default function Scene7Page() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-pink-300 via-blue-200 to-yellow-300 z-0" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-pink-300 via-blue-200 to-yellow-300" />
 
-      {/* Floating bubbles */}
       <div className="absolute inset-0 z-10">
         {[...Array(20)].map((_, i) => (
           <motion.div
@@ -65,28 +123,57 @@ export default function Scene7Page() {
             transition={{
               duration: Math.random() * 3 + 2,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: 'easeInOut',
               delay: Math.random() * 2,
             }}
           />
         ))}
       </div>
 
-      {/* Floating menu */}
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
 
-      {/* Jugar Button */}
-      <div className="relative z-20 flex items-center justify-center min-h-screen">
-        <motion.div
+      {!showVideo ? (
+        <div className="relative z-20 flex items-center justify-center min-h-screen">
+          <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}>
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
-      </motion.div>
-      </div>
-
-
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            <JugarButton onClick={handleButtonClick} disabled={isAnimating} />
+          </motion.div>
+        </div>
+      ) : (
+        <div className="absolute" style={containerStyle}>
+          {!videoEnded ? (
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover z-10"
+              src="/video/ACTIVIDAD-1-ESCENA-7.mp4"
+              autoPlay
+              playsInline
+              onEnded={handleVideoEnd}
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
+              <motion.h2
+                className="text-2xl font-bold mb-6 drop-shadow text-pink-600"
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.2, 1], rotate: [0, 3, -3, 0] }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              >
+                ¡Enhorabuena! Has acabado la Actividad 1
+              </motion.h2>
+              <motion.div
+                animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <JugarButton text="IR A LA ACTIVIDAD 2" onClick={handleBackClick} disabled={isAnimating} />
+              </motion.div>
+            </div>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }
