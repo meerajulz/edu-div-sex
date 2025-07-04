@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { 
   DndContext,
   TouchSensor,
@@ -24,7 +23,7 @@ interface JuegoDosProps {
 
 const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete }) => {
 
-  const router = useRouter();
+
 
   const [matchedParts, setMatchedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);

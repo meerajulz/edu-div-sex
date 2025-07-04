@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import JuegoTres from './JuegoTres/JuegoTres';
 
 export default function Scene6Page() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function Scene6Page() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showJuegoTres, setShowJuegoTres] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -73,8 +76,27 @@ export default function Scene6Page() {
     }, 800);
   };
 
-  const handleGameClick = () => {
-    router.push('/actividad-1/JuegoTres/JuegoTres');
+  const handleOpenJuegoTres = () => {
+    playSound();
+    setShowJuegoTres(true);
+  };
+
+  const handleCloseJuegoTres = () => {
+    setShowJuegoTres(false);
+  };
+
+  const handleGameComplete = () => {
+    setGameCompleted(true);
+  };
+
+  const handleGoToScene7 = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+    setTimeout(() => {
+      setIsAnimating(false);
+      router.push('/actividad-1/scene7');
+    }, 800);
   };
 
   const containerStyle = {
@@ -131,6 +153,16 @@ export default function Scene6Page() {
         <FloatingMenu />
       </div>
 
+      {/* Background change for JuegoTres */}
+      {showJuegoTres && (
+        <div
+          className="fixed inset-0 z-30"
+          style={{ 
+            background: 'linear-gradient(to bottom, #a8e9f7, #fffad4)'
+          }}
+        />
+      )}
+
       {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
@@ -153,16 +185,35 @@ export default function Scene6Page() {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
-              <motion.div
-                animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
-              >
-                <JugarButton onClick={handleGameClick} disabled={isAnimating} />
-              </motion.div>
+              {!showJuegoTres && (
+                <motion.div
+                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                >
+                  {!gameCompleted ? (
+                    <JugarButton onClick={handleOpenJuegoTres} disabled={isAnimating} />
+                  ) : (
+                    <div className="flex flex-col items-center space-y-4">
+                      <JugarButton 
+                        onClick={handleGoToScene7} 
+                        disabled={isAnimating}
+                        text="Continuar..."
+                      />
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </div>
           )}
         </div>
       )}
+
+      {/* JuegoTres Game Modal */}
+      <JuegoTres 
+        isVisible={showJuegoTres} 
+        onClose={handleCloseJuegoTres}
+        onGameComplete={handleGameComplete}
+      />
     </motion.div>
   );
 }
