@@ -72,11 +72,11 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 2,
-      isActive: false,
+      isActive: true,
       title: "Intimidad",
       activeImage: "/svg/menu-actividad/cartell-2-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
-      url: "/actividad-2",
+      url: "/actividad-2/scene1",
       soundUrl: "/audio/whoosh.mp3",
       xPosition: 100,
       yPosition: 350,
