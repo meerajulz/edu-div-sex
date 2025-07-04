@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import JuegoDos from './JuegoDos/JuegoDos';
 
 export default function Scene4Page() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function Scene4Page() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showJuegoDos, setShowJuegoDos] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -64,18 +67,35 @@ export default function Scene4Page() {
 
   const handleButtonClick = () => {
     if (isAnimating) return;
-
     setIsAnimating(true);
     playSound();
-
     setTimeout(() => {
       setIsAnimating(false);
       handleJugarClick();
     }, 800);
   };
 
-  const handleGlobeClick = () => {
-    router.push('./JuegoDos/JuegoDos');
+  const handleOpenJuegoDos = () => {
+    playSound();
+    setShowJuegoDos(true);
+  };
+
+  const handleCloseJuegoDos = () => {
+    setShowJuegoDos(false);
+  };
+
+  const handleGameComplete = () => {
+    setGameCompleted(true);
+  };
+
+  const handleGoToScene5 = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+    setTimeout(() => {
+      setIsAnimating(false);
+      router.push('/actividad-1/scene5');
+    }, 800);
   };
 
   const containerStyle = {
@@ -131,6 +151,14 @@ export default function Scene4Page() {
         <FloatingMenu />
       </div>
 
+      {/* Background for JuegoDos */}
+      {showJuegoDos && (
+        <div
+          className="fixed inset-0 z-30 bg-cover bg-center"
+          style={{ backgroundImage: "url('/image/bg-scene4.png')" }}
+        />
+      )}
+
       {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
@@ -157,12 +185,29 @@ export default function Scene4Page() {
                 animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                 transition={{ duration: 0.8, ease: 'easeInOut' }}
               >
-                <JugarButton onClick={handleGlobeClick} disabled={isAnimating} />
+                {!gameCompleted ? (
+                  <JugarButton onClick={handleOpenJuegoDos} disabled={isAnimating} />
+                ) : (
+                  <div className="flex flex-col items-center space-y-4">
+                    <JugarButton 
+                      onClick={handleGoToScene5} 
+                      disabled={isAnimating}
+                      text="Continuar..."
+                    />
+                  </div>
+                )}
               </motion.div>
             </div>
           )}
         </div>
       )}
+
+      {/* JuegoDos Game Modal */}
+      <JuegoDos 
+        isVisible={showJuegoDos} 
+        onClose={handleCloseJuegoDos}
+        onGameComplete={handleGameComplete}
+      />
     </motion.div>
   );
 }

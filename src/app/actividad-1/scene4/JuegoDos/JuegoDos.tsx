@@ -1,43 +1,160 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import JugarButton from '../../../components/JugarButton/JugarButton';
-import React, { useState } from 'react';
+import { 
+  DndContext,
+  TouchSensor,
+  MouseSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+ } from '@dnd-kit/core';
+import Image from 'next/image';
+import { bodyParts } from './config';
+import DraggablePart from './DraggablePart';
+import DropZone from './DropZone';
+import CongratsOverlay from './CongratsOverlay';
 
-export default function JuegoDos() {
+interface JuegoDosProps {
+  isVisible: boolean;
+  onClose: () => void;
+  onGameComplete?: () => void; // Add callback for game completion
+}
+
+const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete }) => {
+
   const router = useRouter();
-  const [isAnimating, setIsAnimating] = useState(false);
 
-  const handleClick = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    const audio = new Audio('/audio/button/Bright.mp3');
-    audio.volume = 0.7;
-    audio.play().catch(console.warn);
-    setTimeout(() => {
-      setIsAnimating(false);
-      router.push('/actividad-1/scene5');
-    }, 800);
+  const [matchedParts, setMatchedParts] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);
+
+  const mouseSensor = useSensor(MouseSensor);
+  const touchSensor = useSensor(TouchSensor);
+  const sensors = useSensors(mouseSensor, touchSensor);
+
+  const [showCongrats, setShowCongrats] = useState(false);
+
+  // Detect when all parts are matched
+  useEffect(() => {
+    if (matchedParts.length === bodyParts.length) {
+      setShowCongrats(true);
+
+      setTimeout(() => {
+        setShowCongrats(false);
+        // Game complete - close and trigger completion callback
+        onClose();
+        if (onGameComplete) {
+          onGameComplete();
+        }
+      }, 2500);
+    }
+  }, [matchedParts, onClose, onGameComplete]);
+
+  useEffect(() => {
+    if (isVisible) {
+      setMatchedParts([]);
+      setFeedback(null);
+      setShowCongrats(false);
+    }
+  }, [isVisible]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { over, active } = event;
+    if (!over) return;
+
+    if (over.id === active.id) {
+      setMatchedParts((prev) => [...prev, String(active.id)]);
+      setFeedback('ok');
+      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+    } else {
+      setFeedback('wrong');
+      new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
+    }
+
+    setTimeout(() => setFeedback(null), 1000);
   };
 
+  const handleClose = () => {
+    setMatchedParts([]);
+    setFeedback(null);
+    onClose();
+  };
+
+  if (!isVisible) return null;
+
   return (
-    <motion.div
-      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-purple-300 to-pink-200 text-white p-8"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
-    >
-      <h1 className="text-3xl font-bold mb-6">Juego 2 (Placeholder)</h1>
-      <p className="mb-8 text-center max-w-md">
-        Aquí irá el contenido del Juego 2. Haz clic en “Jugar” para continuar a la Escena 5.
-      </p>
-      <motion.div
-        animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-        transition={{ duration: 0.8, ease: 'easeInOut' }}
-      >
-        <JugarButton onClick={handleClick} disabled={isAnimating} />
-      </motion.div>
-    </motion.div>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
+        <div className="relative w-[90%] h-[90%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
+
+          {/* Close Button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-2 right-2 z-10 text-white text-sm bg-red-600/80 hover:bg-red-700 px-4 py-2 rounded-full shadow"
+          >
+            Salir juego
+          </button>
+
+          {/* Center image - Full responsive */}
+          <div className="absolute inset-0 z-0 flex items-center justify-center pl-24 pr-4 py-4">
+            <div className="relative w-full h-full">
+              <Image
+                src="/image/juego_2/nenas.png"
+                alt="Nenas"
+                fill
+                className="object-contain"
+                priority
+              />
+              {bodyParts.map((part) => (
+                <DropZone
+                  key={part.id}
+                  id={part.id}
+                  position={part.position}
+                  isMatched={matchedParts.includes(part.id)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar with draggable parts */}
+          <div className="absolute left-0 top-0 z-10 h-full w-24 flex flex-col items-center justify-center space-y-4 bg-black/10 p-2">
+            {bodyParts.map((part) =>
+              !matchedParts.includes(part.id) && (
+                <DraggablePart key={part.id} id={part.id} image={part.image} sound={part.sound}/>
+              )
+            )}
+          </div>
+
+          {/* Feedback */}
+          {feedback === 'ok' && (
+            <div className="absolute top-1/2 -translate-y-1/2 left-[20%] z-20">
+              <Image
+                src="/image/escena_1/juego/correct.png"
+                alt="Correcto"
+                width={80}
+                height={80}
+              />
+            </div>
+          )}
+          {feedback === 'wrong' && (
+            <div className="absolute top-1/2 -translate-y-1/2 right-[20%] z-20">
+              <Image
+                src="/image/escena_1/juego/incorrect.png"
+                alt="Incorrecto"
+                width={80}
+                height={80}
+              />
+            </div>
+          )}
+        </div>
+        
+        {showCongrats && (
+          <CongratsOverlay onComplete={() => setShowCongrats(false)} />
+        )}
+      </div>
+    </DndContext>
   );
-}
+};
+
+export default JuegoDos;
