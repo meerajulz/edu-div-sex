@@ -123,7 +123,7 @@ export default function Actividad2Scene2Page() {
           <video
             ref={videoRef}
             className="absolute inset-0 w-full h-full object-cover z-20"
-            src="/video/ACTIVIDAD_2_ESCENA_2.mp4"
+            src="/video/ACTIVIDAD-2-ESCENA-2.mp4"
             autoPlay
             playsInline
             onEnded={handleVideoEnd}
