@@ -73,7 +73,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     {
       id: 2,
       isActive: false,
-      title: "Actividad 2",
+      title: "Intimidad",
       activeImage: "/svg/menu-actividad/cartell-2-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
       url: "/actividad-2",
