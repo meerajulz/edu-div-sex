@@ -23,6 +23,7 @@ interface ActivityLabel {
   rotateY?: number;
   delay?: number;
   brightness?: number;
+  soundClick: string;
 }
 
 interface ActivityLabelsProps {
@@ -61,6 +62,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
       url: "/actividad-1/scene1/",
       soundUrl: "/audio/whoosh.mp3",
+      soundClick: "/audio/labels/label-1.mp3",
       xPosition: -60,
       yPosition: 280,
       zPosition: 150,
@@ -78,6 +80,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
       url: "/actividad-2/scene1",
       soundUrl: "/audio/whoosh.mp3",
+      soundClick: "/audio/labels/label-2.mp3",
       xPosition: 100,
       yPosition: 350,
       zPosition: -50,
@@ -95,6 +98,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-3-hover.svg",
       url: "/actividad-3",
       soundUrl: "/audio/whoosh.mp3",
+      soundClick: "/audio/labels/label-3.mp3",
       xPosition: -150,
       yPosition: 280,
       zPosition: -300,
@@ -112,6 +116,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       url: "/actividad-4",
       soundUrl: "/audio/whoosh.mp3",
+      soundClick: "/audio/labels/label-4.mp3",
       xPosition: 40,
       yPosition: 350,
       zPosition: -500,
@@ -129,6 +134,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       url: "/actividad-4",
       soundUrl: "/audio/whoosh.mp3",
+      soundClick: "/audio/labels/label-5.mp3",
       xPosition: -150,
       yPosition: 190,
       zPosition: -700,
@@ -146,6 +152,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       url: "/actividad-4",
       soundUrl: "/audio/whoosh.mp3",
+      soundClick: "/audio/labels/label-6.mp3",
       xPosition: 50,
       yPosition: 180,
       zPosition: -690,
@@ -172,15 +179,16 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     }
   }, [isVisible]);
 
-  const handleClick = (activity: ActivityLabel) => {
-    if (!activity.isActive) return;
-    playAudio('/audio/labels/descubiriendo-mi-cuerpo.mp3').catch(console.warn);
-    if (onLabelClick) {
-      onLabelClick(activity.id, activity.url);
-    } else {
-      router.push(activity.url);
-    }
-  };
+const handleClick = (activity: ActivityLabel) => {
+  if (!activity.isActive) return;
+  playAudio('/audio/labels/descubiriendo-mi-cuerpo.mp3', undefined, 0.7).catch(console.warn); // ✅ Uses each activity's specific sound
+  //playAudio(activity.soundClick).catch(console.warn); // ✅ Uses each activity's specific sound
+  if (onLabelClick) {
+    onLabelClick(activity.id, activity.url);
+  } else {
+    router.push(activity.url);
+  }
+};
 
   const playDropSound = (index: number) => {
     if (labelDropSoundsPlayed.current[index]) return;

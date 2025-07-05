@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import SituationDisplay from './SituationDisplay';
@@ -46,45 +46,53 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
 
   const currentSituationData = GAME_CONFIG.situations[currentSituation];
 
-  // Initialize game when modal opens
-  useEffect(() => {
-    if (isVisible) {
-      console.log('Modal opened, starting game...');
-      resetGame();
-      startSession(userId);
-      
-      // Start game sequence
-      setTimeout(() => {
-        startGameSequence();
-      }, GAME_CONFIG.timing.situationDelay);
-    } else {
-      stopAudio();
-    }
-  }, [isVisible, resetGame, startSession, userId]);
+  // Start situation sequence - FIXED: Pass situation index explicitly
+  const startGameSequence = useCallback(async (situationIndex: number) => {
+    const situationData = GAME_CONFIG.situations[situationIndex];
+    if (!situationData) return;
 
-  // Start situation sequence
-  const startGameSequence = async () => {
-    if (!currentSituationData) return;
-
-    console.log('Starting game sequence...');
+    console.log(`🎮 Starting game sequence for situation ${situationIndex + 1}:`, situationData.id);
+    console.log('🎵 Audio files:', {
+      situation: situationData.audio.situation,
+      text: situationData.audio.text,
+      question: GAME_CONFIG.globalAudio.question
+    });
+    
     setGamePhase('situation');
 
     // Play audio sequence: situation -> text -> question -> show buttons
     await playAudioSequence(
-      currentSituationData.audio.situation,
-      currentSituationData.audio.text,
+      situationData.audio.situation,
+      situationData.audio.text,
       GAME_CONFIG.globalAudio.question,
       () => {
+        console.log('🎮 Audio sequence completed, showing question phase');
         setGamePhase('question');
       }
     );
-  };
+  }, [playAudioSequence, setGamePhase]);
+
+  // Initialize game when modal opens
+  useEffect(() => {
+    if (isVisible) {
+      console.log('🎮 Modal opened, starting game...');
+      resetGame();
+      startSession(userId);
+      
+      // Start game sequence for first situation
+      setTimeout(() => {
+        startGameSequence(0);
+      }, GAME_CONFIG.timing.situationDelay);
+    } else {
+      stopAudio();
+    }
+  }, [isVisible, resetGame, startSession, userId, startGameSequence, stopAudio]);
 
   // Handle answer selection - UPDATED with privacy-based feedback
   const handleAnswerSelect = async (answer: 'YES' | 'NO') => {
     if (!currentSituationData) return;
 
-    console.log('Answer selected:', answer);
+    console.log('🎮 Answer selected:', answer, 'for situation:', currentSituationData.id);
     setSelectedAnswer(answer);
     setGamePhase('feedback');
     
@@ -112,11 +120,13 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         // Play correct feedback audio based on privacy type
         const correctAudioKey = currentSituationData.feedback.correctAudio;
         const feedbackAudioPath = GAME_CONFIG.feedbackAudio[correctAudioKey];
+        console.log('🎵 Playing correct feedback audio:', feedbackAudioPath);
         await playAudio(feedbackAudioPath);
       } else {
         // Play incorrect feedback audio (same as correct for this situation)
         const incorrectAudioKey = currentSituationData.feedback.incorrectAudio;
         const feedbackAudioPath = GAME_CONFIG.feedbackAudio[incorrectAudioKey];
+        console.log('🎵 Playing incorrect feedback audio:', feedbackAudioPath);
         await playAudio(feedbackAudioPath);
       }
     }, 1000);
@@ -124,18 +134,23 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
 
   // Handle feedback completion
   const handleFeedbackComplete = () => {
+    console.log('🎮 Feedback completed. isCorrect:', isCorrect, 'currentSituation:', currentSituation);
+    
     if (isCorrect) {
       // Correct answer - check if there are more situations
       if (currentSituation < GAME_CONFIG.situations.length - 1) {
         // More situations to go - advance to next
+        console.log('🎮 Moving to next situation...');
         setTimeout(() => {
+          const nextSituationIndex = currentSituation + 1;
           nextSituation();
           setTimeout(() => {
-            startGameSequence();
+            startGameSequence(nextSituationIndex);
           }, GAME_CONFIG.timing.situationDelay);
         }, 1000);
       } else {
         // All situations completed - end game
+        console.log('🎮 Game completed!');
         endSession(true, score);
         setTimeout(() => {
           onClose();
@@ -146,6 +161,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
       }
     } else {
       // Wrong answer - retry same situation
+      console.log('🎮 Wrong answer, retrying same situation...');
       setTimeout(() => {
         setGamePhase('question');
         setSelectedAnswer(null);
@@ -154,7 +170,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
   };
 
   const handleClose = () => {
-    console.log('Closing modal...');
+    console.log('🎮 Closing modal...');
     stopAudio();
     endSession(false, score);
     resetGame();
@@ -189,7 +205,8 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             Fase: {gamePhase} | 
             Score: {score} | 
             Answer: {selectedAnswer || 'None'} |
-            Private: {currentSituationData?.isPrivate ? 'Yes' : 'No'}
+            Private: {currentSituationData?.isPrivate ? 'Yes' : 'No'} |
+            SituationId: {currentSituationData?.id || 'None'}
           </div>
         )}
 

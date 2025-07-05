@@ -1,4 +1,4 @@
-// Game Logic Hooks for JuegoUnoActividad2 - Updated with working logic
+// Game Logic Hooks for JuegoUnoActividad2 - Fixed audio sequencing issue
 
 import { useState, useRef, useCallback } from 'react';
 import { GAME_CONFIG, SituationAttempt, GameSession } from './config';
@@ -130,18 +130,26 @@ export const useGameTracking = () => {
 
 export const useAudioManager = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentAudioRef = useRef<string>(''); // Track which audio is currently playing
 
   const playAudio = useCallback(async (audioPath: string, volume = 0.7): Promise<void> => {
     try {
+      console.log('🎵 Attempting to play audio:', audioPath);
+      
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.currentTime = 0;
       }
+      
       const audio = new Audio(audioPath);
       audio.volume = volume;
       audioRef.current = audio;
+      currentAudioRef.current = audioPath;
+      
       await audio.play();
+      console.log('🎵 Audio playing successfully:', audioPath);
     } catch (err) {
-      console.warn('Error playing audio:', audioPath, err);
+      console.warn('❌ Error playing audio:', audioPath, err);
     }
   }, []);
 
@@ -152,17 +160,31 @@ export const useAudioManager = () => {
     onComplete: () => void
   ) => {
     try {
+      console.log('🎵 Starting audio sequence...');
+      console.log('- Situation audio:', situationAudio);
+      console.log('- Text audio:', textAudio);
+      console.log('- Question audio:', questionAudio);
+      
       // Play situation audio and wait for it to finish
-      console.log('Playing situation audio...');
+      console.log('🎵 Step 1: Playing situation audio...');
       await playAudio(situationAudio);
       
       // Create a promise that resolves when situation audio ends
       await new Promise<void>((resolve) => {
         if (audioRef.current) {
-          audioRef.current.onended = () => {
-            console.log('Situation audio finished');
+          const handleEnd = () => {
+            console.log('🎵 Situation audio finished');
+            audioRef.current?.removeEventListener('ended', handleEnd);
             resolve();
           };
+          audioRef.current.addEventListener('ended', handleEnd);
+          
+          // Fallback timeout in case audio doesn't fire ended event
+          setTimeout(() => {
+            console.log('🎵 Situation audio timeout fallback');
+            audioRef.current?.removeEventListener('ended', handleEnd);
+            resolve();
+          }, 10000); // 10 second fallback
         } else {
           resolve();
         }
@@ -172,16 +194,25 @@ export const useAudioManager = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Play text audio and wait for it to finish  
-      console.log('Playing text audio...');
+      console.log('🎵 Step 2: Playing text audio...');
       await playAudio(textAudio);
       
       // Create a promise that resolves when text audio ends
       await new Promise<void>((resolve) => {
         if (audioRef.current) {
-          audioRef.current.onended = () => {
-            console.log('Text audio finished');
+          const handleEnd = () => {
+            console.log('🎵 Text audio finished');
+            audioRef.current?.removeEventListener('ended', handleEnd);
             resolve();
           };
+          audioRef.current.addEventListener('ended', handleEnd);
+          
+          // Fallback timeout
+          setTimeout(() => {
+            console.log('🎵 Text audio timeout fallback');
+            audioRef.current?.removeEventListener('ended', handleEnd);
+            resolve();
+          }, 10000);
         } else {
           resolve();
         }
@@ -191,28 +222,38 @@ export const useAudioManager = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Play question audio and wait for it to finish
-      console.log('Playing question audio...');
+      console.log('🎵 Step 3: Playing question audio...');
       await playAudio(questionAudio);
       
       // Create a promise that resolves when question audio ends
       await new Promise<void>((resolve) => {
         if (audioRef.current) {
-          audioRef.current.onended = () => {
-            console.log('Question audio finished');
+          const handleEnd = () => {
+            console.log('🎵 Question audio finished');
+            audioRef.current?.removeEventListener('ended', handleEnd);
             resolve();
           };
+          audioRef.current.addEventListener('ended', handleEnd);
+          
+          // Fallback timeout
+          setTimeout(() => {
+            console.log('🎵 Question audio timeout fallback');
+            audioRef.current?.removeEventListener('ended', handleEnd);
+            resolve();
+          }, 10000);
         } else {
           resolve();
         }
       });
       
       // Wait a moment then show buttons
+      console.log('🎵 Audio sequence complete, showing buttons...');
       setTimeout(() => {
         onComplete();
       }, GAME_CONFIG.timing.buttonDelay);
       
     } catch (err) {
-      console.warn('Error in audio sequence:', err);
+      console.warn('❌ Error in audio sequence:', err);
       onComplete();
     }
   }, [playAudio]);
@@ -223,11 +264,13 @@ export const useAudioManager = () => {
       audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
+    currentAudioRef.current = '';
   }, []);
 
   return {
     playAudio,
     playAudioSequence,
-    stopAudio
+    stopAudio,
+    getCurrentAudio: () => currentAudioRef.current
   };
 };
