@@ -162,13 +162,21 @@ export default function Scene7Page() {
                 animate={{ scale: [0, 1.2, 1], rotate: [0, 3, -3, 0] }}
                 transition={{ duration: 1, ease: 'easeOut' }}
               >
-                ¡Enhorabuena! Has acabado la Actividad 1
+                ¡Enhorabuena! Has acabado la Aventura
               </motion.h2>
+              <motion.h3
+                  className="text-2xl font-bold mb-6 drop-shadow text-orange-500"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [0, 1.2, 1], rotate: [0, 3, -3, 0] }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+              >
+               Descubriendo el cuerpo humano
+              </motion.h3>
               <motion.div
                 animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <JugarButton text="IR A LA ACTIVIDAD 2" onClick={handleBackClick} disabled={isAnimating} />
+                <JugarButton text="IR A LA PROXIMA AVENTURA! " onClick={handleBackClick} disabled={isAnimating} />
               </motion.div>
             </div>
           )}

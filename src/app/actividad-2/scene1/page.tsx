@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import JuegoUnoActividad2 from './JuegoUnoActividad2/JuegoUnoActividad2';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -11,6 +12,10 @@ export default function Actividad2Scene1Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const [showJuegoUno, setShowJuegoUno] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -66,7 +71,30 @@ export default function Actividad2Scene1Page() {
   };
 
   const handleVideoEnd = () => {
-    router.push('/actividad-2/scene2');
+    setVideoEnded(true);
+  };
+
+  const handleOpenJuegoUno = () => {
+    playSound();
+    setShowJuegoUno(true);
+  };
+
+  const handleCloseJuegoUno = () => {
+    setShowJuegoUno(false);
+  };
+
+  const handleGameComplete = () => {
+    setGameCompleted(true);
+  };
+
+  const handleGoToScene2 = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+    setTimeout(() => {
+      setIsAnimating(false);
+      router.push('/actividad-2/scene2');
+    }, 800);
   };
 
   return (
@@ -76,7 +104,7 @@ export default function Actividad2Scene1Page() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      {/* Background gradient */}
+      {/* Background gradient - NO CHANGE when modal opens */}
       <div className="absolute inset-0 bg-gradient-to-b from-green-400 via-blue-200 to-pink-300 z-0" />
 
       <div className="absolute inset-0 z-10">
@@ -120,16 +148,53 @@ export default function Actividad2Scene1Page() {
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-20"
-            src="/video/ACTIVIDAD-2-ESCENA-1.mp4"
-            autoPlay
-            playsInline
-            onEnded={handleVideoEnd}
-          />
+          {!videoEnded ? (
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover z-20"
+              src="/video/ACTIVIDAD-2-ESCENA-1.mp4"
+              autoPlay
+              playsInline
+              onEnded={handleVideoEnd}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              {!showJuegoUno && (
+                <motion.div
+                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                >
+                  {!gameCompleted ? (
+                    <JugarButton onClick={handleOpenJuegoUno} disabled={isAnimating} />
+                  ) : (
+                    <div className="flex flex-col items-center space-y-4">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
+                      >
+                        ¡Juego Completado! 🎉
+                      </motion.div>
+                      <JugarButton 
+                        onClick={handleGoToScene2} 
+                        disabled={isAnimating}
+                        text="Continuar..."
+                      />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </div>
+          )}
         </div>
       )}
+
+      {/* JuegoUnoActividad2 Game Modal */}
+      <JuegoUnoActividad2 
+        isVisible={showJuegoUno} 
+        onClose={handleCloseJuegoUno}
+        onGameComplete={handleGameComplete}
+      />
     </motion.div>
   );
 }
