@@ -5,6 +5,7 @@ export const GAME_CONFIG = {
   // Global audio files
   globalAudio: {
     titleGame: '/audio/actividad-2/juego2/title-game.mp3',
+    subtitle: '/audio/actividad-2/juego2/subtitulo.mp3', // NEW: Subtitle explaining the game
     buttonClick: '/audio/button/Bright.mp3', // Sound for button clicks
     incorrect: '/audio/actividad-2/juego2/incorrecto.mp3', // General "incorrect answer" audio
     correct: '/audio/actividad-2/juego2/correcto.mp3' // General "correct answer" audio
@@ -133,6 +134,7 @@ export const GAME_CONFIG = {
     feedbackDuration: 4000,
     buttonDelay: 1000,
     titleAudioDelay: 1000,
+    subtitleAudioDelay: 2000, // NEW: Delay before playing subtitle
     incorrectAudioDelay: 1500 // Delay between incorrect audio and specific feedback
   },
 

@@ -1,4 +1,4 @@
-// YesNoButtons Component - Updated with image buttons
+// YesNoButtons Component - Updated with left/right positioning
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -39,15 +39,14 @@ const YesNoButtons: React.FC<YesNoButtonsProps> = ({
   };
 
   return (
-    <motion.div
-      className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-    >
-      <div className="flex space-x-8">
-        
-        {/* YES Button */}
+    <>
+      {/* YES Button - Left Side */}
+      <motion.div
+        className="absolute left-8 bottom-0 transform translate-y-1/2 z-30"
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
         <motion.button
           onClick={() => handleButtonClick('YES')}
           disabled={disabled}
@@ -67,8 +66,15 @@ const YesNoButtons: React.FC<YesNoButtonsProps> = ({
             />
           </div>
         </motion.button>
+      </motion.div>
 
-        {/* NO Button */}
+      {/* NO Button - Right Side */}
+      <motion.div
+        className="absolute right-8 bottom-0 transform translate-y-1/2 z-30"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
         <motion.button
           onClick={() => handleButtonClick('NO')}
           disabled={disabled}
@@ -88,9 +94,8 @@ const YesNoButtons: React.FC<YesNoButtonsProps> = ({
             />
           </div>
         </motion.button>
-
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 

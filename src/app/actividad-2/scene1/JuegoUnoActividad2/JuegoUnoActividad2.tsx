@@ -213,10 +213,10 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         {/* Game Content */}
         {gamePhase === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white text-xl font-bold text-center">
+            {/* <div className="text-white text-xl font-bold text-center">
               <div className="text-2xl mb-4">🎮 Cargando situación...</div>
               <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -249,8 +249,10 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             {gamePhase === 'question' && (
               <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20">
                 <div className="text-center">
-                  <div className="text-xl font-bold text-fuchsia-300 mb-4">
-                    ¿Está bien que se lo cuente a todos los amigos?
+                  <div className="bg-transparent backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
+                    <div className="text-xl font-bold text-fuchsia-900 mb-4">
+                      ¿Está bien que se lo cuente a todos los amigos?
+                    </div>
                   </div>
                 </div>
               </div>

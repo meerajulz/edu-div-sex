@@ -40,7 +40,7 @@ const SituationDisplay: React.FC<SituationDisplayProps> = ({
           src={image}
           alt={alt}
           fill
-          className="object-contain rounded-lg shadow-lg"
+          className="object-contain "
           priority
         />
       </div>

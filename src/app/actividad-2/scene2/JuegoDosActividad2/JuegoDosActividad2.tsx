@@ -47,7 +47,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
   const { recordAttempt } = useGameTracking();
   
   // Audio management
-  const { playButtonSound, playTitleAudio, playFeedbackAudio, playCorrectAudio, playIncorrectAudio, stopAudio } = useAudioManager();
+  const { playButtonSound, playTitleAudio, playSubtitleAudio, playFeedbackAudio, playCorrectAudio, playIncorrectAudio, stopAudio } = useAudioManager();
 
   // Get current body part - this was the missing piece!
   const currentBodyPart = shuffledBodyParts[currentBodyPartIndex] || null;
@@ -83,19 +83,24 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
       const bodyPartsOrder = shuffledBodyParts.map(bp => bp.id);
       startSession(userId, bodyPartsOrder);
       
-      // Play title audio first, then start game
+      // Play title audio first, then subtitle, then start game
       setTimeout(async () => {
         await playTitleAudio();
         
-        // Start first body part sequence
-        setTimeout(() => {
-          startGameSequence(0);
-        }, GAME_CONFIG.timing.imageAnimation);
+        // Play subtitle audio after title
+        setTimeout(async () => {
+          await playSubtitleAudio();
+          
+          // Start first body part sequence after subtitle
+          setTimeout(() => {
+            startGameSequence(0);
+          }, GAME_CONFIG.timing.imageAnimation);
+        }, GAME_CONFIG.timing.subtitleAudioDelay);
       }, GAME_CONFIG.timing.titleAudioDelay);
     } else if (!isVisible) {
       stopAudio();
     }
-  }, [isVisible, gameInitialized, shuffledBodyParts.length, userId, startSession, playTitleAudio, startGameSequence, stopAudio]);
+  }, [isVisible, gameInitialized, shuffledBodyParts.length, userId, startSession, playTitleAudio, playSubtitleAudio, startGameSequence, stopAudio]);
 
   // Handle answer selection
   const handleAnswerSelect = async (answer: 'YES' | 'NO') => {
@@ -238,7 +243,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
         {gamePhase === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-gray-800 text-xl font-bold text-center">
-              <div className="text-2xl mb-4">🎮 {GAME_CONFIG.title}</div>
+              {/* <div className="text-2xl top-0 mb-4">🎮 {GAME_CONFIG.title}</div> */}
               <div className="w-16 h-16 border-4 border-blue-400/30 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
             </div>
           </div>
@@ -247,7 +252,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
         {/* Game Title and Instructions */}
         {gamePhase === 'showing' && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-            <div className="bg-white/90 p-6 rounded-lg text-center text-gray-800 max-w-md border-2 border-blue-300">
+            {/* <div className="bg-white/90 p-6 rounded-lg text-center text-gray-800 max-w-md border-2 border-blue-300">
               <div className="text-2xl font-bold mb-4 text-blue-600">
                 🎯 Mi cuerpo y mi espacio
               </div>
@@ -257,7 +262,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
               <div className="text-sm text-gray-600">
                 🎵 Preparando imagen...
               </div>
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -293,7 +298,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           <CongratsOverlay onComplete={handleCelebrationComplete} />
         )}
 
-   {/* Game Complete - Simple JugarButton */}
+        {/* Game Complete - Simple JugarButton */}
         {gamePhase === 'complete' && (
           <div className="absolute inset-0 flex items-center justify-center z-40">
             <motion.div
