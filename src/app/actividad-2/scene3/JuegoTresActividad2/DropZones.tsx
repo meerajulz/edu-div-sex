@@ -12,8 +12,7 @@ interface DropZonesProps {
 const DropZones: React.FC<DropZonesProps> = ({ 
   onDrop, 
   disabled = false, 
-  droppedItems, 
-  situations 
+  droppedItems,  
 }) => {
   const [dragOverZone, setDragOverZone] = useState<string | null>(null);
 
@@ -40,9 +39,6 @@ const DropZones: React.FC<DropZonesProps> = ({
     setDragOverZone(null);
   };
 
-  const getSituationById = (id: string) => {
-    return situations.find(s => s.id === id);
-  };
 
   return (
     <div className="flex justify-center gap-8 mb-8">
@@ -64,9 +60,19 @@ const DropZones: React.FC<DropZonesProps> = ({
         onDrop={(e) => handleDrop(e, 'PRIVATE')}
         whileHover={!disabled ? GAME_CONFIG.animations.dropZoneHover : {}}
       >
+        {/* Decorative Lock Image - Top Left */}
+        <div 
+          className="absolute -top-28 -left-10 w-[180px] h-[180px] pointer-events-none z-10"
+          style={{
+            backgroundImage: "url('/image/actividad_2/juego_3/Candado_.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }}
+        />
+
         {/* Zone Header */}
-        <div className="text-center mb-2">
-          <div className="text-2xl mb-1">🔒</div>
+        <div className="text-center mt-2">
           <div 
             className="text-lg font-bold"
             style={{ color: '#b45309' }}
@@ -75,24 +81,56 @@ const DropZones: React.FC<DropZonesProps> = ({
           </div>
         </div>
 
-        {/* Dropped Items */}
-        <div className="flex flex-wrap gap-1 justify-center items-center flex-1 w-full px-2">
-          {droppedItems.PRIVATE?.map((situation) => (
-            <div
-              key={`dropped-${situation.id}`}
-              className="w-12 h-12 rounded-lg overflow-hidden border-2 border-green-400 relative"
-            >
-              <img
-                src={situation.image}
-                alt={situation.name}
-                className="w-full h-full object-cover"
-              />
-              {/* Success indicator */}
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">✓</span>
-              </div>
-            </div>
-          ))}
+        {/* Dropped Items - More Free Layout */}
+        <div className="relative flex-1 w-full p-4">
+          {droppedItems.PRIVATE?.map((situation, index) => {
+            // Create more organic, scattered positioning
+            const positions = [
+              { top: '10%', left: '15%', rotation: -5 },
+              { top: '20%', left: '60%', rotation: 8 },
+              { top: '45%', left: '25%', rotation: -3 },
+              { top: '60%', left: '70%', rotation: 6 },
+              { top: '35%', left: '45%', rotation: -8 },
+              { top: '75%', left: '20%', rotation: 4 },
+              { top: '15%', left: '80%', rotation: -6 }
+            ];
+            
+            const position = positions[index % positions.length];
+            
+            return (
+              <motion.div
+                key={`dropped-${situation.id}`}
+                className="absolute w-28 h-28 rounded-lg overflow-hidden border-2 border-green-400"
+                style={{
+                  top: position.top,
+                  left: position.left,
+                  transform: `rotate(${position.rotation}deg)`,
+                  zIndex: 5
+                }}
+                initial={{ scale: 0, rotate: 0 }}
+                animate={{ 
+                  scale: 1, 
+                  rotate: position.rotation,
+                  transition: { 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 15
+                  }
+                }}
+              >
+                <img
+                  src={situation.image}
+                  alt={situation.name}
+                  className="w-full h-full object-cover"
+                />
+                {/* Success indicator */}
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
         
         {/* Visual feedback for drag over */}
@@ -124,9 +162,19 @@ const DropZones: React.FC<DropZonesProps> = ({
         onDrop={(e) => handleDrop(e, 'PUBLIC')}
         whileHover={!disabled ? GAME_CONFIG.animations.dropZoneHover : {}}
       >
+        {/* Decorative OK Image - Top Right */}
+        <div 
+          className="absolute -top-28 -right-0 w-[180px] h-[180px] pointer-events-none z-10"
+          style={{
+            backgroundImage: "url('/image/actividad_2/juego_3/ok_.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }}
+        />
+
         {/* Zone Header */}
-        <div className="text-center mb-2">
-          <div className="text-2xl mb-1">🌍</div>
+        <div className="text-center mt-2">
           <div 
             className="text-lg font-bold"
             style={{ color: '#1e3a8a' }}
@@ -135,24 +183,56 @@ const DropZones: React.FC<DropZonesProps> = ({
           </div>
         </div>
 
-        {/* Dropped Items */}
-        <div className="flex flex-wrap gap-1 justify-center items-center flex-1 w-full px-2">
-          {droppedItems.PUBLIC?.map((situation) => (
-            <div
-              key={`dropped-${situation.id}`}
-              className="w-24 h-24 rounded-lg overflow-hidden border-2 border-green-400 relative"
-            >
-              <img
-                src={situation.image}
-                alt={situation.name}
-                className="w-full h-full object-cover"
-              />
-              {/* Success indicator */}
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">✓</span>
-              </div>
-            </div>
-          ))}
+        {/* Dropped Items - More Free Layout */}
+        <div className="relative flex-1 w-full p-4">
+          {droppedItems.PUBLIC?.map((situation, index) => {
+            // Create more organic, scattered positioning
+            const positions = [
+              { top: '15%', left: '20%', rotation: 7 },
+              { top: '30%', left: '65%', rotation: -4 },
+              { top: '50%', left: '30%', rotation: 9 },
+              { top: '25%', left: '75%', rotation: -7 },
+              { top: '65%', left: '15%', rotation: 3 },
+              { top: '40%', left: '55%', rotation: -5 },
+              { top: '70%', left: '70%', rotation: 8 }
+            ];
+            
+            const position = positions[index % positions.length];
+            
+            return (
+              <motion.div
+                key={`dropped-${situation.id}`}
+                className="absolute w-28 h-28 rounded-lg overflow-hidden border-2 border-green-400"
+                style={{
+                  top: position.top,
+                  left: position.left,
+                  transform: `rotate(${position.rotation}deg)`,
+                  zIndex: 5
+                }}
+                initial={{ scale: 0, rotate: 0 }}
+                animate={{ 
+                  scale: 1, 
+                  rotate: position.rotation,
+                  transition: { 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 15
+                  }
+                }}
+              >
+                <img
+                  src={situation.image}
+                  alt={situation.name}
+                  className="w-full h-full object-cover"
+                />
+                {/* Success indicator */}
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
         
         {/* Visual feedback for drag over */}

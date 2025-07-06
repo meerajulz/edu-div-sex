@@ -57,8 +57,72 @@ export const GAME_CONFIG = {
         correctText: '¡Muy bien! Cambiarse de ropa es algo que podemos hacer en espacios privados, en la habitación o en el baño.',
         incorrectText: 'Ohhh, tu respuesta está mal. Cambiarse de ropa es algo privado. No lo hacemos en público.'
       }
+    },
+    {
+      id: 'besar_en_la_boca',
+      name: 'Besar en la boca',
+      image: '/image/actividad_2/juego_3/PRI-besar-pareja.png',
+      dragAudio: '/audio/actividad-2/juego3/besoboca.mp3',
+      isPrivate: true,
+      correctAnswer: 'PRIVATE' as const,
+      feedback: {
+        audio: '/audio/actividad-2/juego3/text-beso-boca.mp3',
+        correctText: '¡Muy bien! Besar en la boca es algo que podemos hacer en espacios privados cuando estamos solos con nuestra pareja.',
+        incorrectText: 'Ohhh, tu respuesta está mal. Besar en la boca es algo que podemos hacer en espacios privados. No lo hacemos en público. ¡Inténtalo de nuevo!'
+      }
+    },
+    {
+      id: 'besar_en_la_mejilla',
+      name: 'Besar en la mejilla',
+      image: '/image/actividad_2/juego_3/PUB-dar-dos-besos.png',
+      dragAudio: '/audio/actividad-2/juego3/besarmejilla.mp3',
+      isPrivate: false,
+      correctAnswer: 'PUBLIC' as const,
+      feedback: {
+        audio: '/audio/actividad-2/juego3/text-besar-mejilla.mp3',
+        correctText: '¡Muy bien! ¡Muy bien! Besar en la mejilla es algo que podemos hacer en espacios públicos.',
+        incorrectText: 'Ohhh, tu respuesta está mal. Besar en la mejilla es algo que podemos hacer en espacios públicos. ¡Inténtalo de nuevo!'
+      }
+    },
+    {
+      id: 'jugar_a_las_cartas',
+      name: 'Jugar a las cartas',
+      image: '/image/actividad_2/juego_3/PUB_Jugar-cartas.png',
+      dragAudio: '/audio/actividad-2/juego3/jugar.mp3',
+      isPrivate: false,
+      correctAnswer: 'PUBLIC' as const,
+      feedback: {
+        audio: '/audio/actividad-2/juego3/text-jugar-cartas.mp3',
+        correctText: '¡Muy bien! Jugar a las cartas es algo que podemos hacer en espacios públicos.',
+        incorrectText: 'Ohhh, tu respuesta está mal. Jugar a las cartas es algo que hacemos en espacios públicos. ¡Inténtalo de nuevo!'
+      }
+    },
+    {
+      id: 'masturbarse_bano',
+      name: 'Masturbarse en el baño',
+      image: '/image/actividad_2/juego_3/PRI-Masturbarse.png',
+      dragAudio: '/audio/actividad-2/juego3/jugar.mp3',
+      isPrivate: true,
+      correctAnswer: 'PRIVATE' as const,
+      feedback: {
+        audio: '/audio/actividad-2/juego3/text-toca-pene.mp3',
+        correctText: '¡Muy bien! Tocarse (el pene o la vulva) es algo privado que hacemos en un lugar y momento en que estamos solos.',
+        incorrectText: 'Ohhh, tu respuesta está mal. Tocarse (el pene o la vulva) es algo que podemos hacer en espacios privados. No lo hacemos en público. ¡Inténtalo de nuevo!'
+      }
+    },
+    {
+      id: 'abrazarse',
+      name: 'Abrazarse',
+      image: '/image/actividad_2/juego_3/PUB-saludar-amigos.png',
+      dragAudio: '/audio/actividad-2/juego3/abrazo.mp3',
+      isPrivate: false,
+      correctAnswer: 'PUBLIC' as const,
+      feedback: {
+        audio: '/audio/actividad-2/juego3/text-abrazo.mp3',
+        correctText: '¡Muy bien! Abrazarse es algo que que podemos hacer en espacios públicos.',
+        incorrectText: 'Si es incorrecto: Ohhh, tu respuesta está mal. Abrazarse es algo que podemos hacer en espacios públicos. ¡Inténtalo de nuevo!'
+      }
     }
-    // More situations will be added here...
   ],
 
   // Timing configuration

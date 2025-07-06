@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
@@ -28,8 +28,6 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     setGamePhase,
     draggedItem,
     setDraggedItem,
-    isCorrect,
-    setIsCorrect,
     score,
     setScore,
     completedSituations,
@@ -37,10 +35,8 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     gameInitialized,
     droppedItems,
     resetGame,
-    nextSituation,
     completeSituation,
-    addDroppedItem,
-    removeDroppedItem
+    addDroppedItem
   } = useGameState();
 
   // Session tracking
@@ -116,7 +112,6 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     console.log(`🎮 Dropped ${situation.name} on ${zoneId} zone`);
     
     const correct = zoneId === situation.correctAnswer;
-    setIsCorrect(correct);
 
     // Record attempt
     recordAttempt(
@@ -142,8 +137,11 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
         await playFeedbackAudio(situation.feedback.audio);
         
         // Check if game is complete after feedback audio finishes
-        const newCompletedCount = completedSituations.size + 1;
-        if (newCompletedCount >= GAME_CONFIG.situations.length) {
+        // Use the current completedSituations size + 1 for the new completion
+        const currentCompletedCount = completedSituations.size;
+        console.log(`🎮 Current completed: ${currentCompletedCount}, Total situations: ${GAME_CONFIG.situations.length}`);
+        
+        if (currentCompletedCount + 1 >= GAME_CONFIG.situations.length) {
           console.log('🎮 All situations completed! Showing celebration...');
           setTimeout(() => {
             setGamePhase('celebrating');
@@ -168,6 +166,16 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     // Reset dragged item
     setDraggedItem(null);
   };
+
+  // Watch for completion state changes to trigger celebration
+  useEffect(() => {
+    if (gamePhase === 'playing' && completedSituations.size >= GAME_CONFIG.situations.length) {
+      console.log('🎮 Game completed via effect! Showing celebration...');
+      setTimeout(() => {
+        setGamePhase('celebrating');
+      }, 2000); // Give time for any ongoing audio
+    }
+  }, [completedSituations.size, gamePhase]);
 
   const handleCelebrationComplete = () => {
     console.log('🎮 Celebration completed! Closing modal and going to scene...');
@@ -211,7 +219,7 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
       >
         {/* Background decorative image */}
         <div 
-          className="absolute inset-0 w-full h-full bg-contain bg-center bg-no-repeat opacity-20"
+          className="absolute inset-0 w-full h-full bg-contain bg-center bg-no-repeat opacity-1"
           style={{
             backgroundImage: "url('/image/actividad_2/juego_3/bg.png')"
           }}
