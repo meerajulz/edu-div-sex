@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import JuegoDosActividad2 from './JuegoDosActividad2/JuegoDosActividad2';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -11,6 +12,7 @@ export default function Actividad2Scene2Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [showGameModal, setShowGameModal] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -66,7 +68,18 @@ export default function Actividad2Scene2Page() {
   };
 
   const handleVideoEnd = () => {
+    setShowVideo(false);
+    setShowGameModal(true);
+  };
+
+  const handleGameComplete = () => {
+    setShowGameModal(false);
     router.push('/actividad-2/scene3');
+  };
+
+  const handleCloseGame = () => {
+    setShowGameModal(false);
+    // Stay on current page
   };
 
   return (
@@ -109,7 +122,7 @@ export default function Actividad2Scene2Page() {
         <FloatingMenu />
       </div>
 
-      {!showVideo ? (
+      {!showVideo && !showGameModal && (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
@@ -118,7 +131,9 @@ export default function Actividad2Scene2Page() {
             <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      ) : (
+      )}
+
+      {showVideo && (
         <div className="absolute" style={containerStyle}>
           <video
             ref={videoRef}
@@ -130,6 +145,14 @@ export default function Actividad2Scene2Page() {
           />
         </div>
       )}
+
+      {/* Game Component */}
+      <JuegoDosActividad2
+        isVisible={showGameModal}
+        onClose={handleCloseGame}
+        onGameComplete={handleGameComplete}
+        userId="user123" // You can pass the actual user ID here
+      />
     </motion.div>
   );
 }
