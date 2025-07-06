@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback} from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { GAME_CONFIG, BodyPartAttempt, GameSession, shuffleArray } from './config';
 
 export const useGameState = () => {
   const [currentBodyPartIndex, setCurrentBodyPartIndex] = useState(0);
-  const [gamePhase, setGamePhase] = useState<'loading' | 'showing' | 'question' | 'feedback' | 'complete'>('loading');
+  const [gamePhase, setGamePhase] = useState<'loading' | 'showing' | 'question' | 'feedback' | 'celebrating' | 'complete'>('loading');
   const [selectedAnswer, setSelectedAnswer] = useState<'YES' | 'NO' | null>(null);
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState(0);

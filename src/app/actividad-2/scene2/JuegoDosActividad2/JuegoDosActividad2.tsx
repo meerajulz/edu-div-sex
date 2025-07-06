@@ -7,6 +7,8 @@ import { useGameState, useGameSession, useGameTracking, useAudioManager } from '
 import BodyPartDisplay from './BodyPartDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
+import CongratsOverlay from './CongratsOverlay';
+import JugarButton from '../../../components/JugarButton/JugarButton';
 
 interface JuegoDosActividad2Props {
   isVisible: boolean;
@@ -155,15 +157,9 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           }, GAME_CONFIG.timing.imageAnimation);
         }, 500);
       } else {
-        // All body parts completed - end game
-        console.log('🎮 Game completed!');
-        endSession(true, score + 1); // +1 because score update happens after this
-        setTimeout(() => {
-          if (onGameComplete) {
-            onGameComplete();
-          }
-          onClose();
-        }, 1000);
+        // All body parts completed - show celebration first
+        console.log('🎮 Game completed! Showing celebration...');
+        setGamePhase('celebrating');
       }
     } else {
       // Wrong answer - retry same body part
@@ -173,6 +169,22 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
         setSelectedAnswer(null);
       }, 500);
     }
+  };
+
+  const handleCelebrationComplete = () => {
+    console.log('🎮 Celebration completed! Showing final congratulations...');
+    setGamePhase('complete');
+  };
+
+  const handleGameComplete = () => {
+    console.log('🎮 Handling final game completion...');
+    endSession(true, score + 1); // +1 because score update happens after this
+    setTimeout(() => {
+      if (onGameComplete) {
+        onGameComplete();
+      }
+      onClose();
+    }, 1000);
   };
 
   const handleClose = () => {
@@ -225,7 +237,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
         {/* Loading State */}
         {gamePhase === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-blue-600 bg-white/50 p-4 text-xl font-bold text-center">
+            <div className="text-gray-800 text-xl font-bold text-center">
               <div className="text-2xl mb-4">🎮 {GAME_CONFIG.title}</div>
               <div className="w-16 h-16 border-4 border-blue-400/30 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
             </div>
@@ -233,7 +245,21 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
         )}
 
         {/* Game Title and Instructions */}
-
+        {gamePhase === 'showing' && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+            <div className="bg-white/90 p-6 rounded-lg text-center text-gray-800 max-w-md border-2 border-blue-300">
+              <div className="text-2xl font-bold mb-4 text-blue-600">
+                🎯 Mi cuerpo y mi espacio
+              </div>
+              <p className="text-lg mb-3">
+                Señala cuáles son las partes íntimas o privadas
+              </p>
+              <div className="text-sm text-gray-600">
+                🎵 Preparando imagen...
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Body Part Display */}
         {currentBodyPart && (gamePhase === 'showing' || gamePhase === 'question') && (
@@ -242,16 +268,6 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
             name={currentBodyPart.name}
             isVisible={gamePhase === 'showing' || gamePhase === 'question'}
           />
-        )}
-
-        {gamePhase === 'showing' && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-            <div className="bg-white/90 p-6 rounded-lg text-center text-gray-800 max-w-md border-2 border-blue-300">
-              <div className="text-sm text-gray-600">
-                🎵 Preparando imagen...
-              </div>
-            </div>
-          </div>
         )}
 
         {/* Yes/No Buttons */}
@@ -272,28 +288,19 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           />
         )}
 
-        {/* Game Complete */}
+        {/* Celebration Overlay - ¡Muy bien! with sparkles */}
+        {gamePhase === 'celebrating' && (
+          <CongratsOverlay onComplete={handleCelebrationComplete} />
+        )}
+
+   {/* Game Complete - Simple JugarButton */}
         {gamePhase === 'complete' && (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center z-40">
             <motion.div
-              className="bg-white/95 p-8 rounded-2xl text-center text-gray-800 max-w-md mx-4 border-4 border-green-400"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              animate={{ scale: [1, 1.3, 1], rotate: [0, -360] }}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
             >
-              <div className="text-6xl mb-4">🏆</div>
-              <div className="text-3xl font-bold mb-4 text-green-600">
-                ¡Juego Completado!
-              </div>
-              <p className="text-lg mb-4">
-                Puntuación final: {score}/{shuffledBodyParts.length}
-              </p>
-              <button
-                onClick={handleClose}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
-              >
-                Continuar
-              </button>
+              <JugarButton text="Continuar la próxima aventura..." onClick={handleGameComplete} disabled={false} />
             </motion.div>
           </div>
         )}
