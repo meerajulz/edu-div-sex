@@ -121,11 +121,11 @@ export const GAME_CONFIG = {
   // Timing configuration
   timing: {
     titleAudioDelay: 5000, // 5 seconds total for title (audio + delay)
-    situationImageDelay: 500, // Delay before showing situation image
-    optionsDelay: 1000, // Delay after situation audio before showing options
-    feedbackImageDelay: 500, // Delay before showing ok/no feedback image
+    situationImageDelay: 100, // Delay before showing situation image
+    optionsDelay: 800, // Delay after situation audio before showing options
+    feedbackImageDelay: 200, // Delay before showing ok/no feedback image
     feedbackAudioDelay: 800, // Delay before playing feedback audio
-    nextSituationDelay: 6500, // 6 seconds for feedback + 500ms buffer
+    nextSituationDelay: 4000, // 6 seconds for feedback + 500ms buffer
     congratsDelay: 1000, // Delay before showing congratulations
     retryDelay: 6500 // 6 seconds for feedback + 500ms buffer before allowing retry
   },
