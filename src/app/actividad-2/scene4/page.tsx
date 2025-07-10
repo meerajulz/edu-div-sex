@@ -1,14 +1,16 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState, useRef, useEffect } from 'react';
 import JuegoCuatroActividad2 from './JuegoCuatroActividad2/JuegoCuatroActividad2';
 import JuegoCincoActividad2 from './JuegoCincoActividad2/JuegoCincoActividad2';
-import router from 'next/router';
+
 
 export default function Actividad2Scene4Page() {
+  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const alexAudioRef = useRef<HTMLAudioElement | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -140,7 +142,7 @@ export default function Actividad2Scene4Page() {
     playSound();
     // Add your navigation logic here to go to the next level
     console.log('Going to next level...');
-    router.push('/actividad-1') 
+    router.push('/actividad-1');
   };
 
   // Show Alex congratulations scene if both games are completed
