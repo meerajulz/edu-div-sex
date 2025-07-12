@@ -101,11 +101,11 @@ export const GAME_CONFIG = {
       id: 'masturbarse_bano',
       name: 'Masturbarse en el baño',
       image: '/image/actividad_2/juego_3/PRI-Masturbarse.png',
-      dragAudio: '/audio/actividad-2/juego3/jugar.mp3',
+      dragAudio: '/audio/actividad-2/juego3/masturbar-bano.mp3',
       isPrivate: true,
       correctAnswer: 'PRIVATE' as const,
       feedback: {
-        audio: '/audio/actividad-2/juego3/text-toca-pene.mp3',
+        audio: '/audio/actividad-2/juego3/text-tocar-pene.mp3',
         correctText: '¡Muy bien! Tocarse (el pene o la vulva) es algo privado que hacemos en un lugar y momento en que estamos solos.',
         incorrectText: 'Ohhh, tu respuesta está mal. Tocarse (el pene o la vulva) es algo que podemos hacer en espacios privados. No lo hacemos en público. ¡Inténtalo de nuevo!'
       }

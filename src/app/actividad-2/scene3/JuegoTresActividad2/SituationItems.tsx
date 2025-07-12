@@ -19,7 +19,7 @@ const SituationItems: React.FC<SituationItemsProps> = ({
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, situationId: string) => {
     if (disabled || completedSituations.has(situationId)) return;
-    
+
     e.dataTransfer.setData('text/plain', situationId);
     setDraggedItem(situationId);
     onDragStart(situationId);
@@ -37,12 +37,12 @@ const SituationItems: React.FC<SituationItemsProps> = ({
             Arrastra las situaciones a las categorías
           </h3>
         </div>
-        
+
         <div className="flex gap-2 overflow-x-auto pb-2">
           {situations.map((situation) => {
             const isCompleted = completedSituations.has(situation.id);
             const isDragging = draggedItem === situation.id;
-            
+
             return (
               <motion.div
                 key={situation.id}
@@ -73,6 +73,7 @@ const SituationItems: React.FC<SituationItemsProps> = ({
                   draggable={!disabled && !isCompleted}
                   onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, situation.id)}
                   onDragEnd={handleDragEnd}
+                  onContextMenu={(e) => e.preventDefault()} // Prevent context menu on long press
                   className="w-full h-full"
                 >
                   <img
@@ -81,14 +82,14 @@ const SituationItems: React.FC<SituationItemsProps> = ({
                     className="w-full h-full object-cover"
                     draggable={false}
                   />
-                  
+
                   {/* Completed overlay - positioned to not block other items */}
                   {isCompleted && (
                     <div className="absolute inset-0 bg-green-500/30 flex items-center justify-center pointer-events-none">
                       <div className="text-2xl">✅</div>
                     </div>
                   )}
-                  
+
                   {/* Situation name tooltip */}
                   {!isCompleted && (
                     <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 
@@ -102,7 +103,7 @@ const SituationItems: React.FC<SituationItemsProps> = ({
             );
           })}
         </div>
-        
+
         {/* Progress indicator */}
         <div className="flex justify-center">
           <div className="text-sm text-gray-600">
