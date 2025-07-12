@@ -13,6 +13,7 @@ export default function Actividad2Scene2Page() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -70,6 +71,7 @@ export default function Actividad2Scene2Page() {
   const handleVideoEnd = () => {
     setShowVideo(false);
     setShowGameModal(true);
+    setGameCompleted(true); 
   };
 
   const handleGameComplete = () => {
@@ -153,6 +155,21 @@ export default function Actividad2Scene2Page() {
         onGameComplete={handleGameComplete}
         userId="user123" // You can pass the actual user ID here
       />
+     
+      {/* After the game ends, show the final button */}
+      {gameCompleted && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center">
+          <motion.div
+            animate={{ scale: [1, 1.3, 1], rotate: [0, -360] }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            <JugarButton
+              text="Continuar..."
+              onClick={() => router.push('/actividad-2/scene3')}
+            />
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }
