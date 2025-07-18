@@ -12,13 +12,22 @@ const sparkleVariants = {
 };
 
 interface CongratsOverlayProps {
+  isVisible?: boolean; // Added isVisible prop
   onComplete: () => void;
+  duration?: number; // Added duration prop
 }
 
-const CongratsOverlay: React.FC<CongratsOverlayProps> = ({ onComplete }) => {
+const CongratsOverlay: React.FC<CongratsOverlayProps> = ({ 
+  isVisible = true, // Default to true for backward compatibility
+  onComplete, 
+  duration = 2000 // Default duration
+}) => {
   const hasPlayedRef = useRef(false);
 
   useEffect(() => {
+    // Only run if visible
+    if (!isVisible) return;
+
     if (!hasPlayedRef.current) {
       hasPlayedRef.current = true;
       const audio = new Audio('/audio/actividad-1/escena_2/elements/muy_bien_bright.mp3');
@@ -27,10 +36,20 @@ const CongratsOverlay: React.FC<CongratsOverlayProps> = ({ onComplete }) => {
 
     const timeout = setTimeout(() => {
       onComplete();
-    }, 2000);
+    }, duration); // Use the duration prop
 
     return () => clearTimeout(timeout);
-  }, [onComplete]);
+  }, [onComplete, duration, isVisible]);
+
+  // Reset audio played flag when component becomes invisible
+  useEffect(() => {
+    if (!isVisible) {
+      hasPlayedRef.current = false;
+    }
+  }, [isVisible]);
+
+  // Don't render if not visible
+  if (!isVisible) return null;
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 pointer-events-none">
