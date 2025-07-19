@@ -17,7 +17,7 @@ interface Student {
   motor_skills: number;
   created_at: string;
   additional_abilities?: {
-    evaluation_responses?: any[];
+    evaluation_responses?: unknown[];
     evaluation_date?: string;
   };
 }

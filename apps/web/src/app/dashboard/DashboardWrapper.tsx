@@ -30,9 +30,9 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       setUserData({
         name: user.name || 'Usuario',
         email: user.email || '',
-        role: (user as any).role,
-        first_name: (user as any).first_name,
-        last_name: (user as any).last_name,
+        role: (user as { role?: string }).role,
+        first_name: (user as { first_name?: string }).first_name,
+        last_name: (user as { last_name?: string }).last_name,
       });
     }
   }, [session]);

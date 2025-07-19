@@ -37,7 +37,11 @@ export default function AddUser() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedCredentials, setGeneratedCredentials] = useState<any>(null);
+  const [generatedCredentials, setGeneratedCredentials] = useState<{
+    username?: string;
+    email?: string;
+    generated_password?: string;
+  } | null>(null);
 
   // Handle TIPO DE APOYO change
   const handleSupportTypeChange = (id: number, value: "1" | "0") => {
@@ -194,7 +198,7 @@ export default function AddUser() {
             <p><strong>Usuario:</strong> {generatedCredentials.username}</p>
             <p><strong>Email:</strong> {generatedCredentials.email}</p>
             {generatedCredentials.generated_password && (
-              <p><strong>Contraseña:</strong> "{generatedCredentials.generated_password}"</p>
+              <p><strong>Contraseña:</strong> &quot;{generatedCredentials.generated_password}&quot;</p>
             )}
             <p className="text-xs mt-2 text-blue-600">Guarde estas credenciales para el estudiante.</p>
           </div>
@@ -309,7 +313,7 @@ export default function AddUser() {
                       </label>
                     </div>
                     <p className="text-sm text-gray-500 ml-6">
-                      Se generará una contraseña con 3 palabras simples en español (ej: "gato azul correr")
+                      Se generará una contraseña con 3 palabras simples en español (ej: &quot;gato azul correr&quot;)
                     </p>
                   </div>
 

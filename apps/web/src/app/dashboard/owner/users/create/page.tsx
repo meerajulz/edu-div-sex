@@ -200,7 +200,7 @@ export default function OwnerCreateUserPage() {
               </label>
               <select
                 value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value as any})}
+                onChange={(e) => setFormData({...formData, role: e.target.value as 'owner' | 'admin' | 'teacher' | 'student' | ''})}
                 className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 required
               >
@@ -239,7 +239,7 @@ export default function OwnerCreateUserPage() {
                   {useGeneratedPassword && generatedPassword && (
                     <div className="ml-6 p-3 bg-blue-50 rounded-lg">
                       <p className="text-sm text-blue-700 mb-1">Contraseña generada:</p>
-                      <p className="font-mono text-lg text-blue-900">"{generatedPassword}"</p>
+                      <p className="font-mono text-lg text-blue-900">&quot;{generatedPassword}&quot;</p>
                       <button
                         type="button"
                         onClick={generatePassword}

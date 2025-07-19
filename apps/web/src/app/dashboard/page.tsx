@@ -31,7 +31,7 @@ export default function DashboardPage() {
         setStats({
           totalStudents: students.length,
           recentStudents: students
-            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .sort((a: { created_at: string }, b: { created_at: string }) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
             .slice(0, 5)
         });
       }

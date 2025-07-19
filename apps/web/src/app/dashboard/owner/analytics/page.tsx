@@ -75,18 +75,18 @@ export default function OwnerAnalyticsPage() {
       const students = studentsData.students || [];
       const assignments = assignmentsData.assignments || [];
 
-      const usersByRole = users.reduce((acc: any, user: any) => {
+      const usersByRole = users.reduce((acc: Record<string, number>, user: { role: string }) => {
         acc[user.role] = (acc[user.role] || 0) + 1;
         return acc;
       }, {});
 
-      const studentsByAbility = students.reduce((acc: any, student: any) => {
+      const studentsByAbility = students.reduce((acc: Record<string, number>, student: { reading_level?: number }) => {
         const level = student.reading_level || 1;
         acc[level] = (acc[level] || 0) + 1;
         return acc;
       }, {});
 
-      const studentsByAge = students.reduce((acc: any, student: any) => {
+      const studentsByAge = students.reduce((acc: Record<string, number>, student: { age?: number }) => {
         if (!student.age) {
           acc['Sin especificar'] = (acc['Sin especificar'] || 0) + 1;
           return acc;
@@ -102,23 +102,23 @@ export default function OwnerAnalyticsPage() {
         return acc;
       }, {});
 
-      const studentsBySex = students.reduce((acc: any, student: any) => {
+      const studentsBySex = students.reduce((acc: { male: number; female: number }, student: { sex: string }) => {
         acc[student.sex] = (acc[student.sex] || 0) + 1;
         return acc;
       }, { male: 0, female: 0 });
 
-      const teachersWithStudents = new Set(students.map((s: any) => s.teacher_id)).size;
+      const teachersWithStudents = new Set(students.map((s: { teacher_id: string }) => s.teacher_id)).size;
       const teacherCount = usersByRole.teacher || 0;
       const avgStudentsPerTeacher = teacherCount > 0 ? students.length / teacherCount : 0;
 
-      const recentRegistrations = users.filter((user: any) => {
+      const recentRegistrations = users.filter((user: { created_at: string }) => {
         const createdAt = new Date(user.created_at);
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         return createdAt > weekAgo;
       }).length;
 
-      const studentsWithEvaluations = students.filter((s: any) => 
+      const studentsWithEvaluations = students.filter((s: { additional_abilities?: { evaluation_responses?: unknown[] } }) => 
         s.additional_abilities?.evaluation_responses?.length > 0
       ).length;
 
@@ -131,8 +131,8 @@ export default function OwnerAnalyticsPage() {
             teacher: usersByRole.teacher || 0,
             student: usersByRole.student || 0,
           },
-          active: users.filter((u: any) => u.is_active).length,
-          inactive: users.filter((u: any) => !u.is_active).length,
+          active: users.filter((u: { is_active: boolean }) => u.is_active).length,
+          inactive: users.filter((u: { is_active: boolean }) => !u.is_active).length,
           recent_registrations: recentRegistrations,
         },
         students: {
