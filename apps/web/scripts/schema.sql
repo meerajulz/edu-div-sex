@@ -1,9 +1,26 @@
 -- Educational Platform Database Schema
 -- For tracking student progress and teacher management
 
--- Update users table to include roles
-ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'student' CHECK (role IN ('teacher', 'student'));
+-- Update users table to include new role hierarchy and student-specific fields
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'student' CHECK (role IN ('owner', 'admin', 'teacher', 'student'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_change TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+-- Add student-specific fields
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sex VARCHAR(10) CHECK (sex IN ('male', 'female'));
+
+-- Teacher-Admin relationships table - tracks which admins can manage which teachers
+CREATE TABLE IF NOT EXISTS teacher_admin_assignments (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    admin_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(teacher_id, admin_id)
+);
 
 -- Students table - stores student information and abilities
 CREATE TABLE IF NOT EXISTS students (
@@ -97,6 +114,11 @@ CREATE TABLE IF NOT EXISTS student_sessions (
 );
 
 -- Indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_created_by ON users(created_by);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_teacher_admin_teacher_id ON teacher_admin_assignments(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_admin_admin_id ON teacher_admin_assignments(admin_id);
 CREATE INDEX IF NOT EXISTS idx_students_teacher_id ON students(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id);
 CREATE INDEX IF NOT EXISTS idx_student_progress_student_id ON student_progress(student_id);

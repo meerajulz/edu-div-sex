@@ -7,15 +7,21 @@ This database is designed for an educational platform that teaches mentally disa
 ## Tables
 
 ### 1. `users` (Extended)
-Main authentication table for both teachers and students.
+Main authentication table for all user types with role hierarchy and student-specific fields.
 
 ```sql
 - id (SERIAL PRIMARY KEY)
 - email (VARCHAR UNIQUE)
 - password_hash (VARCHAR)
-- name (VARCHAR)
-- role (VARCHAR) - 'teacher' or 'student'
+- name (VARCHAR) - Full name (generated for students)
+- role (VARCHAR) - 'owner', 'admin', 'teacher', or 'student'
 - is_active (BOOLEAN)
+- created_by (INTEGER) - References users(id) for audit trail
+- last_password_change (TIMESTAMP)
+- username (VARCHAR UNIQUE) - Student login username (firstname.lastname format)
+- first_name (VARCHAR) - Student's first name
+- last_name (VARCHAR) - Student's last name  
+- sex (VARCHAR) - 'male' or 'female' for students
 - created_at, updated_at (TIMESTAMP)
 ```
 
@@ -99,7 +105,25 @@ Tracks login sessions and time spent.
 - created_at (TIMESTAMP)
 ```
 
+### 7. `teacher_admin_assignments`
+Manages which admins can supervise which teachers.
+
+```sql
+- id (SERIAL PRIMARY KEY)
+- teacher_id (INTEGER) - References users(id)
+- admin_id (INTEGER) - References users(id)
+- created_at (TIMESTAMP)
+- UNIQUE(teacher_id, admin_id)
+```
+
 ## Key Features
+
+### Role-Based Access Control
+Four-tier user hierarchy with specific permissions:
+- **Owner**: Full system access, can manage all users and data
+- **Admin**: Manages assigned teachers and their students, can reset passwords
+- **Teacher**: Manages own students, can create/modify student accounts
+- **Student**: Access to own progress and assigned content
 
 ### Ability-Based Content Filtering
 Students see content based on their ability levels:
@@ -113,11 +137,20 @@ Students see content based on their ability levels:
 - Resume capability from last position
 - Attempt counting for assessment
 
-### Teacher Management
-- Teachers can manage multiple students
-- Detailed ability profiling
-- Progress monitoring and reporting
-- Notes and observations
+### Hierarchical Management
+- Owners can manage all users
+- Admins supervise specific teachers through assignments
+- Teachers manage their own students
+- Comprehensive audit trail through created_by relationships
+
+### Student Authentication System
+- **Dual Login Support**: Students can login with either username or email
+- **Simple Spanish Passwords**: Three-word Spanish passwords (e.g., "gato azul correr") for accessibility
+- **Auto-Generated Usernames**: Format firstname.lastname (e.g., alex.martinez)
+- **Teacher-Set Passwords**: Teachers create and manage student passwords
+- **Secure but Memorable**: ~1.9M combinations with 196 easy-to-remember Spanish words
+- **Accessible Vocabulary**: Animals, colors, family, actions, food, and body parts in Spanish
+- **Accent Support**: Includes proper Spanish accents (á, é, í, ó, ú, ñ)
 
 ## Setup Commands
 
@@ -132,14 +165,47 @@ npm run setup-schema
 ## Default Data
 
 After running `setup-schema`:
-- Test teacher: `test@example.com` / `testpass123`
-- Sample student: "Alex Martinez" with mixed ability levels
-- All current activities (actividad-1, actividad-2, actividad-3)
+- **Owner**: `owner@example.com` / `testpass123`
+- **Admin**: `admin@example.com` / `testpass123`
+- **Teacher 1**: `teacher1@example.com` / `testpass123` (Maria Rodriguez)
+- **Teacher 2**: `teacher2@example.com` / `testpass123` (Carlos Martinez)
+- **Students with Spanish passwords**:
+  - `alex.martinez` / `"gato azul correr"`
+  - `sofia.garcia` / `"perro rojo saltar"`
+  - `diego.lopez` / `"feliz árbol cinco"`
+  - `luna.rodriguez` / `"sol verde jugar"`
+- Sample students with varying ability levels
+- All current activities (actividad-1 through actividad-6)
 - Corresponding scenes for each activity
+- Teacher-admin assignments and sample progress data
 
-## API Endpoints (To Be Implemented)
+## API Endpoints
 
-- `GET/POST /api/students` - Student management
-- `GET/PUT /api/students/[id]/progress` - Progress tracking
-- `POST /api/progress/save` - Save student progress
-- `GET /api/activities/accessible/[studentId]` - Get available content
+### User Management
+- `GET/POST /api/admin/users` - User management (owners/admins)
+- `GET/PUT/DELETE /api/admin/users/[id]` - Individual user operations
+- `GET/POST /api/admin/teacher-assignments` - Teacher-admin assignments
+- `DELETE /api/admin/teacher-assignments/[id]` - Remove assignments
+
+### Student Management
+- `GET/POST /api/students` - Student management with new fields (first_name, last_name, sex)
+- `GET/PUT/DELETE /api/students/[id]` - Individual student operations
+- `GET /api/students/[id]/progress` - Progress tracking
+- `GET /api/students/[id]/accessible-content` - Available content
+
+### Password Management
+- `GET /api/admin/generate-password` - Generate simple Spanish password for students
+- `POST /api/admin/generate-password` - Validate custom Spanish simple password
+
+### Progress & Sessions
+- `POST /api/progress` - Save student progress
+- `GET/POST /api/sessions` - Session management
+
+### Activities
+- `GET /api/activities` - Get all activities (teachers+)
+
+### Authentication
+- Supports both email and username login
+- Backwards compatible with existing email-based logins
+- Spanish simple password validation for student accounts
+- Error messages in Spanish for user-facing content
