@@ -29,12 +29,6 @@ function EditUserForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
-  useEffect(() => {
-    if (userId) {
-      fetchUser();
-    }
-  }, [userId, fetchUser]);
-
   const fetchUser = useCallback(async () => {
     try {
       setIsLoadingUser(true);
@@ -61,6 +55,12 @@ function EditUserForm() {
       setIsLoadingUser(false);
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchUser();
+    }
+  }, [userId, fetchUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

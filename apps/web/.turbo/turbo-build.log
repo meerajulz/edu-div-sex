@@ -9,7 +9,7 @@
 
 🌼   daisyUI 4.12.23
 ├─ ✔︎ 32 themes added		https://daisyui.com/docs/themes
-╰─ ❤︎ Support daisyUI project:	https://opencollective.com/daisyui
+╰─ ★ Star daisyUI on GitHub	https://github.com/saadeghi/daisyui
 
  ✓ Compiled successfully
    Linting and checking validity of types ...
@@ -126,12 +126,6 @@
 ./src/app/components/WindowBirds/WindowBirds.tsx
 111:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
 
-./src/app/dashboard/owner/users/[id]/edit/page.tsx
-36:6  Warning: React Hook useEffect has a missing dependency: 'fetchUser'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-
-./src/app/dashboard/owner/users/[id]/page.tsx
-41:6  Warning: React Hook useEffect has a missing dependency: 'fetchUser'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
    Collecting page data ...
    Generating static pages (0/44) ...
@@ -186,8 +180,8 @@ Route (app)                                Size     First Load JS
 ├ ○ /dashboard/evaluation-form             1.4 kB          115 kB
 ├ ○ /dashboard/owner/analytics             2.67 kB         117 kB
 ├ ○ /dashboard/owner/users                 2.34 kB         116 kB
-├ ƒ /dashboard/owner/users/[id]            2.13 kB         116 kB
-├ ƒ /dashboard/owner/users/[id]/edit       2.63 kB         116 kB
+├ ƒ /dashboard/owner/users/[id]            2.15 kB         116 kB
+├ ƒ /dashboard/owner/users/[id]/edit       2.65 kB         116 kB
 ├ ○ /dashboard/owner/users/create          3.55 kB         117 kB
 ├ ○ /dashboard/profile                     1.81 kB         116 kB
 ├ ○ /dashboard/profile/change-password     2.68 kB         117 kB

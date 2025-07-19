@@ -34,12 +34,6 @@ function ViewUserDetails() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (userId) {
-      fetchUser();
-    }
-  }, [userId, fetchUser]);
-
   const fetchUser = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -58,6 +52,12 @@ function ViewUserDetails() {
       setIsLoading(false);
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchUser();
+    }
+  }, [userId, fetchUser]);
 
   const getRoleBadge = (role: string) => {
     const roleConfig = {
