@@ -11,31 +11,8 @@
 ├─ ✔︎ 32 themes added		https://daisyui.com/docs/themes
 ╰─ ❤︎ Support daisyUI project:	https://opencollective.com/daisyui
 
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7W0Q5n-wU.woff2 failed, reason: 
-
-Retrying 1/3...
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7W0Q5n-wU.woff2 failed, reason: 
-
-Retrying 1/3...
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7W0Q5n-wU.woff2 failed, reason: 
-
-Retrying 1/3...
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7W0Q5n-wU.woff2 failed, reason: 
-
-Retrying 1/3...
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7W0Q5n-wU.woff2 failed, reason: 
-
-Retrying 1/3...
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7W0Q5n-wU.woff2 failed, reason: 
-
-Retrying 1/3...
-request to https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2 failed, reason: 
-
-Retrying 1/3...
  ✓ Compiled successfully
    Linting and checking validity of types ...
-
-Failed to compile.
 
 ./src/app/actividad-1/page.tsx
 64:6  Warning: React Hook useEffect has a missing dependency: 'aspectRatio'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
@@ -149,41 +126,81 @@ Failed to compile.
 ./src/app/components/WindowBirds/WindowBirds.tsx
 111:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
 
-./src/app/dashboard/add-user/page.tsx
-64:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-146:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-177:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-327:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-327:77  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
 ./src/app/dashboard/owner/users/[id]/edit/page.tsx
 36:6  Warning: React Hook useEffect has a missing dependency: 'fetchUser'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-292:60  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
-292:79  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
 
 ./src/app/dashboard/owner/users/[id]/page.tsx
-19:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-36:6  Warning: React Hook useEffect has a missing dependency: 'fetchUser'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-
-./src/app/dashboard/profile/page.tsx
-28:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/auth.ts
-64:20  Error: 'url' is defined but never used.  @typescript-eslint/no-unused-vars
-72:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-73:31  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-74:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-75:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-84:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-85:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-86:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-87:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:6  Warning: React Hook useEffect has a missing dependency: 'fetchUser'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
-npm error Lifecycle script `build` failed with error:
-npm error code 1
-npm error path /mnt/c/Users/ian.gilmore/Documents/repo/edu-div-sex/apps/web
-npm error workspace @edu-div-sex/web@0.1.0
-npm error location /mnt/c/Users/ian.gilmore/Documents/repo/edu-div-sex/apps/web
-npm error command failed
-npm error command sh -c next build
+   Collecting page data ...
+   Generating static pages (0/44) ...
+   Generating static pages (11/44) 
+🔍 Current user gender: male
+   Generating static pages (22/44) 
+   Generating static pages (33/44) 
+ ✓ Generating static pages (44/44)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      339 B           106 kB
+├ ○ /_not-found                            983 B           106 kB
+├ ○ /actividad-1                           1.98 kB         158 kB
+├ ○ /actividad-1/scene1                    5.11 kB         169 kB
+├ ○ /actividad-1/scene2                    2.63 kB         154 kB
+├ ○ /actividad-1/scene3                    2.63 kB         154 kB
+├ ○ /actividad-1/scene4                    4.22 kB         168 kB
+├ ○ /actividad-1/scene5                    2.67 kB         154 kB
+├ ○ /actividad-1/scene6                    4.94 kB         156 kB
+├ ○ /actividad-1/scene7                    2.89 kB         154 kB
+├ ○ /actividad-2                           1.98 kB         158 kB
+├ ○ /actividad-2/scene1                    6.12 kB         157 kB
+├ ○ /actividad-2/scene2                    6.32 kB         158 kB
+├ ○ /actividad-2/scene3                    7.8 kB          159 kB
+├ ○ /actividad-2/scene4                    9.49 kB         161 kB
+├ ○ /actividad-3/scene1                    9.45 kB         161 kB
+├ ○ /actividad-3/scene2                    3.55 kB         155 kB
+├ ƒ /api/activities                        178 B           106 kB
+├ ƒ /api/admin/generate-password           178 B           106 kB
+├ ƒ /api/admin/teacher-assignments         178 B           106 kB
+├ ƒ /api/admin/teacher-assignments/[id]    178 B           106 kB
+├ ƒ /api/admin/users                       178 B           106 kB
+├ ƒ /api/admin/users/[id]                  178 B           106 kB
+├ ƒ /api/auth/[...nextauth]                178 B           106 kB
+├ ƒ /api/auth/change-password              178 B           106 kB
+├ ƒ /api/progress                          178 B           106 kB
+├ ƒ /api/sessions                          178 B           106 kB
+├ ƒ /api/students                          178 B           106 kB
+├ ƒ /api/students/[id]                     178 B           106 kB
+├ ƒ /api/students/[id]/accessible-content  178 B           106 kB
+├ ƒ /api/students/[id]/progress            178 B           106 kB
+├ ○ /auth/login                            173 B           111 kB
+├ ○ /components/AnimatedSky                396 B           106 kB
+├ ○ /dashboard                             1.55 kB         115 kB
+├ ○ /dashboard/add-user                    3.58 kB         117 kB
+├ ○ /dashboard/admin/students              2.12 kB         116 kB
+├ ○ /dashboard/admin/teacher-assignments   2.34 kB         116 kB
+├ ○ /dashboard/admin/teachers              1.63 kB         115 kB
+├ ○ /dashboard/admin/users/create          2.21 kB         116 kB
+├ ○ /dashboard/evaluation-form             1.4 kB          115 kB
+├ ○ /dashboard/owner/analytics             2.67 kB         117 kB
+├ ○ /dashboard/owner/users                 2.34 kB         116 kB
+├ ƒ /dashboard/owner/users/[id]            2.13 kB         116 kB
+├ ƒ /dashboard/owner/users/[id]/edit       2.63 kB         116 kB
+├ ○ /dashboard/owner/users/create          3.55 kB         117 kB
+├ ○ /dashboard/profile                     1.81 kB         116 kB
+├ ○ /dashboard/profile/change-password     2.68 kB         117 kB
+├ ○ /dashboard/students                    1.67 kB         116 kB
+└ ○ /home                                  7.44 kB         159 kB
++ First Load JS shared by all              105 kB
+  ├ chunks/2855-a68b12a31b9ddc37.js        50.5 kB
+  ├ chunks/87c73c54-a427587b5d4e8fde.js    52.9 kB
+  └ other shared chunks (total)            2.03 kB
+
+
+ƒ Middleware                               31.9 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

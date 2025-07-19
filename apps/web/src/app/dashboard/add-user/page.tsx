@@ -61,7 +61,7 @@ export default function AddUser() {
   // Fetch teachers for owner/admin
   useEffect(() => {
     const fetchTeachers = async () => {
-      const userRole = (session?.user as any)?.role;
+      const userRole = (session?.user as { role?: string })?.role;
       if (userRole === 'owner' || userRole === 'admin') {
         setLoadingTeachers(true);
         try {
@@ -143,7 +143,7 @@ export default function AddUser() {
     setSuccess('');
 
     // Get user role
-    const userRole = (session?.user as any)?.role;
+    const userRole = (session?.user as { role?: string })?.role;
 
     // Validation
     if (!formData.first_name || !formData.last_name) {
@@ -174,7 +174,7 @@ export default function AddUser() {
       const abilities = calculateAbilityLevels();
       
       // Get user role
-      const userRole = (session?.user as any)?.role;
+      const userRole = (session?.user as { role?: string })?.role;
       
       // Prepare student data
       const studentData = {
@@ -324,7 +324,7 @@ export default function AddUser() {
             </div>
 
             {/* Teacher Selection - Only for Owner/Admin */}
-            {((session?.user as any)?.role === 'owner' || (session?.user as any)?.role === 'admin') && (
+            {((session?.user as { role?: string })?.role === 'owner' || (session?.user as { role?: string })?.role === 'admin') && (
               <div>
                 <label className="block text-gray-700 font-medium mb-1">
                   PROFESOR ASIGNADO *

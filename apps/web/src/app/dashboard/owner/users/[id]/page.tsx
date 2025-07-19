@@ -16,7 +16,12 @@ interface User {
   // Additional role-specific data
   student_count?: number;
   assigned_admins?: string[];
-  student_profile?: unknown;
+  student_profile?: {
+    age?: number;
+    teacher_name?: string;
+    reading_level?: number;
+    comprehension_level?: number;
+  };
   managed_teachers?: number;
 }
 

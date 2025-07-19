@@ -61,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ url, baseUrl }) {
+		async redirect({ baseUrl }) {
 			// Always redirect to dashboard except for explicit logout
 			return `${baseUrl}/dashboard`;
 		},
@@ -69,10 +69,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			// Pass user data to token when user signs in
 			if (user) {
 				console.log('JWT callback - User data:', user);
-				token.role = (user as any).role;
-				token.username = (user as any).username;
-				token.first_name = (user as any).first_name;
-				token.last_name = (user as any).last_name;
+				token.role = (user as { role?: string }).role;
+				token.username = (user as { username?: string }).username;
+				token.first_name = (user as { first_name?: string }).first_name;
+				token.last_name = (user as { last_name?: string }).last_name;
 			}
 			console.log('JWT callback - Token:', { role: token.role, sub: token.sub });
 			return token;
@@ -81,10 +81,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			// Add user info from token to session
 			if (token && session.user) {
 				session.user.id = token.sub as string;
-				(session.user as any).role = token.role;
-				(session.user as any).username = token.username;
-				(session.user as any).first_name = token.first_name;
-				(session.user as any).last_name = token.last_name;
+				(session.user as { role?: string }).role = token.role as string;
+				(session.user as { username?: string }).username = token.username as string;
+				(session.user as { first_name?: string }).first_name = token.first_name as string;
+				(session.user as { last_name?: string }).last_name = token.last_name as string;
 			}
 			return session;
 		},
