@@ -135,7 +135,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, email, is_active, new_password } = body;
+    const { name, email, role, is_active, new_password } = body;
 
     // Build dynamic update query
     const updates = [];
@@ -149,6 +149,10 @@ export async function PUT(
     if (email !== undefined) {
       updates.push(`email = $${paramCount++}`);
       values.push(email);
+    }
+    if (role !== undefined) {
+      updates.push(`role = $${paramCount++}`);
+      values.push(role);
     }
     if (is_active !== undefined) {
       updates.push(`is_active = $${paramCount++}`);

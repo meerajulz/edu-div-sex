@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Question, questionsData } from "../../data/questions";
+import DashboardWrapper from '../DashboardWrapper';
 
 interface StudentFormData {
   first_name: string;
@@ -13,10 +15,18 @@ interface StudentFormData {
   create_login: boolean;
   use_generated_password: boolean;
   custom_password: string;
+  teacher_id: string;
+}
+
+interface Teacher {
+  id: string;
+  name: string;
+  email: string;
 }
 
 export default function AddUser() {
   const router = useRouter();
+  const { data: session } = useSession();
   
   // Student profile data
   const [formData, setFormData] = useState<StudentFormData>({
@@ -27,8 +37,13 @@ export default function AddUser() {
     email: '',
     create_login: true,
     use_generated_password: true,
-    custom_password: ''
+    custom_password: '',
+    teacher_id: ''
   });
+  
+  // Teacher data for owner/admin
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
   
   // Evaluation data
   const [questions, setQuestions] = useState<Question[]>(questionsData);
@@ -42,6 +57,31 @@ export default function AddUser() {
     email?: string;
     generated_password?: string;
   } | null>(null);
+
+  // Fetch teachers for owner/admin
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      const userRole = (session?.user as any)?.role;
+      if (userRole === 'owner' || userRole === 'admin') {
+        setLoadingTeachers(true);
+        try {
+          const response = await fetch('/api/admin/users?role=teacher');
+          if (response.ok) {
+            const data = await response.json();
+            setTeachers(data.users || []);
+          }
+        } catch (error) {
+          console.error('Error fetching teachers:', error);
+        } finally {
+          setLoadingTeachers(false);
+        }
+      }
+    };
+
+    if (session) {
+      fetchTeachers();
+    }
+  }, [session]);
 
   // Handle TIPO DE APOYO change
   const handleSupportTypeChange = (id: number, value: "1" | "0") => {
@@ -102,6 +142,9 @@ export default function AddUser() {
     setError('');
     setSuccess('');
 
+    // Get user role
+    const userRole = (session?.user as any)?.role;
+
     // Validation
     if (!formData.first_name || !formData.last_name) {
       setError('Nombre y apellido son requeridos.');
@@ -110,6 +153,12 @@ export default function AddUser() {
 
     if (!formData.sex) {
       setError('Por favor seleccione el sexo.');
+      return;
+    }
+
+    // Validate teacher selection for owner/admin
+    if ((userRole === 'owner' || userRole === 'admin') && !formData.teacher_id) {
+      setError('Por favor seleccione un profesor para asignar al estudiante.');
       return;
     }
 
@@ -124,6 +173,9 @@ export default function AddUser() {
       // Calculate ability levels from evaluation
       const abilities = calculateAbilityLevels();
       
+      // Get user role
+      const userRole = (session?.user as any)?.role;
+      
       // Prepare student data
       const studentData = {
         first_name: formData.first_name,
@@ -134,6 +186,8 @@ export default function AddUser() {
         email: formData.email || undefined,
         use_generated_password: formData.use_generated_password,
         custom_password: formData.custom_password || undefined,
+        // Include teacher_id only for owner/admin
+        ...(userRole === 'owner' || userRole === 'admin' ? { teacher_id: formData.teacher_id } : {}),
         ...abilities,
         // Store evaluation data as additional notes
         notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`,
@@ -178,7 +232,8 @@ export default function AddUser() {
   };
 
   return (
-    <div className="p-6">
+    <DashboardWrapper>
+      <div className="p-6">
       <div className="max-w-3xl mx-auto">
         {error && (
           <div className="bg-red-50 text-red-500 p-3 rounded-lg text-sm mb-4">
@@ -267,6 +322,34 @@ export default function AddUser() {
                 </select>
               </div>
             </div>
+
+            {/* Teacher Selection - Only for Owner/Admin */}
+            {((session?.user as any)?.role === 'owner' || (session?.user as any)?.role === 'admin') && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  PROFESOR ASIGNADO *
+                </label>
+                {loadingTeachers ? (
+                  <div className="w-full p-3 border border-gray-300 rounded-lg text-gray-500">
+                    Cargando profesores...
+                  </div>
+                ) : (
+                  <select
+                    value={formData.teacher_id}
+                    onChange={(e) => setFormData({...formData, teacher_id: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                    required
+                  >
+                    <option value="">Seleccionar profesor...</option>
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.name} ({teacher.email})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-gray-700 font-medium mb-1">
@@ -436,6 +519,7 @@ export default function AddUser() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardWrapper>
   );
 }

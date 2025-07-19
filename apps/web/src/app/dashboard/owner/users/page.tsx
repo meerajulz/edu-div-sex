@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DashboardWrapper from '../../DashboardWrapper';
 
 interface User {
   id: string;
@@ -130,7 +131,8 @@ export default function OwnerUsersPage() {
   }
 
   return (
-    <div className="p-6">
+    <DashboardWrapper>
+      <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Usuarios del Sistema</h1>
@@ -299,6 +301,7 @@ export default function OwnerUsersPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </DashboardWrapper>
   );
 }

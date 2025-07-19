@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import DashboardWrapper from '../../../DashboardWrapper';
 
 interface UserFormData {
   name: string;
@@ -11,7 +12,7 @@ interface UserFormData {
   confirmPassword: string;
 }
 
-export default function OwnerCreateUserPage() {
+function OwnerCreateUserForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultRole = (searchParams.get('role') as 'owner' | 'admin' | 'teacher' | 'student') || '';
@@ -29,6 +30,9 @@ export default function OwnerCreateUserPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [createdUser, setCreatedUser] = useState<{name: string, email: string, password: string} | null>(null);
 
   useEffect(() => {
     if (useGeneratedPassword) {
@@ -98,10 +102,14 @@ export default function OwnerCreateUserPage() {
 
       setSuccess(`¡Usuario ${formData.role} creado exitosamente!`);
       
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        router.push('/dashboard/owner/users');
-      }, 2000);
+      // Store created user credentials for display
+      setCreatedUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
+      
+      // Don't auto-redirect - let user copy credentials first
 
     } catch (err) {
       console.error('Error creating user:', err);
@@ -142,7 +150,8 @@ export default function OwnerCreateUserPage() {
   };
 
   return (
-    <div className="p-6">
+    <DashboardWrapper>
+      <div className="p-6">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -163,6 +172,52 @@ export default function OwnerCreateUserPage() {
         {success && (
           <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm mb-4">
             {success}
+          </div>
+        )}
+
+        {createdUser && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">
+              📧 Credenciales del Usuario Creado
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-blue-700 font-medium">Nombre:</label>
+                  <p className="text-blue-900 bg-white p-2 rounded border">{createdUser.name}</p>
+                </div>
+                <div>
+                  <label className="block text-blue-700 font-medium">Email:</label>
+                  <p className="text-blue-900 bg-white p-2 rounded border">{createdUser.email}</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-blue-700 font-medium">Contraseña:</label>
+                <p className="text-blue-900 bg-white p-2 rounded border font-mono">&quot;{createdUser.password}&quot;</p>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded">
+              <p className="text-amber-700 text-sm">
+                <strong>⚠️ Importante:</strong> Copie estas credenciales y envíelas al nuevo usuario de forma segura. 
+                Esta información no se mostrará nuevamente.
+              </p>
+            </div>
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(`Email: ${createdUser.email}\nContraseña: "${createdUser.password}"`)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+              >
+                📋 Copiar Credenciales
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/dashboard/owner/users')}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+              >
+                Ver Todos los Usuarios
+              </button>
+            </div>
           </div>
         )}
 
@@ -268,23 +323,59 @@ export default function OwnerCreateUserPage() {
                   
                   {!useGeneratedPassword && (
                     <div className="ml-6 space-y-3">
-                      <input
-                        type="password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        placeholder="Contraseña (mínimo 8 caracteres)"
-                        className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                        minLength={8}
-                        required={!useGeneratedPassword}
-                      />
-                      <input
-                        type="password"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                        placeholder="Confirmar contraseña"
-                        className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                        required={!useGeneratedPassword}
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={formData.password}
+                          onChange={(e) => setFormData({...formData, password: e.target.value})}
+                          placeholder="Contraseña (mínimo 8 caracteres)"
+                          className="w-full p-3 pr-10 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                          minLength={8}
+                          required={!useGeneratedPassword}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? (
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.543 7-1.275 4.057-5.066 7-9.543 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={formData.confirmPassword}
+                          onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                          placeholder="Confirmar contraseña"
+                          className="w-full p-3 pr-10 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                          required={!useGeneratedPassword}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                        >
+                          {showConfirmPassword ? (
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.543 7-1.275 4.057-5.066 7-9.543 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -333,6 +424,15 @@ export default function OwnerCreateUserPage() {
           </form>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardWrapper>
+  );
+}
+
+export default function OwnerCreateUserPage() {
+  return (
+    <Suspense fallback={<div className="p-6"><div className="text-center">Cargando...</div></div>}>
+      <OwnerCreateUserForm />
+    </Suspense>
   );
 }

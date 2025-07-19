@@ -11,23 +11,36 @@ const TeacherSidebar: React.FC = () => {
       <nav className='space-y-6'>
         <div>
           <div className='text-pink-600 font-medium text-sm uppercase block mb-2'>
-            Professor Profile
+            Panel de Control
           </div>
-          <Link href='' className='text-gray-600 text-sm block mb-2'>
-            Create Professor Profile
+          <Link href='/dashboard' className='text-gray-600 text-sm block mb-2'>
+            Vista General
           </Link>
 
-          <div className='text-pink-600 font-medium text-sm uppercase block mb-2'>
-            Alumno Profile
+          <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
+            Perfil del Profesor
           </div>
+          <Link href='/dashboard/teacher/profile' className='text-gray-600 text-sm block mb-2'>
+            Mi Perfil
+          </Link>
 
+          <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
+            Gestión de Alumnos
+          </div>
           <Link
             href='/dashboard/add-user'
             className='text-gray-600 text-sm block mb-2'>
-            Create Alumno Profile
+            Crear Perfil de Alumno
           </Link>
           <Link href='/dashboard/students' className='text-gray-600 text-sm block mb-2'>
-            Ver lista Alumnos
+            Ver Lista de Alumnos
+          </Link>
+          
+          <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
+            Herramientas
+          </div>
+          <Link href='/dashboard/evaluation-form' className='text-gray-600 text-sm block mb-2'>
+            Formulario de Evaluación
           </Link>
         </div>
 

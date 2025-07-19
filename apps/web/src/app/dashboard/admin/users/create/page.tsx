@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import DashboardWrapper from '../../../DashboardWrapper';
 
 interface UserFormData {
   name: string;
@@ -11,7 +12,7 @@ interface UserFormData {
   confirmPassword: string;
 }
 
-export default function CreateUserPage() {
+function CreateUserForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultRole = (searchParams.get('role') as 'teacher' | 'student') || '';
@@ -127,7 +128,8 @@ export default function CreateUserPage() {
   };
 
   return (
-    <div className="p-6">
+    <DashboardWrapper>
+      <div className="p-6">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -292,6 +294,15 @@ export default function CreateUserPage() {
           </form>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardWrapper>
+  );
+}
+
+export default function CreateUserPage() {
+  return (
+    <Suspense fallback={<div className="p-6"><div className="text-center">Cargando...</div></div>}>
+      <CreateUserForm />
+    </Suspense>
   );
 }

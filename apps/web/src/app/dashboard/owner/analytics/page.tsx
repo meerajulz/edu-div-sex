@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DashboardWrapper from '../../DashboardWrapper';
 
 interface SystemAnalytics {
   users: {
@@ -103,7 +104,9 @@ export default function OwnerAnalyticsPage() {
       }, {});
 
       const studentsBySex = students.reduce((acc: { male: number; female: number }, student: { sex: string }) => {
-        acc[student.sex] = (acc[student.sex] || 0) + 1;
+        if (student.sex === 'male' || student.sex === 'female') {
+          acc[student.sex] = (acc[student.sex] || 0) + 1;
+        }
         return acc;
       }, { male: 0, female: 0 });
 
@@ -119,7 +122,7 @@ export default function OwnerAnalyticsPage() {
       }).length;
 
       const studentsWithEvaluations = students.filter((s: { additional_abilities?: { evaluation_responses?: unknown[] } }) => 
-        s.additional_abilities?.evaluation_responses?.length > 0
+        s.additional_abilities?.evaluation_responses && s.additional_abilities.evaluation_responses.length > 0
       ).length;
 
       setAnalytics({
@@ -206,7 +209,8 @@ export default function OwnerAnalyticsPage() {
   }
 
   return (
-    <div className="p-6">
+    <DashboardWrapper>
+      <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Análisis del Sistema</h1>
@@ -409,6 +413,7 @@ export default function OwnerAnalyticsPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardWrapper>
   );
 }

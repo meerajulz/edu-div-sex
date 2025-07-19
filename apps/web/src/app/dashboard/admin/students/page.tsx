@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DashboardWrapper from '../../DashboardWrapper';
 
 interface Student {
   id: string;
@@ -124,7 +125,8 @@ export default function AdminStudentsPage() {
   }
 
   return (
-    <div className="p-6">
+    <DashboardWrapper>
+      <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Todos los Estudiantes</h1>
@@ -266,6 +268,7 @@ export default function AdminStudentsPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </DashboardWrapper>
   );
 }

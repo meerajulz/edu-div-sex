@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Question, questionsData } from "@/app/data/questions";
 import { useRouter } from "next/navigation";
+import DashboardWrapper from '../DashboardWrapper';
 
 export default function Form() {
 	// State to manage the questions
@@ -40,7 +41,8 @@ export default function Form() {
 	};
 
 	return (
-		<div className="min-h-screen bg-neutral py-10 px-4">
+		<DashboardWrapper>
+			<div className="min-h-screen bg-neutral py-10 px-4">
 			<div className="max-w-3xl mx-auto bg-white shadow-md rounded-md p-6">
 				<h1 className="text-2xl font-bold mb-6">Evaluación de Nivel</h1>
 				<form onSubmit={handleSubmit}>
@@ -135,6 +137,7 @@ export default function Form() {
 					</button>
 				</form>
 			</div>
-		</div>
+			</div>
+		</DashboardWrapper>
 	);
 }

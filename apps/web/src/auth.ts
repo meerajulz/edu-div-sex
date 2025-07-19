@@ -61,14 +61,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ baseUrl }) {
-			// After successful sign in, redirect to evaluation form
-			return `${baseUrl}/home`;
+		async redirect({ url, baseUrl }) {
+			// Always redirect to dashboard except for explicit logout
+			return `${baseUrl}/dashboard`;
+		},
+		async jwt({ token, user }) {
+			// Pass user data to token when user signs in
+			if (user) {
+				console.log('JWT callback - User data:', user);
+				token.role = (user as any).role;
+				token.username = (user as any).username;
+				token.first_name = (user as any).first_name;
+				token.last_name = (user as any).last_name;
+			}
+			console.log('JWT callback - Token:', { role: token.role, sub: token.sub });
+			return token;
 		},
 		async session({ session, token }) {
 			// Add user info from token to session
 			if (token && session.user) {
 				session.user.id = token.sub as string;
+				(session.user as any).role = token.role;
+				(session.user as any).username = token.username;
+				(session.user as any).first_name = token.first_name;
+				(session.user as any).last_name = token.last_name;
 			}
 			return session;
 		},
@@ -76,37 +92,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 });
 
 async function getUserFromDb(login: string, password: string) {
-	try {
-		// Try to find user by email or username
-		const result = await query(
-			'SELECT id, email, username, name, password_hash, role, first_name, last_name FROM users WHERE email = $1 OR username = $1',
-			[login]
-		);
-
-		if (result.rows.length === 0) {
-			return null;
-		}
-
-		const user = result.rows[0];
-		const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
-		if (!isValidPassword) {
-			return null;
-		}
-
+	// Mock authentication for local testing
+	// Replace this with real database logic when DATABASE_URL is configured
+	if (login === 'test@example.com' && password === 'testpass123') {
 		return {
-			id: user.id.toString(),
-			email: user.email,
-			username: user.username,
-			name: user.name,
-			role: user.role,
-			first_name: user.first_name,
-			last_name: user.last_name,
+			id: '1',
+			email: 'test@example.com',
+			username: 'testuser',
+			name: 'Test User',
+			role: 'owner', // This will show the owner dashboard
+			first_name: 'Test',
+			last_name: 'User',
 		};
-	} catch (error) {
-		console.error('Database error:', error);
-		return null;
 	}
+	
+	// Additional test users for different roles
+	if (login === 'admin@example.com' && password === 'testpass123') {
+		return {
+			id: '2',
+			email: 'admin@example.com',
+			username: 'adminuser',
+			name: 'Admin User',
+			role: 'admin',
+			first_name: 'Admin',
+			last_name: 'User',
+		};
+	}
+	
+	if (login === 'teacher@example.com' && password === 'testpass123') {
+		return {
+			id: '3',
+			email: 'teacher@example.com',
+			username: 'teacheruser',
+			name: 'Teacher User',
+			role: 'teacher',
+			first_name: 'Teacher',
+			last_name: 'User',
+		};
+	}
+	
+	return null;
 }
 
 export async function hashPassword(password: string): Promise<string> {

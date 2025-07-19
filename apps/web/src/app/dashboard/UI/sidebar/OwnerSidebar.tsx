@@ -23,6 +23,9 @@ const OwnerSidebar: React.FC = () => {
           <Link href='/dashboard/owner/users' className='text-gray-600 text-sm block mb-2'>
             Todos los Usuarios
           </Link>
+          <Link href='/dashboard/owner/users/create' className='text-gray-600 text-sm block mb-2'>
+            Crear Nuevo Usuario
+          </Link>
           <Link href='/dashboard/owner/admins' className='text-gray-600 text-sm block mb-2'>
             Gestionar Administradores
           </Link>
