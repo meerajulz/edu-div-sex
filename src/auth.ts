@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import { ZodError } from "zod";
 import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "./lib/zod";
+import bcrypt from "bcryptjs";
+import { query } from "./lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	session: {
@@ -23,11 +25,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 					const { email, password } =
 						await signInSchema.parseAsync(credentials);
 
-					// logic to salt and hash password
-					const pwHash = saltAndHashPassword(password);
-
 					// logic to verify if the user exists
-					user = await getUserFromDb(email, pwHash);
+					user = await getUserFromDb(email, password);
 
 					if (!user) {
 						throw new Error("Invalid credentials.");
@@ -64,46 +63,50 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 	},
 });
 
-async function getUserFromDb(email: string, pwHash: string) {
-	// In a real implementation, you would:
-	// 1. Connect to your database
-	// 2. Query for a user with matching email
-	// 3. Compare password hashes
-	// 4. Return user data or null
+async function getUserFromDb(email: string, password: string) {
+	try {
+		const result = await query(
+			'SELECT id, email, name, password_hash FROM users WHERE email = $1',
+			[email]
+		);
 
-	// This is a mock implementation
-	const mockDb = {
-		users: [
-			{
-				id: "1",
-				email: "test@example.com",
-				passwordHash: "mockhash123",
-				name: "Test User",
-			},
-		],
-	};
+		if (result.rows.length === 0) {
+			return null;
+		}
 
-	const user = mockDb.users.find(
-		(u) => u.email === email && u.passwordHash === pwHash,
-	);
+		const user = result.rows[0];
+		const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
-	return user || null;
+		if (!isValidPassword) {
+			return null;
+		}
+
+		return {
+			id: user.id.toString(),
+			email: user.email,
+			name: user.name,
+		};
+	} catch (error) {
+		console.error('Database error:', error);
+		return null;
+	}
 }
 
-function saltAndHashPassword(password: unknown): string {
-	if (typeof password !== "string") {
-		throw new Error("Password must be a string");
+export async function hashPassword(password: string): Promise<string> {
+	const saltRounds = 12;
+	return await bcrypt.hash(password, saltRounds);
+}
+
+export async function createUser(email: string, password: string, name: string) {
+	try {
+		const hashedPassword = await hashPassword(password);
+		const result = await query(
+			'INSERT INTO users (email, password_hash, name, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id, email, name',
+			[email, hashedPassword, name]
+		);
+		return result.rows[0];
+	} catch (error) {
+		console.error('Error creating user:', error);
+		throw error;
 	}
-
-	// In a real implementation, you would:
-	// 1. Generate a unique salt for each user
-	// 2. Store the salt alongside the password hash
-	// 3. Use a proper crypto library like bcrypt
-
-	// This is a mock implementation
-	if (password === "testpass123") {
-		return "mockhash123";
-	}
-
-	return "invalidhash";
 }
