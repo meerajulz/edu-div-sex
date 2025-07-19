@@ -49,3 +49,5 @@ next-env.d.ts
 .claude/
 
 apps/web/.next/
+
+package-lock.json
