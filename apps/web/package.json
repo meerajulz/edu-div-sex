@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup-db": "node scripts/setup-db.js"
+    "setup-db": "node scripts/setup-db.js",
+    "setup-schema": "node scripts/setup-schema.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
