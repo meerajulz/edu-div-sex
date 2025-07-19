@@ -11,7 +11,7 @@ Educational platform for sexual education using Next.js, built as a Turborepo mo
 ├── package.json      # Root package.json with workspaces
 └── turbo.json        # Turborepo configuration
 ```
-
+where
 ## Development
 
 ```bash

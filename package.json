@@ -11,6 +11,7 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "setup-db": "turbo setup-db",
+    "setup-schema": "turbo setup-schema",
     "clean": "turbo clean"
   },
   "devDependencies": {
