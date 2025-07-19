@@ -28,6 +28,7 @@ function EditUserForm() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [newPassword, setNewPassword] = useState('');
 
   const fetchUser = useCallback(async () => {
     try {
@@ -76,17 +77,24 @@ function EditUserForm() {
     setIsLoading(true);
 
     try {
+      const updateData: any = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        is_active: formData.is_active
+      };
+
+      // Only include password if it's provided
+      if (newPassword && newPassword.trim() !== '') {
+        updateData.new_password = newPassword;
+      }
+
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          role: formData.role,
-          is_active: formData.is_active
-        }),
+        body: JSON.stringify(updateData),
       });
 
       const result = await response.json();
@@ -97,6 +105,7 @@ function EditUserForm() {
 
       setSuccess('¡Usuario actualizado exitosamente!');
       setOriginalData(formData);
+      setNewPassword(''); // Clear password field after successful update
       
       // Redirect after 2 seconds
       setTimeout(() => {
@@ -113,7 +122,9 @@ function EditUserForm() {
 
   const hasChanges = () => {
     if (!originalData) return false;
-    return JSON.stringify(formData) !== JSON.stringify(originalData);
+    const formChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+    const passwordChanged = newPassword.trim() !== '';
+    return formChanges || passwordChanged;
   };
 
   const getRoleTitle = () => {
@@ -264,6 +275,22 @@ function EditUserForm() {
               </div>
               <p className="text-sm text-gray-600 mt-1">
                 Los usuarios inactivos no podrán iniciar sesión en el sistema.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-medium mb-1">
+                Restablecer Contraseña (Opcional)
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Dejar en blanco para mantener contraseña actual"
+                className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Solo ingrese una nueva contraseña si desea cambiarla. Dejar en blanco mantendrá la contraseña actual.
               </p>
             </div>
 

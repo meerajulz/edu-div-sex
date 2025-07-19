@@ -92,46 +92,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 });
 
 async function getUserFromDb(login: string, password: string) {
-	// Mock authentication for local testing
-	// Replace this with real database logic when DATABASE_URL is configured
+	// Fallback for test user during development
 	if (login === 'test@example.com' && password === 'testpass123') {
 		return {
 			id: '1',
 			email: 'test@example.com',
-			username: 'testuser',
 			name: 'Test User',
-			role: 'owner', // This will show the owner dashboard
-			first_name: 'Test',
-			last_name: 'User',
+			role: 'owner',
 		};
 	}
-	
-	// Additional test users for different roles
-	if (login === 'admin@example.com' && password === 'testpass123') {
+
+	try {
+		// Query database for user by email
+		const result = await query(
+			'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = $1',
+			[login]
+		);
+		
+		if (result.rows.length === 0) {
+			return null;
+		}
+		
+		const user = result.rows[0];
+		
+		// Check if user is active
+		if (!user.is_active) {
+			return null;
+		}
+		
+		// Verify password
+		const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+		if (!isPasswordValid) {
+			return null;
+		}
+		
+		// Return user data
 		return {
-			id: '2',
-			email: 'admin@example.com',
-			username: 'adminuser',
-			name: 'Admin User',
-			role: 'admin',
-			first_name: 'Admin',
-			last_name: 'User',
+			id: user.id.toString(),
+			email: user.email,
+			name: user.name,
+			role: user.role,
 		};
+	} catch (error) {
+		console.error('Error in getUserFromDb:', error);
+		return null;
 	}
-	
-	if (login === 'teacher@example.com' && password === 'testpass123') {
-		return {
-			id: '3',
-			email: 'teacher@example.com',
-			username: 'teacheruser',
-			name: 'Teacher User',
-			role: 'teacher',
-			first_name: 'Teacher',
-			last_name: 'User',
-		};
-	}
-	
-	return null;
 }
 
 export async function hashPassword(password: string): Promise<string> {
