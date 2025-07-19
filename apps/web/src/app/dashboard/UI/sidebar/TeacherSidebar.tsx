@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import ActivityTree from './ActivityTree';
 
 const TeacherSidebar: React.FC = () => {
   return (
@@ -42,6 +43,9 @@ const TeacherSidebar: React.FC = () => {
           <Link href='/dashboard/evaluation-form' className='text-gray-600 text-sm block mb-2'>
             Formulario de Evaluación
           </Link>
+
+          {/* Activity Tree */}
+          <ActivityTree />
         </div>
 
         {/* <div>

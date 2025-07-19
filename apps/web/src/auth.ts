@@ -47,7 +47,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 						id: user.id,
 						email: user.email,
 						name: user.name,
-						...(user.username && { username: user.username }),
 						...(user.role && { role: user.role }),
 					};
 				} catch (error) {

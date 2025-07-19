@@ -77,7 +77,15 @@ function EditUserForm() {
     setIsLoading(true);
 
     try {
-      const updateData: any = {
+      interface UpdateData {
+        name: string;
+        email: string;
+        role: string;
+        is_active: boolean;
+        new_password?: string;
+      }
+
+      const updateData: UpdateData = {
         name: formData.name,
         email: formData.email,
         role: formData.role,

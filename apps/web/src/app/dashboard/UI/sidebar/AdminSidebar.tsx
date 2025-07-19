@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import ActivityTree from './ActivityTree';
 
 const AdminSidebar: React.FC = () => {
   return (
@@ -43,6 +44,9 @@ const AdminSidebar: React.FC = () => {
           <Link href='/dashboard/admin/password-reset' className='text-gray-600 text-sm block mb-2'>
             Restablecer Contraseñas
           </Link>
+
+          {/* Activity Tree */}
+          <ActivityTree />
         </div>
       </nav>
     </div>

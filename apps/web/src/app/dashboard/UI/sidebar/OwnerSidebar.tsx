@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import ActivityTree from './ActivityTree';
 
 const OwnerSidebar: React.FC = () => {
   return (
@@ -65,6 +66,9 @@ const OwnerSidebar: React.FC = () => {
           <Link href='/dashboard/owner/backup' className='text-gray-600 text-sm block mb-2'>
             Respaldo y Restauración
           </Link>
+
+          {/* Activity Tree */}
+          <ActivityTree />
         </div>
       </nav>
     </div>
