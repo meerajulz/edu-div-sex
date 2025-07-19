@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import DashboardWrapper from '../../../../DashboardWrapper';
 
@@ -33,9 +33,9 @@ function EditUserForm() {
     if (userId) {
       fetchUser();
     }
-  }, [userId]);
+  }, [userId, fetchUser]);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       setIsLoadingUser(true);
       const response = await fetch(`/api/admin/users/${userId}`);
@@ -60,7 +60,7 @@ function EditUserForm() {
     } finally {
       setIsLoadingUser(false);
     }
-  };
+  }, [userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

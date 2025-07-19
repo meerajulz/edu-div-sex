@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import DashboardWrapper from '../../../DashboardWrapper';
 
@@ -38,9 +38,9 @@ function ViewUserDetails() {
     if (userId) {
       fetchUser();
     }
-  }, [userId]);
+  }, [userId, fetchUser]);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/admin/users/${userId}`);
@@ -57,7 +57,7 @@ function ViewUserDetails() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
 
   const getRoleBadge = (role: string) => {
     const roleConfig = {
