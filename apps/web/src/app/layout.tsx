@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import LandscapeLayout from "./LandscapeLayout";
+import { SessionProvider } from "next-auth/react";
 
 const inter = Inter({
   subsets: ['latin']
@@ -23,9 +24,11 @@ export default function RootLayout({
       <body
         className={`${inter.className} antialiased`}
       >
-        <LandscapeLayout>
-          {children}
-        </LandscapeLayout>
+        <SessionProvider>
+          <LandscapeLayout>
+            {children}
+          </LandscapeLayout>
+        </SessionProvider>
       </body>
     </html>
   );

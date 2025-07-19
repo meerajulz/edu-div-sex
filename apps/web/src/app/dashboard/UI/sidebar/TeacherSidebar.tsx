@@ -1,11 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
 
-const Sidebar: React.FC = () => {
+const TeacherSidebar: React.FC = () => {
   return (
     <div className='h-full w-64 bg-white shadow-lg p-6'>
       <div className='mb-8'>
-        <h2 className='text-sm font-medium mb-4'>Saludiversex</h2>
+        <h2 className='text-sm font-medium mb-4'>Saludiversex - Profesor</h2>
       </div>
 
       <nav className='space-y-6'>
@@ -26,11 +26,8 @@ const Sidebar: React.FC = () => {
             className='text-gray-600 text-sm block mb-2'>
             Create Alumno Profile
           </Link>
-          <Link href='' className='text-gray-600 text-sm block mb-2'>
-            Download lista Alumnos
-          </Link>
-          <Link href='/login' className='text-gray-600 text-sm block mb-2'>
-            Salir
+          <Link href='/dashboard/students' className='text-gray-600 text-sm block mb-2'>
+            Ver lista Alumnos
           </Link>
         </div>
 
@@ -54,5 +51,5 @@ const Sidebar: React.FC = () => {
   );
 };
 
-export default Sidebar;
+export default TeacherSidebar;
 
