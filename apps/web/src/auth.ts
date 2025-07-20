@@ -103,30 +103,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 async function getUserFromDb(login: string, password: string) {
 	try {
-		// Query database for user by email OR username
+		console.log('🔍 Login attempt for:', login);
+		
+		// Query database for user by email OR username (excluding deleted users)
 		// Handle cases where username might be NULL for existing users
 		const result = await query(
-			'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE email = $1 OR (username IS NOT NULL AND username = $1)',
+			'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
 			[login]
 		);
 		
+		console.log('📊 Query result:', result.rows.length, 'users found');
+		
 		if (result.rows.length === 0) {
+			console.log('❌ No user found with login:', login);
 			return null;
 		}
 		
 		const user = result.rows[0];
+		console.log('👤 User found:', user.email, 'Role:', user.role, 'Active:', user.is_active);
 		
 		// Check if user is active
 		if (!user.is_active) {
+			console.log('❌ User is not active');
 			return null;
 		}
 		
 		// Verify password
+		console.log('🔐 Verifying password...');
 		const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+		console.log('🔐 Password valid:', isPasswordValid);
 		
 		if (!isPasswordValid) {
+			console.log('❌ Password verification failed');
 			return null;
 		}
+		
+		console.log('✅ Authentication successful for:', user.email);
 		
 		// Return user data
 		return {
