@@ -107,10 +107,21 @@ async function getUserFromDb(login: string, password: string) {
 		
 		// Query database for user by email OR username (excluding deleted users)
 		// Handle cases where username might be NULL for existing users
-		const result = await query(
-			'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
-			[login]
-		);
+		// Use conditional query based on whether username column exists
+		let result;
+		try {
+			result = await query(
+				'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
+				[login]
+			);
+		} catch (err) {
+			// Fallback for databases without username or deleted_at columns
+			console.log('Falling back to basic email query:', err.message);
+			result = await query(
+				'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = $1',
+				[login]
+			);
+		}
 		
 		console.log('📊 Query result:', result.rows.length, 'users found');
 		
