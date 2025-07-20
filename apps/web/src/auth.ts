@@ -116,7 +116,7 @@ async function getUserFromDb(login: string, password: string) {
 			);
 		} catch (err) {
 			// Fallback for databases without username or deleted_at columns
-			console.log('Falling back to basic email query:', err.message);
+			console.log('Falling back to basic email query:', err instanceof Error ? err.message : 'Unknown error');
 			result = await query(
 				'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = $1',
 				[login]
