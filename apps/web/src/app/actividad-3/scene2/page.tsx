@@ -3,9 +3,16 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import JuegoCuatroActividad3Fem from './JuegoTresActividad3/JuegoTresActividad3';
+import JuegoTresActividad3 from './JuegoTresActividad3/JuegoTresActividad3'; // FIXED: Correct import name
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
+// Mock gender detection function - Replace with real backend data later
+const getMockUserGender = (): 'male' | 'female' => {
+  // TODO: Replace with real user data from backend
+  // For now, you can change this to test both versions
+  return 'male'; // Change to 'female' to test female version
+};
 
 export default function Actividad3Scene2Page() {
   const router = useRouter();
@@ -15,6 +22,10 @@ export default function Actividad3Scene2Page() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  
+  // Get user gender
+  const userGender = getMockUserGender();
+  console.log('🔍 Current user gender in Scene 2:', userGender);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -66,7 +77,17 @@ export default function Actividad3Scene2Page() {
 
     setTimeout(() => {
       setIsAnimating(false);
-      setShowVideo(true);
+      
+      // Gender-based logic
+      if (userGender === 'male') {
+        // Male users: Show video first
+        console.log('👨 Male user: Showing video first');
+        setShowVideo(true);
+      } else {
+        // Female users: Go directly to game modal
+        console.log('👩 Female user: Going directly to game modal');
+        setShowJuegoCuatro(true);
+      }
     }, 800);
   };
 
@@ -85,6 +106,7 @@ export default function Actividad3Scene2Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
+    setShowJuegoCuatro(false); // Close the game modal
   };
 
   const handleGoToNextActivity = () => {
@@ -94,7 +116,7 @@ export default function Actividad3Scene2Page() {
     setTimeout(() => {
       setIsAnimating(false);
       // Navigate to next activity or main menu
-      router.push('/actividades');
+      router.push('/actividad-1');
     }, 800);
   };
 
@@ -167,7 +189,19 @@ export default function Actividad3Scene2Page() {
         <FloatingMenu />
       </div>
 
-      {!showVideo ? (
+      {/* Debug Info (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-4 left-4 z-50 text-xs text-white bg-black/50 p-2 rounded">
+          <div>Gender: {userGender}</div>
+          <div>Show Video: {showVideo.toString()}</div>
+          <div>Video Ended: {videoEnded.toString()}</div>
+          <div>Show Game: {showJuegoCuatro.toString()}</div>
+          <div>Game Completed: {gameCompleted.toString()}</div>
+        </div>
+      )}
+
+      {/* Initial Screen: Show Jugar button if no video and no game */}
+      {!showVideo && !showJuegoCuatro && !gameCompleted && (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
@@ -176,7 +210,10 @@ export default function Actividad3Scene2Page() {
             <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      ) : (
+      )}
+
+      {/* Video Section (Only for Males) - FIXED: Hide when game is completed */}
+      {showVideo && userGender === 'male' && !gameCompleted && (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
             <video
@@ -194,24 +231,11 @@ export default function Actividad3Scene2Page() {
                   animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
-                  {!gameCompleted ? (
-                    <JugarButton onClick={handleOpenJuegoCuatro} disabled={isAnimating} />
-                  ) : (
-                    <div className="flex flex-col items-center space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-                      >
-                        ¡Actividad Completada! 🎉
-                      </motion.div>
-                      <JugarButton 
-                        onClick={handleGoToNextActivity} 
-                        disabled={isAnimating}
-                        text="Finalizar"
-                      />
-                    </div>
-                  )}
+                  <JugarButton 
+                    onClick={handleOpenJuegoCuatro} 
+                    disabled={isAnimating}
+                    text="Jugar"
+                  />
                 </motion.div>
               )}
             </div>
@@ -219,8 +243,33 @@ export default function Actividad3Scene2Page() {
         </div>
       )}
 
-      {/* JuegoCuatroActividad3Fem Game Modal - Placeholder */}
-      <JuegoCuatroActividad3Fem 
+      {/* Game Completed Screen */}
+      {gameCompleted && (
+        <div className="relative z-20 flex items-center justify-center min-h-screen">
+          <div className="flex flex-col items-center space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
+            >
+              ¡Actividad Completada! 🎉
+            </motion.div>
+            <motion.div
+              animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+            >
+              <JugarButton 
+                onClick={handleGoToNextActivity} 
+                disabled={isAnimating}
+                text="Volver al Menú Principal"
+              />
+            </motion.div>
+          </div>
+        </div>
+      )}
+
+      {/* FIXED: Correct component name - JuegoTresActividad3 */}
+      <JuegoTresActividad3 
         isVisible={showJuegoCuatro} 
         onClose={handleCloseJuegoCuatro}
         onGameComplete={handleGameComplete}

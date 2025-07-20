@@ -1,0 +1,24 @@
+# Recommended for most uses
+DATABASE_URL=postgres://neondb_owner:npg_wNU3qjno9itb@ep-tiny-wave-aba3h08y-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require
+
+# For uses requiring a connection without pgbouncer
+DATABASE_URL_UNPOOLED=postgresql://neondb_owner:npg_wNU3qjno9itb@ep-tiny-wave-aba3h08y.eu-west-2.aws.neon.tech/neondb?sslmode=require
+
+# Parameters for constructing your own connection string
+PGHOST=ep-tiny-wave-aba3h08y-pooler.eu-west-2.aws.neon.tech
+PGHOST_UNPOOLED=ep-tiny-wave-aba3h08y.eu-west-2.aws.neon.tech
+PGUSER=neondb_owner
+PGDATABASE=neondb
+PGPASSWORD=npg_wNU3qjno9itb
+
+# Parameters for Vercel Postgres Templates
+POSTGRES_URL=postgres://neondb_owner:npg_wNU3qjno9itb@ep-tiny-wave-aba3h08y-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require
+POSTGRES_URL_NON_POOLING=postgres://neondb_owner:npg_wNU3qjno9itb@ep-tiny-wave-aba3h08y.eu-west-2.aws.neon.tech/neondb?sslmode=require
+POSTGRES_USER=neondb_owner
+POSTGRES_HOST=ep-tiny-wave-aba3h08y-pooler.eu-west-2.aws.neon.tech
+POSTGRES_PASSWORD=npg_wNU3qjno9itb
+POSTGRES_DATABASE=neondb
+POSTGRES_URL_NO_SSL=postgres://neondb_owner:npg_wNU3qjno9itb@ep-tiny-wave-aba3h08y-pooler.eu-west-2.aws.neon.tech/neondb
+POSTGRES_PRISMA_URL=postgres://neondb_owner:npg_wNU3qjno9itb@ep-tiny-wave-aba3h08y-pooler.eu-west-2.aws.neon.tech/neondb?connect_timeout=15&sslmode=require
+
+AUTH_SECRET="YgLsxZabPBy/JUijnZGEjqpTTpJe0nr2/KAs6ErT9eo=" # Added by `npx auth`. Read more: https://cli.authjs.dev

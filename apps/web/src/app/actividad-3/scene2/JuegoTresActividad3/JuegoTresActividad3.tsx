@@ -1,31 +1,388 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
+import { getMockUserGender } from './config';
+import SituationDisplay from './SituationDisplay';
+import OptionsList from './OptionsList';
+import FeedbackOverlay from './FeedbackOverlay';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
-interface JuegoCuatroActividad3FemProps {
+interface JuegoTresActividad3Props {
   isVisible: boolean;
   onClose: () => void;
-  onGameComplete?: () => void;
+  onGameComplete: () => void;
   userId?: string;
 }
 
-const JuegoCuatroActividad3Fem: React.FC<JuegoCuatroActividad3FemProps> = ({ 
-  isVisible, 
-  onClose, 
- // onGameComplete,
- // userId 
+const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
+  isVisible,
+  onClose,
+  onGameComplete,
+  userId
 }) => {
+  const userGender = getMockUserGender();
+  console.log('🔍 Current user gender:', userGender); // Debug log
+  
+  // Game hooks
+  const {
+    currentSituation,
+    setCurrentSituation, // Added this line
+    gamePhase,
+    setGamePhase,
+    currentOptionIndex,
+    setCurrentOptionIndex,
+    selectedOption,
+    setSelectedOption,
+    //isCorrect,
+    setIsCorrect,
+    score,
+    setScore,
+    situationsCorrect,
+    resetGame,
+   // nextSituation,
+    markSituationCorrect,
+   // isGameComplete,
+    gameConfig
+  } = useGameState(userGender);
 
-  const handleClose = () => {
-    console.log('🎮 Closing JuegoCuatroActividad3Fem modal...');
+  const { currentSession, startSession, endSession } = useGameSession(userGender);
+  const { recordAttempt } = useGameTracking(userGender);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { playAudio, playAudioWithCallback, stopAudio } = useAudioManager();
+
+  // Local state for feedback control
+  const [showFeedback, setShowFeedback] = useState(false);
+  //const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isFeedbackCorrect, setIsFeedbackCorrect] = useState(false);
+
+  // Initialize game when modal opens
+  useEffect(() => {
+    if (isVisible) {
+      console.log('🎮 Game modal opened, starting game...');
+      resetGame();
+      startSession(userId);
+      startTitlePhase();
+    } else {
+      stopAudio();
+    }
+  }, [isVisible, userId, resetGame, startSession, stopAudio]);
+
+  // Start the title phase
+  const startTitlePhase = useCallback(async () => {
+    console.log('🎵 Starting title phase...');
+    setGamePhase('title');
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      playAudioWithCallback(
+        gameConfig.title.audio,
+        () => {
+          console.log('🎵 Title audio finished, moving to first situation');
+          setTimeout(() => {
+            startSituationPhase(0);
+          }, 500);
+        }
+      );
+    } catch (error) {
+      console.error('Error in title phase:', error);
+      startSituationPhase(0);
+    }
+  }, [gameConfig.title.audio, playAudioWithCallback]);
+
+  // Start situation phase - FIXED VERSION
+  const startSituationPhase = useCallback(async (situationIndex: number) => {
+    // Ensure we don't go out of bounds
+    if (situationIndex >= gameConfig.situations.length) {
+      console.log('🎉 All situations completed, ending game');
+      setGamePhase('complete');
+      return;
+    }
+
+    const situation = gameConfig.situations[situationIndex];
+    console.log(`🎮 Starting situation ${situationIndex + 1}:`, situation.title);
+    console.log('🎮 Situation data:', situation);
+    
+    // Update current situation index to match
+    setCurrentSituation(situationIndex);
+    setGamePhase('situation'); // Set to 'situation' phase - this will hide options
+    setCurrentOptionIndex(0);
+    setSelectedOption(null);
+    
+    // Stop any current audio before playing new one
+    stopAudio();
+    
+    try {
+      // Small delay to ensure audio is stopped and UI updates
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Play situation description audio
+      console.log('🎵 Playing situation audio:', situation.description.audio);
+      playAudioWithCallback(
+        situation.description.audio,
+        () => {
+          console.log('🎵 Situation audio finished, starting options sequence');
+          setTimeout(() => {
+            startOptionsSequence(situationIndex);
+          }, 500);
+        }
+      );
+    } catch (error) {
+      console.error('Error playing situation audio:', error);
+      startOptionsSequence(situationIndex);
+    }
+  }, [gameConfig.situations, playAudioWithCallback, stopAudio, setCurrentSituation, setGamePhase, setCurrentOptionIndex, setSelectedOption]);
+
+  // Start options sequence (play each option audio sequentially)
+  const startOptionsSequence = useCallback(async (situationIndex: number) => {
+    const situation = gameConfig.situations[situationIndex];
+    console.log(`🎮 Starting options sequence for situation ${situationIndex + 1}`);
+    
+    setGamePhase('options');
+    
+    // Play all option audios sequentially
+    const playOptionAudio = async (optionIndex: number): Promise<void> => {
+      if (optionIndex >= situation.options.length) {
+        // All options played, now allow user to click
+        console.log('🎵 All options played, waiting for user click');
+        setGamePhase('waiting_for_click');
+        return;
+      }
+
+      const option = situation.options[optionIndex];
+      setCurrentOptionIndex(optionIndex);
+      
+      console.log(`🎵 Playing option ${optionIndex + 1} audio:`, option.audio);
+      
+      return new Promise(resolve => {
+        playAudioWithCallback(
+          option.audio,
+          () => {
+            console.log(`🎵 Option ${optionIndex + 1} audio finished`);
+            setTimeout(() => {
+              playOptionAudio(optionIndex + 1).then(resolve);
+            }, 500); // Small delay between options
+          }
+        );
+      });
+    };
+
+    await playOptionAudio(0);
+  }, [gameConfig.situations, playAudioWithCallback, setGamePhase, setCurrentOptionIndex]);
+
+  // Handle option selection - FIXED VERSION
+  const handleOptionSelect = useCallback(async (optionId: string) => {
+    const situation = gameConfig.situations[currentSituation];
+    const selectedOptionData = situation.options.find(opt => opt.id === optionId);
+    
+    if (!selectedOptionData || gamePhase !== 'waiting_for_click') return;
+
+    console.log(`🎮 Option selected: ${optionId} for situation ${currentSituation + 1}`);
+    console.log('🎮 Selected option data:', selectedOptionData);
+    
+    setSelectedOption(optionId);
+    const correct = selectedOptionData.isCorrect;
+    setIsCorrect(correct);
+    setIsFeedbackCorrect(correct);
+
+    console.log('🎮 Is answer correct?', correct);
+
+    // Record the attempt
+    recordAttempt(
+      situation.id,
+      optionId,
+      optionId,
+      correct,
+      userId,
+      currentSession?.sessionId
+    );
+
+    // Update score and mark as correct if needed
+    if (correct) {
+      console.log('🎮 Updating score and marking situation as correct');
+      setScore(prev => prev + 1);
+      markSituationCorrect(currentSituation);
+    }
+
+    // Set feedback and show overlay
+    setShowFeedback(true);
+    console.log('🎮 About to play feedback audio:', selectedOptionData.feedback.audio);
+
+    // Play feedback audio with callback
+    try {
+      playAudioWithCallback(
+        selectedOptionData.feedback.audio,
+        () => {
+          console.log('🎵 Feedback audio completed - proceeding with next steps');
+          // Add 1 second delay after audio completes before proceeding
+          setTimeout(() => {
+            console.log('🎵 Processing feedback completion...');
+            
+            // Hide feedback first
+            setShowFeedback(false);
+            stopAudio();
+            
+            if (correct) {
+              // Correct answer - move to next situation
+              if (currentSituation >= gameConfig.situations.length - 1) {
+                // Game complete
+                console.log('🎉 Game completed!');
+                const finalScore = score + 1;
+                const finalCorrect = [...situationsCorrect];
+                finalCorrect[currentSituation] = true;
+                
+                endSession(true, finalScore, finalCorrect);
+                setGamePhase('complete');
+                
+                setTimeout(() => {
+                  onGameComplete();
+                  onClose();
+                }, 2000);
+              } else {
+                // Move to next situation - FIXED: Don't update currentSituation here
+                console.log('➡️ Moving to next situation...');
+                const nextSituationIndex = currentSituation + 1;
+                console.log('🎮 Next situation index:', nextSituationIndex);
+                
+                // IMPORTANT: Don't update currentSituation here, let startSituationPhase do it
+                // This prevents the brief flash of options
+                
+                setTimeout(() => {
+                  console.log('🎮 Starting next situation:', nextSituationIndex);
+                  startSituationPhase(nextSituationIndex);
+                }, 1000);
+              }
+            } else {
+              // Wrong answer - retry same situation
+              console.log('❌ Wrong answer, staying on same situation');
+              setTimeout(() => {
+                setGamePhase('waiting_for_click');
+                setSelectedOption(null);
+              }, 500);
+            }
+          }, 1000);
+        }
+      );
+    } catch (error) {
+      console.warn('Could not play feedback audio:', error);
+      // If audio fails, still proceed after delay
+      setTimeout(() => {
+        console.log('🎵 Audio failed - proceeding anyway');
+        setShowFeedback(false);
+        if (correct && currentSituation < gameConfig.situations.length - 1) {
+          const nextSituationIndex = currentSituation + 1;
+          setTimeout(() => {
+            startSituationPhase(nextSituationIndex);
+          }, 1000);
+        }
+      }, 3000);
+    }
+
+  }, [
+    gameConfig.situations,
+    currentSituation,
+    gamePhase,
+    recordAttempt,
+    markSituationCorrect,
+    playAudioWithCallback,
+    userId,
+    currentSession,
+    setSelectedOption,
+    setIsCorrect,
+    setIsFeedbackCorrect,
+    setScore,
+    setShowFeedback,
+    score,
+    situationsCorrect,
+    endSession,
+    onGameComplete,
+    onClose,
+    setGamePhase,
+    startSituationPhase,
+    stopAudio
+  ]);
+
+  // Handle feedback completion
+  // const handleFeedbackComplete = useCallback(() => {
+  //   console.log('📝 Feedback completed for situation', currentSituation + 1);
+  //   console.log('📝 Answer was correct:', isCorrect);
+  //   console.log('📝 Current situations correct:', situationsCorrect);
+    
+  //   setShowFeedback(false);
+    
+  //   // Stop any current audio before proceeding
+  //   stopAudio();
+    
+  //   if (isCorrect) {
+  //     // Correct answer - move to next situation
+  //     if (currentSituation >= gameConfig.situations.length - 1) {
+  //       // Game complete
+  //       console.log('🎉 Game completed!');
+  //       const finalScore = score + 1; // Add 1 for the current correct answer
+  //       const finalCorrect = [...situationsCorrect];
+  //       finalCorrect[currentSituation] = true; // Mark current as correct
+        
+  //       endSession(true, finalScore, finalCorrect);
+  //       setGamePhase('complete');
+        
+  //       setTimeout(() => {
+  //         onGameComplete();
+  //         onClose();
+  //       }, 2000);
+  //     } else {
+  //       // Move to next situation
+  //       console.log('➡️ Moving to next situation...');
+  //       nextSituation(); // This updates the state
+  //       setTimeout(() => {
+  //         // Use currentSituation + 1 since state update is async
+  //         const nextSituationIndex = currentSituation + 1;
+  //         console.log('🎮 Starting next situation:', nextSituationIndex);
+  //         startSituationPhase(nextSituationIndex);
+  //       }, 1000);
+  //     }
+  //   } else {
+  //     // Wrong answer - retry same situation (don't move to next)
+  //     console.log('❌ Wrong answer, staying on same situation');
+  //     setTimeout(() => {
+  //       setGamePhase('waiting_for_click');
+  //       setSelectedOption(null);
+  //     }, 500);
+  //   }
+  // }, [
+  //   currentSituation,
+  //   gameConfig.situations.length,
+  //   score,
+  //   isCorrect,
+  //   situationsCorrect,
+  //   endSession,
+  //   nextSituation,
+  //   onGameComplete,
+  //   onClose,
+  //   startSituationPhase,
+  //   stopAudio,
+  //   setShowFeedback,
+  //   setGamePhase,
+  //   setSelectedOption
+  // ]);
+
+  // Handle close button
+  const handleClose = useCallback(() => {
+    stopAudio();
+    endSession(false, score, situationsCorrect);
+    resetGame();
     onClose();
-  };
+  }, [stopAudio, endSession, score, situationsCorrect, resetGame, onClose]);
 
   if (!isVisible) return null;
 
+  const currentSituationData = gameConfig.situations[currentSituation];
+  const showSituation = gamePhase === 'situation' || gamePhase === 'options' || gamePhase === 'waiting_for_click';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto p-4">
-      {/* Modal with background - 800x500 responsive */}
+      {/* Modal with gradient background - 800x500 responsive */}
       <div 
         className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-500"
         style={{ 
@@ -41,60 +398,108 @@ const JuegoCuatroActividad3Fem: React.FC<JuegoCuatroActividad3FemProps> = ({
           Salir juego
         </button>
 
-        {/* Placeholder Content */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="text-4xl mb-4">🎯</div>
-            <div className="text-2xl font-bold mb-2">
-              JuegoCuatroActividad3-Fem
-            </div>
-            <div className="text-lg opacity-80 mb-6">
-              Placeholder Modal - Escena 2
-            </div>
-            <div className="text-sm opacity-60 max-w-md mx-auto leading-relaxed">
-              Este es un modal placeholder para el juego JuegoCuatroActividad3-Fem.
-              <br />
-              Aquí se implementará la lógica del juego específica para la segunda escena.
+        {/* Progress Indicator */}
+        <div className="absolute top-4 left-4 z-10 bg-white/20 rounded-full px-4 py-2">
+          <span className="text-white font-bold">
+            {currentSituation + 1} / {gameConfig.situations.length}
+          </span>
+        </div>
+
+        {/* Debug Info (development only) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-16 left-4 z-10 text-xs text-white bg-black/50 p-2 rounded max-w-md">
+            <div>Gender: {userGender}</div>
+            <div>Situación: {currentSituation + 1}/{gameConfig.situations.length}</div>
+            <div>Fase: {gamePhase}</div>
+            <div>Score: {score}</div>
+            <div>Option Index: {currentOptionIndex}</div>
+            {currentSituationData && (
+              <>
+                <div>ID: {currentSituationData.id}</div>
+                <div>Título: {currentSituationData.title}</div>
+                <div>Options: {currentSituationData.options.length}</div>
+                <div>Selected: {selectedOption || 'None'}</div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Title Phase */}
+        {gamePhase === 'title' && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white">
+              <motion.div
+                className="text-4xl mb-4"
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                🎯
+              </motion.div>
+              <div className="text-2xl font-bold mb-4">
+                La masturbación
+              </div>
+              <div className="text-lg opacity-80 mb-2">
+                Elige qué debería hacer {userGender === 'male' ? 'Dani' : 'Cris'}  en cada situación
+              </div>
+              <div className="text-sm opacity-60 mb-6">
+                Escuchando instrucciones...
+              </div>
+              <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Floating animation elements - Different shapes for Scene 2 */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={`triangle-${i}`}
-              className="absolute w-0 h-0 border-l-4 border-r-4 border-b-8 border-transparent border-b-white/20"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `pulse ${Math.random() * 3 + 2}s infinite`,
-                animationDelay: `${Math.random() * 2}s`
-              }}
-            />
-          ))}
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={`square-${i}`}
-              className="absolute w-3 h-3 bg-white/20 transform rotate-45 animate-bounce"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${Math.random() * 3 + 2}s`
-              }}
-            />
-          ))}
-        </div>
+        {/* Situation Display */}
+        {showSituation && currentSituationData && (
+          <SituationDisplay
+            image={currentSituationData.description.image}
+            alt={currentSituationData.title}
+            isVisible={true}
+          />
+        )}
 
-        {/* Animated border effect */}
-        <div className="absolute inset-2 border-2 border-white/20 rounded-lg">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
-        </div>
+        {/* Options List */}
+        {showSituation && currentSituationData && (
+          <OptionsList
+            options={currentSituationData.options}
+            currentOptionIndex={currentOptionIndex}
+            gamePhase={gamePhase}
+            onOptionSelect={handleOptionSelect}
+            selectedOption={selectedOption}
+          />
+        )}
+
+        {/* Feedback Overlay */}
+        {showFeedback && (
+          <FeedbackOverlay
+            isVisible={true}
+            isCorrect={isFeedbackCorrect}
+            onComplete={() => {}} // Empty function - we handle completion via audio callback now
+            duration={10000} // Longer duration as fallback, but audio callback controls timing
+          />
+        )}
+
+        {/* Game Complete */}
+        {gamePhase === 'complete' && (
+          <CongratsOverlay
+            isVisible={true}
+            onComplete={() => {
+              onGameComplete();
+              onClose();
+            }}
+            duration={5000}
+          />
+        )}
 
       </div>
     </div>
   );
 };
 
-export default JuegoCuatroActividad3Fem;
+export default JuegoTresActividad3;
