@@ -1,9 +1,14 @@
 import { SignIn } from "@/app/components/sign-in";
 
-export default function LoginPage() {
+interface LoginPageProps {
+	searchParams: Promise<{ error?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+	const { error } = await searchParams;
 	return (
 		<main>
-			<SignIn />
+			<SignIn error={error} />
 		</main>
 	);
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 import { getUserRole, checkPermission } from '@/lib/permissions';
+import { generateUsername } from '@/lib/passwordGenerator';
 
 // GET /api/admin/users - Get all users (admins and owners only)
 export async function GET(request: NextRequest) {
@@ -119,6 +120,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Split name for username generation
+    const nameParts = name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || firstName;
+
     // Validate role permissions
     const validRoles = ['admin', 'teacher', 'student'];
     if (userRole === 'admin') {
@@ -144,12 +150,19 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     try {
+      // Get existing usernames to avoid conflicts
+      const existingUsernames = await query('SELECT username FROM users WHERE username IS NOT NULL');
+      const usernameList = existingUsernames.rows.map(row => row.username);
+      
+      // Generate unique username
+      const username = generateUsername(firstName, lastName, usernameList);
+      
       // Create user
       const result = await query(`
-        INSERT INTO users (email, password_hash, name, role, created_by)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, email, name, role, created_at
-      `, [email, hashedPassword, name, role, session.user.id]);
+        INSERT INTO users (email, password_hash, name, role, created_by, is_active, username, first_name, last_name)
+        VALUES ($1, $2, $3, $4, $5, true, $6, $7, $8)
+        RETURNING id, email, name, role, username, created_at
+      `, [email, hashedPassword, name, role, session.user.id, username, firstName, lastName]);
 
       const newUser = result.rows[0];
 

@@ -5,9 +5,9 @@ import { signInSchema, signInSchemaLegacy } from "./lib/zod";
 import bcrypt from "bcryptjs";
 import { query } from "./lib/db";
 
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	session: {
-		// When remember me is checked, session will last for 30 days, otherwise 24 hours
 		strategy: "jwt",
 	},
 	providers: [
@@ -20,7 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			},
 			authorize: async (credentials) => {
 				try {
-					let user = null;
+					if (!credentials) {
+						return null;
+					}
 
 					// Try new schema first (login + password)
 					let login, password;
@@ -28,30 +30,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 						const parsed = await signInSchema.parseAsync(credentials);
 						login = parsed.login;
 						password = parsed.password;
-					} catch {
+					} catch (schemaError) {
 						// Fall back to legacy schema (email + password) for backwards compatibility
-						const parsed = await signInSchemaLegacy.parseAsync(credentials);
-						login = parsed.email;
-						password = parsed.password;
+						try {
+							const parsed = await signInSchemaLegacy.parseAsync(credentials);
+							login = parsed.email;
+							password = parsed.password;
+						} catch (legacyError) {
+							throw legacyError;
+						}
 					}
 
 					// logic to verify if the user exists
-					user = await getUserFromDb(login, password);
+					const user = await getUserFromDb(login, password);
 
 					if (!user) {
-						throw new Error("Invalid credentials.");
+						return null;
 					}
 
-					// return JSON object with the user data
 					return {
 						id: user.id,
 						email: user.email,
 						name: user.name,
-						...(user.role && { role: user.role }),
+						role: user.role,
 					};
 				} catch (error) {
 					if (error instanceof ZodError) {
-						// Return `null` to indicate that the credentials are invalid
 						return null;
 					}
 					return null;
@@ -60,20 +64,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ baseUrl }) {
-			// Always redirect to dashboard except for explicit logout
+		async redirect({ url, baseUrl }) {
+			// Handle logout redirects to login page
+			if (url === `${baseUrl}/auth/login`) {
+				return url;
+			}
+			
+			// Allow explicit relative URLs
+			if (url.startsWith("/")) return `${baseUrl}${url}`;
+			if (url.startsWith(baseUrl)) return url;
+			
+			// Default redirect to dashboard for login
 			return `${baseUrl}/dashboard`;
 		},
 		async jwt({ token, user }) {
 			// Pass user data to token when user signs in
 			if (user) {
-				console.log('JWT callback - User data:', user);
 				token.role = (user as { role?: string }).role;
 				token.username = (user as { username?: string }).username;
 				token.first_name = (user as { first_name?: string }).first_name;
 				token.last_name = (user as { last_name?: string }).last_name;
 			}
-			console.log('JWT callback - Token:', { role: token.role, sub: token.sub });
 			return token;
 		},
 		async session({ session, token }) {
@@ -91,20 +102,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 });
 
 async function getUserFromDb(login: string, password: string) {
-	// Fallback for test user during development
-	if (login === 'test@example.com' && password === 'testpass123') {
-		return {
-			id: '1',
-			email: 'test@example.com',
-			name: 'Test User',
-			role: 'owner',
-		};
-	}
-
 	try {
-		// Query database for user by email
+		// Query database for user by email OR username
+		// Handle cases where username might be NULL for existing users
 		const result = await query(
-			'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = $1',
+			'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE email = $1 OR (username IS NOT NULL AND username = $1)',
 			[login]
 		);
 		
@@ -121,6 +123,7 @@ async function getUserFromDb(login: string, password: string) {
 		
 		// Verify password
 		const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+		
 		if (!isPasswordValid) {
 			return null;
 		}

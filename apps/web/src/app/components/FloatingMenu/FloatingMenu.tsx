@@ -109,7 +109,7 @@ const FloatingMenu = () => {
 		setActiveId(item.id);
 
 		if (item.id === "exit") {
-			await signOut();
+			await signOut({ callbackUrl: '/auth/login' });
 			return;
 		}
 

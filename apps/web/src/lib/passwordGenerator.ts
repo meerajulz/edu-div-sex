@@ -3,45 +3,45 @@
 
 const SIMPLE_WORDS = [
   // Animales (Animals)
-  'gato', 'perro', 'pájaro', 'pez', 'oso', 'león', 'pato', 'rana', 'vaca', 'cerdo',
-  'zorro', 'búho', 'abeja', 'hormiga', 'murciélago', 'ciervo', 'cabra', 'cordero', 'foca', 'lobo',
-  'conejo', 'ratón', 'caballo', 'pollo', 'oveja', 'mono', 'elefante', 'jirafa', 'tigre', 'zebra',
+  'gato', 'perro', 'pajaro', 'pez', 'oso', 'leon', 'pato', 'rana', 'vaca', 'cerdo',
+  'zorro', 'buho', 'abeja', 'hormiga', 'murcielago', 'ciervo', 'cabra', 'cordero', 'foca', 'lobo',
+  'conejo', 'raton', 'caballo', 'pollo', 'oveja', 'mono', 'elefante', 'jirafa', 'tigre', 'zebra',
   
   // Colores (Colors)
-  'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'morado', 'naranja', 'blanco', 'negro', 'marrón',
+  'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'morado', 'naranja', 'blanco', 'negro', 'marron',
   'gris', 'dorado', 'plateado', 'violeta',
   
   // Objetos simples (Simple objects)
-  'pelota', 'libro', 'carro', 'árbol', 'casa', 'sol', 'luna', 'estrella', 'piedra', 'barco',
-  'bici', 'lápiz', 'taza', 'sombrero', 'bolsa', 'caja', 'llave', 'puerta', 'juguete', 'campana',
+  'pelota', 'libro', 'carro', 'arbol', 'casa', 'sol', 'luna', 'estrella', 'piedra', 'barco',
+  'bici', 'lapiz', 'taza', 'sombrero', 'bolsa', 'caja', 'llave', 'puerta', 'juguete', 'campana',
   'mesa', 'silla', 'cama', 'flor', 'agua', 'fuego', 'tierra', 'aire', 'nube', 'lluvia',
   
   // Partes del cuerpo (Body parts - appropriate for educational context)
   'mano', 'pie', 'cabeza', 'ojo', 'oreja', 'nariz', 'brazo', 'pierna', 'pelo', 'cara',
-  'boca', 'diente', 'lengua', 'cuello', 'espalda', 'barriga', 'corazón',
+  'boca', 'diente', 'lengua', 'cuello', 'espalda', 'barriga', 'corazon',
   
   // Acciones simples (Simple actions)
   'correr', 'caminar', 'saltar', 'jugar', 'leer', 'comer', 'dormir', 'cantar', 'bailar', 'ayudar',
-  'amar', 'abrazar', 'sonreír', 'reír', 'mirar', 'ver', 'oír', 'hablar', 'dibujar', 'escribir',
-  'nadar', 'volar', 'cocinar', 'limpiar', 'estudiar', 'trabajar', 'pensar', 'soñar',
+  'amar', 'abrazar', 'sonreir', 'reir', 'mirar', 'ver', 'oir', 'hablar', 'dibujar', 'escribir',
+  'nadar', 'volar', 'cocinar', 'limpiar', 'estudiar', 'trabajar', 'pensar', 'sonar',
   
   // Adjetivos simples (Simple adjectives)
-  'grande', 'pequeño', 'rápido', 'lento', 'feliz', 'triste', 'bueno', 'malo', 'caliente', 'frío',
+  'grande', 'pequeno', 'rapido', 'lento', 'feliz', 'triste', 'bueno', 'malo', 'caliente', 'frio',
   'tibio', 'fresco', 'suave', 'duro', 'nuevo', 'viejo', 'limpio', 'sucio', 'bonito', 'feo',
-  'alto', 'bajo', 'gordo', 'flaco', 'fuerte', 'débil', 'rico', 'dulce', 'salado',
+  'alto', 'bajo', 'gordo', 'flaco', 'fuerte', 'debil', 'rico', 'dulce', 'salado',
   
-  // Números como palabras (Numbers as words)
+  // Numeros como palabras (Numbers as words)
   'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
   
   // Familia (Family)
-  'mamá', 'papá', 'hijo', 'hija', 'hermano', 'hermana', 'abuelo', 'abuela', 'tío', 'tía',
+  'mama', 'papa', 'hijo', 'hija', 'hermano', 'hermana', 'abuelo', 'abuela', 'tio', 'tia',
   
   // Comida simple (Simple food)
-  'pan', 'leche', 'queso', 'manzana', 'plátano', 'naranja', 'uva', 'fresa', 'tomate', 'papa',
+  'pan', 'leche', 'queso', 'manzana', 'platano', 'naranja', 'uva', 'fresa', 'tomate', 'papa',
   'arroz', 'pasta', 'pollo', 'pescado', 'huevo', 'sopa', 'dulce', 'helado',
   
-  // Tiempo y días (Time and days)
-  'día', 'noche', 'mañana', 'tarde', 'ayer', 'hoy', 'lunes', 'martes', 'sábado', 'domingo'
+  // Tiempo y dias (Time and days)
+  'dia', 'noche', 'manana', 'tarde', 'ayer', 'hoy', 'lunes', 'martes', 'sabado', 'domingo'
 ];
 
 export interface GeneratedPassword {
