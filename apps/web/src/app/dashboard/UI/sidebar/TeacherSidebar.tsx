@@ -29,7 +29,7 @@ const TeacherSidebar: React.FC = () => {
             Gestión de Alumnos
           </div>
           <Link
-            href='/dashboard/add-user'
+            href='/dashboard/owner/users/create?role=student'
             className='text-gray-600 text-sm block mb-2'>
             Crear Perfil de Alumno
           </Link>

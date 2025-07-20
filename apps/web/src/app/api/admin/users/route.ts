@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 import { getUserRole, checkPermission } from '@/lib/permissions';
-import { generateUsername } from '@/lib/passwordGenerator';
 
 // GET /api/admin/users - Get all users (admins and owners only)
 export async function GET(request: NextRequest) {
@@ -111,12 +110,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, name, role } = body;
+    const { email, password, name, role, username } = body;
 
     // Validate required fields
     if (!email || !password || !name || !role) {
       return NextResponse.json({ 
         error: 'email, password, name, and role are required' 
+      }, { status: 400 });
+    }
+
+    // Validate username for students
+    if (role === 'student' && !username) {
+      return NextResponse.json({ 
+        error: 'username is required for student accounts' 
       }, { status: 400 });
     }
 
@@ -150,19 +156,27 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     try {
-      // Get existing usernames to avoid conflicts
-      const existingUsernames = await query('SELECT username FROM users WHERE username IS NOT NULL');
-      const usernameList = existingUsernames.rows.map(row => row.username);
-      
-      // Generate unique username
-      const username = generateUsername(firstName, lastName, usernameList);
+      // Determine username based on role
+      let finalUsername = null;
+      if (role === 'student') {
+        // For students, use the provided username
+        finalUsername = username;
+        
+        // Check if username already exists
+        const existingUsername = await query('SELECT id FROM users WHERE username = $1', [username]);
+        if (existingUsername.rows.length > 0) {
+          return NextResponse.json({ 
+            error: 'Username already exists' 
+          }, { status: 400 });
+        }
+      }
       
       // Create user
       const result = await query(`
         INSERT INTO users (email, password_hash, name, role, created_by, is_active, username, first_name, last_name)
         VALUES ($1, $2, $3, $4, $5, true, $6, $7, $8)
         RETURNING id, email, name, role, username, created_at
-      `, [email, hashedPassword, name, role, session.user.id, username, firstName, lastName]);
+      `, [email, hashedPassword, name, role, session.user.id, finalUsername, firstName, lastName]);
 
       const newUser = result.rows[0];
 
@@ -172,6 +186,14 @@ export async function POST(request: NextRequest) {
           INSERT INTO teacher_admin_assignments (teacher_id, admin_id)
           VALUES ($1, $2)
         `, [newUser.id, session.user.id]);
+      }
+
+      // If creating a student, create student profile
+      if (role === 'student') {
+        await query(`
+          INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, is_active)
+          VALUES ($1, $2, 1, 1, 1, 1, true)
+        `, [name, newUser.id]);
       }
 
       return NextResponse.json({

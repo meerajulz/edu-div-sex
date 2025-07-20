@@ -135,7 +135,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, email, role, is_active, new_password } = body;
+    const { name, email, role, is_active, new_password, notes } = body;
 
     // Build dynamic update query
     const updates = [];
@@ -181,6 +181,15 @@ export async function PUT(
 
     const result = await query(updateQuery, values);
     const updatedUser = result.rows[0];
+
+    // Handle notes update for students
+    if (notes !== undefined && updatedUser.role === 'student') {
+      await query(`
+        UPDATE students 
+        SET notes = $1, updated_at = NOW()
+        WHERE user_id = $2
+      `, [notes, userId]);
+    }
 
     return NextResponse.json({
       message: 'User updated successfully',

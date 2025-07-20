@@ -24,6 +24,9 @@ const AdminSidebar: React.FC = () => {
           <Link href='/dashboard/admin/teachers' className='text-gray-600 text-sm block mb-2'>
             Ver Profesores Asignados
           </Link>
+          <Link href='/dashboard/admin/users/create?role=teacher' className='text-gray-600 text-sm block mb-2'>
+            Crear Profesor
+          </Link>
           <Link href='/dashboard/admin/teacher-assignments' className='text-gray-600 text-sm block mb-2'>
             Asignar Profesores
           </Link>
@@ -33,6 +36,9 @@ const AdminSidebar: React.FC = () => {
           </div>
           <Link href='/dashboard/admin/students' className='text-gray-600 text-sm block mb-2'>
             Ver Todos los Estudiantes
+          </Link>
+          <Link href='/dashboard/admin/users/create?role=student' className='text-gray-600 text-sm block mb-2'>
+            Crear Estudiante
           </Link>
           <Link href='/dashboard/admin/reports' className='text-gray-600 text-sm block mb-2'>
             Reportes y Estadísticas
