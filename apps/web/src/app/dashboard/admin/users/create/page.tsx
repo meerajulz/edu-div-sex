@@ -97,7 +97,7 @@ function CreateUserForm() {
         throw new Error(result.error || 'Error al crear el usuario');
       }
 
-      setSuccess(`¡Usuario ${formData.role} creado exitosamente!`);
+      setSuccess(`¡Usuario ${getRoleButtonText()} creado exitosamente!`);
       
       // Reset form after 3 seconds
       setTimeout(() => {
@@ -124,6 +124,17 @@ function CreateUserForm() {
         return 'Crear Estudiante';
       default:
         return 'Crear Usuario';
+    }
+  };
+
+  const getRoleButtonText = () => {
+    switch (formData.role) {
+      case 'teacher':
+        return 'Profesor';
+      case 'student':
+        return 'Estudiante';
+      default:
+        return 'Usuario';
     }
   };
 
@@ -288,7 +299,7 @@ function CreateUserForm() {
                     : 'bg-pink-600 hover:bg-pink-700'
                 } text-white font-medium`}
               >
-                {isLoading ? 'Creando...' : `Crear ${formData.role || 'Usuario'}`}
+                {isLoading ? 'Creando...' : `Crear ${getRoleButtonText()}`}
               </button>
             </div>
           </form>

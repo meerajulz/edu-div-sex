@@ -100,7 +100,7 @@ function OwnerCreateUserForm() {
         throw new Error(result.error || 'Error al crear el usuario');
       }
 
-      setSuccess(`¡Usuario ${formData.role} creado exitosamente!`);
+      setSuccess(`¡Usuario ${getRoleButtonText()} creado exitosamente!`);
       
       // Store created user credentials for display
       setCreatedUser({
@@ -146,6 +146,21 @@ function OwnerCreateUserForm() {
         return 'Los estudiantes tienen acceso a las actividades educativas del sistema.';
       default:
         return '';
+    }
+  };
+
+  const getRoleButtonText = () => {
+    switch (formData.role) {
+      case 'owner':
+        return 'Propietario';
+      case 'admin':
+        return 'Administrador';
+      case 'teacher':
+        return 'Profesor';
+      case 'student':
+        return 'Estudiante';
+      default:
+        return 'Usuario';
     }
   };
 
@@ -418,7 +433,7 @@ function OwnerCreateUserForm() {
                     : 'bg-pink-600 hover:bg-pink-700'
                 } text-white font-medium`}
               >
-                {isLoading ? 'Creando...' : `Crear ${formData.role || 'Usuario'}`}
+                {isLoading ? 'Creando...' : `Crear ${getRoleButtonText()}`}
               </button>
             </div>
           </form>
