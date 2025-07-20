@@ -79,7 +79,7 @@ export function SignIn({ error }: SignInProps) {
 					{error && (
 						<div className="mb-4 p-3 bg-red-500 text-white rounded-lg text-sm">
 							{error === 'CredentialsSignin' 
-								? 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.'
+								? 'Email/usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
 								: 'Error de autenticación. Por favor, inténtalo de nuevo.'
 							}
 						</div>
@@ -133,12 +133,12 @@ export function SignIn({ error }: SignInProps) {
 						className="space-y-6"
 					>
 						<div className="space-y-2">
-							<label className="block font-medium" htmlFor="login">EMAIL</label>
+							<label className="block font-medium" htmlFor="login">EMAIL O USUARIO</label>
 							<input
-								type="email"
+								type="text"
 								name="login"
 								id="login"
-								placeholder="Email"
+								placeholder="Email o nombre de usuario"
 								className="w-full p-3 rounded-lg text-gray-900 placeholder-gray-400 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
 								required
 							/>

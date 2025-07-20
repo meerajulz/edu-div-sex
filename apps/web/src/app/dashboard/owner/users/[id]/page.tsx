@@ -8,6 +8,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  username?: string;
   role: 'owner' | 'admin' | 'teacher' | 'student';
   is_active: boolean;
   created_at: string;
@@ -298,6 +299,13 @@ function ViewUserDetails() {
               <label className="block text-sm font-medium text-gray-700">Email</label>
               <p className="mt-1 text-gray-900">{user.email}</p>
             </div>
+            {user.role === 'student' && user.username && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
+                <p className="mt-1 text-gray-900 font-mono">{user.username}</p>
+                <p className="text-xs text-gray-500 mt-1">Usado para iniciar sesión</p>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">Rol</label>
               <div className="mt-1">{getRoleBadge(user.role)}</div>

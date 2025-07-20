@@ -33,6 +33,7 @@ export async function GET(
         u.id,
         u.email,
         u.name,
+        u.username,
         u.role,
         u.is_active,
         u.created_at,
