@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardWrapper from '../../../DashboardWrapper';
+import { Question, questionsData } from '../../../../data/questions';
 
 interface UserFormData {
   name: string;
@@ -44,6 +45,45 @@ function CreateUserForm() {
     message: string;
   }>({ checking: false, available: null, message: '' });
   const [emailTimeout, setEmailTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [questions, setQuestions] = useState<Question[]>(questionsData);
+
+  // Form validation
+  const isFormValid = () => {
+    // Basic required fields
+    if (!formData.name.trim() || !formData.email.trim() || !formData.role) {
+      return false;
+    }
+
+    // Username required for students
+    if (formData.role === 'student' && !formData.username.trim()) {
+      return false;
+    }
+
+    // Password validation
+    if (!useGeneratedPassword) {
+      if (!formData.password || formData.password !== formData.confirmPassword) {
+        return false;
+      }
+      if (formData.password.length < 8) {
+        return false;
+      }
+    }
+
+    // Email and username availability check
+    if (emailStatus.available === false || usernameStatus.available === false) {
+      return false;
+    }
+
+    // For students, check if evaluation is complete (at least some questions answered)
+    if (formData.role === 'student') {
+      const answeredQuestions = questions.filter(q => q.supportType !== null);
+      if (answeredQuestions.length === 0) {
+        return false;
+      }
+    }
+
+    return true;
+  };
 
   useEffect(() => {
     if (useGeneratedPassword) {
@@ -154,6 +194,60 @@ function CreateUserForm() {
     setEmailTimeout(timeout);
   };
 
+  // Handle TIPO DE APOYO change
+  const handleSupportTypeChange = (id: number, value: "1" | "0") => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === id
+          ? { ...q, supportType: value, frequency: value === "1" ? null : q.frequency }
+          : q
+      )
+    );
+  };
+
+  // Handle FRECUENCIA change
+  const handleFrequencyChange = (id: number, value: "1" | "0") => {
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, frequency: value } : q))
+    );
+  };
+
+  // Calculate ability levels from evaluation responses
+  const calculateAbilityLevels = () => {
+    const responses = questions.filter(q => q.supportType !== null);
+    
+    if (responses.length === 0) {
+      return {
+        reading_level: 1,
+        comprehension_level: 1,
+        attention_span: 1,
+        motor_skills: 1
+      };
+    }
+
+    // Simple scoring algorithm based on evaluation responses
+    const totalScore = responses.reduce((sum, q) => {
+      let score = 0;
+      if (q.supportType === "1") score = 2; // No support needed
+      else if (q.supportType === "0" && q.frequency === "1") score = 1; // Sometimes support
+      else if (q.supportType === "0" && q.frequency === "0") score = 0; // Always support
+      return sum + score;
+    }, 0);
+
+    const maxScore = responses.length * 2;
+    const percentage = totalScore / maxScore;
+    
+    // Convert to 1-5 scale
+    const level = Math.ceil(percentage * 5) || 1;
+    
+    return {
+      reading_level: Math.max(1, Math.min(5, level)),
+      comprehension_level: Math.max(1, Math.min(5, level)),
+      attention_span: Math.max(1, Math.min(5, level)),
+      motor_skills: Math.max(1, Math.min(5, level))
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -183,18 +277,32 @@ function CreateUserForm() {
     setIsLoading(true);
 
     try {
+      // Prepare user data with evaluation for students
+      const userData: Record<string, unknown> = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        username: formData.role === 'student' ? formData.username : undefined,
+        password: formData.password
+      };
+
+      // Add evaluation data for students
+      if (formData.role === 'student') {
+        const abilities = calculateAbilityLevels();
+        userData.evaluation = {
+          ...abilities,
+          evaluation_responses: questions.filter(q => q.supportType !== null),
+          evaluation_date: new Date().toISOString(),
+          notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`
+        };
+      }
+
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          role: formData.role,
-          username: formData.role === 'student' ? formData.username : undefined,
-          password: formData.password
-        }),
+        body: JSON.stringify(userData),
       });
 
       const result = await response.json();
@@ -203,16 +311,19 @@ function CreateUserForm() {
         throw new Error(result.error || 'Error al crear el usuario');
       }
 
-      setSuccess(`¡Usuario ${getRoleButtonText()} creado exitosamente!`);
+      // Prepare credentials for the success page
+      const credentialsData = {
+        id: result.user.id,
+        name: formData.name,
+        email: formData.email,
+        username: formData.role === 'student' ? formData.username : undefined,
+        password: formData.password,
+        role: formData.role
+      };
       
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        if (formData.role === 'teacher') {
-          router.push('/dashboard/admin/teachers');
-        } else {
-          router.push('/dashboard/admin/students');
-        }
-      }, 2000);
+      // Encode credentials and redirect to success page
+      const credentialsParam = btoa(JSON.stringify(credentialsData));
+      router.push(`/dashboard/admin/users/created?credentials=${credentialsParam}`);
 
     } catch (err) {
       console.error('Error creating user:', err);
@@ -445,7 +556,10 @@ function CreateUserForm() {
                       id="custom_password"
                       name="password_type"
                       checked={!useGeneratedPassword}
-                      onChange={() => setUseGeneratedPassword(false)}
+                      onChange={() => {
+                        setUseGeneratedPassword(false);
+                        setFormData({...formData, password: '', confirmPassword: ''});
+                      }}
                       className="h-4 w-4 text-pink-600 focus:ring-pink-500"
                     />
                     <label htmlFor="custom_password" className="ml-2 text-gray-700">
@@ -478,6 +592,103 @@ function CreateUserForm() {
               </div>
             </div>
 
+            {/* Student Evaluation Form - only show for students */}
+            {formData.role === 'student' && (
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-medium mb-4">Evaluación de Nivel del Estudiante</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Complete esta evaluación para determinar los niveles iniciales de habilidades del estudiante.
+                </p>
+                
+                <div className="space-y-6">
+                  {questions.map((q) => (
+                    <div key={q.id} className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-gray-700 font-medium mb-4">{q.question}</label>
+
+                      {/* TIPO DE APOYO */}
+                      <div className="mb-4">
+                        <div className="flex gap-6">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name={`supportType-${q.id}`}
+                              value="1"
+                              checked={q.supportType === "1"}
+                              onChange={(e) => handleSupportTypeChange(q.id, e.target.value as "1" | "0")}
+                              className="form-radio h-4 w-4 text-pink-600"
+                            />
+                            <span className="text-gray-700">Ninguno (1)</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name={`supportType-${q.id}`}
+                              value="0"
+                              checked={q.supportType === "0"}
+                              onChange={(e) => handleSupportTypeChange(q.id, e.target.value as "1" | "0")}
+                              className="form-radio h-4 w-4 text-pink-600"
+                            />
+                            <span className="text-gray-700">Supervisión (0)</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* FRECUENCIA */}
+                      {q.supportType === "0" && (
+                        <div className="ml-6 mt-4">
+                          <label className="block text-gray-700 font-medium mb-2">
+                            Frecuencia
+                          </label>
+                          <div className="flex gap-6">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name={`frequency-${q.id}`}
+                                value="0"
+                                checked={q.frequency === "0"}
+                                onChange={(e) => handleFrequencyChange(q.id, e.target.value as "1" | "0")}
+                                className="form-radio h-4 w-4 text-pink-600"
+                              />
+                              <span className="text-gray-700">A veces (0)</span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name={`frequency-${q.id}`}
+                                value="1"
+                                checked={q.frequency === "1"}
+                                onChange={(e) => handleFrequencyChange(q.id, e.target.value as "1" | "0")}
+                                className="form-radio h-4 w-4 text-pink-600"
+                              />
+                              <span className="text-gray-700">Siempre (1)</span>
+                            </label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Form validation summary */}
+            {!isFormValid() && formData.role && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
+                <h4 className="text-sm font-medium text-amber-800 mb-2">Campos requeridos pendientes:</h4>
+                <ul className="text-sm text-amber-700 space-y-1">
+                  {!formData.name.trim() && <li>• Nombre completo</li>}
+                  {!formData.email.trim() && <li>• Email</li>}
+                  {emailStatus.available === false && <li>• Email válido y disponible</li>}
+                  {formData.role === 'student' && !formData.username.trim() && <li>• Nombre de usuario</li>}
+                  {formData.role === 'student' && usernameStatus.available === false && <li>• Nombre de usuario válido y disponible</li>}
+                  {!useGeneratedPassword && !formData.password && <li>• Contraseña</li>}
+                  {!useGeneratedPassword && formData.password && formData.password !== formData.confirmPassword && <li>• Las contraseñas deben coincidir</li>}
+                  {!useGeneratedPassword && formData.password && formData.password.length < 8 && <li>• Contraseña de al menos 8 caracteres</li>}
+                  {formData.role === 'student' && questions.filter(q => q.supportType !== null).length === 0 && <li>• Complete al menos una pregunta de evaluación</li>}
+                </ul>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
@@ -488,9 +699,9 @@ function CreateUserForm() {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !isFormValid()}
                 className={`flex-1 py-3 px-4 rounded-lg transition-colors ${
-                  isLoading 
+                  isLoading || !isFormValid()
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-pink-600 hover:bg-pink-700'
                 } text-white font-medium`}

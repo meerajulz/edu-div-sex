@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, name, role, username } = body;
+    const { email, password, name, role, username, evaluation } = body;
 
     // Validate required fields
     if (!email || !password || !name || !role) {
@@ -190,10 +190,37 @@ export async function POST(request: NextRequest) {
 
       // If creating a student, create student profile
       if (role === 'student') {
-        await query(`
-          INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, is_active)
-          VALUES ($1, $2, 1, 1, 1, 1, true)
-        `, [name, newUser.id]);
+        let studentParams;
+        let studentQuery;
+        
+        if (evaluation) {
+          // Use evaluation data if provided
+          const { reading_level = 1, comprehension_level = 1, attention_span = 1, motor_skills = 1, notes = '', evaluation_responses = [], evaluation_date = new Date().toISOString() } = evaluation;
+          
+          studentQuery = `
+            INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, is_active, notes, additional_abilities)
+            VALUES ($1, $2, $3, $4, $5, $6, true, $7, $8)
+          `;
+          studentParams = [
+            name, 
+            newUser.id, 
+            reading_level, 
+            comprehension_level, 
+            attention_span, 
+            motor_skills, 
+            notes,
+            JSON.stringify({ evaluation_responses, evaluation_date })
+          ];
+        } else {
+          // Default values if no evaluation
+          studentQuery = `
+            INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, is_active)
+            VALUES ($1, $2, 1, 1, 1, 1, true)
+          `;
+          studentParams = [name, newUser.id];
+        }
+        
+        await query(studentQuery, studentParams);
       }
 
       return NextResponse.json({
