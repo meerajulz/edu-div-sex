@@ -74,6 +74,8 @@ function ViewUserDetails() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesText, setNotesText] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -238,6 +240,31 @@ function ViewUserDetails() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!user) return;
+    
+    try {
+      setIsDeleting(true);
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar el usuario');
+      }
+
+      // Redirect to users list after successful deletion
+      router.push('/dashboard/owner/users');
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err instanceof Error ? err.message : 'Error al eliminar el usuario');
+      setShowDeleteModal(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-6">
@@ -283,6 +310,12 @@ function ViewUserDetails() {
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Editar Usuario
+            </button>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Eliminar Usuario
             </button>
           </div>
         </div>
@@ -590,6 +623,38 @@ function ViewUserDetails() {
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Confirmar Eliminación
+              </h3>
+              <p className="text-gray-600 mb-6">
+                ¿Estás seguro de que quieres eliminar a <strong>{user.name}</strong>? 
+                Esta acción no se puede deshacer. El usuario será marcado como eliminado 
+                y no aparecerá en las listas, pero sus datos se conservarán en el sistema.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? 'Eliminando...' : 'Eliminar Usuario'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       </div>
     </DashboardWrapper>

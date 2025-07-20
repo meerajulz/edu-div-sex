@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Get user details
+    // Get user details (excluding deleted users)
     const result = await query(`
       SELECT 
         u.id,
@@ -41,7 +41,7 @@ export async function GET(
         creator.name as created_by_name
       FROM users u
       LEFT JOIN users creator ON u.created_by = creator.id
-      WHERE u.id = $1
+      WHERE u.id = $1 AND u.deleted_at IS NULL
     `, [userId]);
 
     if (result.rows.length === 0) {
@@ -208,7 +208,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/admin/users/[id] - Deactivate user
+// DELETE /api/admin/users/[id] - Soft delete user (mark as deleted)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -237,10 +237,23 @@ export async function DELETE(
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 
-    // Soft delete the user
+    // Check if user is already deleted
+    const userCheck = await query(`
+      SELECT deleted_at FROM users WHERE id = $1
+    `, [userId]);
+    
+    if (userCheck.rows.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    if (userCheck.rows[0].deleted_at) {
+      return NextResponse.json({ error: 'User is already deleted' }, { status: 400 });
+    }
+
+    // Soft delete the user by setting deleted_at timestamp
     await query(`
       UPDATE users 
-      SET is_active = false
+      SET deleted_at = NOW(), is_active = false
       WHERE id = $1
     `, [userId]);
 
@@ -252,7 +265,7 @@ export async function DELETE(
     `, [userId]);
 
     return NextResponse.json({
-      message: 'User deactivated successfully'
+      message: 'User deleted successfully'
     });
 
   } catch (error) {

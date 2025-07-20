@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     let queryParams: unknown[] = [];
 
     if (userRole === 'owner') {
-      // Owner can see all users
+      // Owner can see all users (excluding deleted ones)
       usersQuery = `
         SELECT 
           u.id,
@@ -39,12 +39,13 @@ export async function GET(request: NextRequest) {
           creator.name as created_by_name
         FROM users u
         LEFT JOIN users creator ON u.created_by = creator.id
-        ${roleFilter ? 'WHERE u.role = $1' : ''}
+        WHERE u.deleted_at IS NULL
+        ${roleFilter ? 'AND u.role = $1' : ''}
         ORDER BY u.created_at DESC
       `;
       if (roleFilter) queryParams = [roleFilter];
     } else if (userRole === 'admin') {
-      // Admin can see teachers they manage and their students
+      // Admin can see teachers they manage and their students (excluding deleted ones)
       usersQuery = `
         SELECT DISTINCT
           u.id,
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
           creator.name as created_by_name
         FROM users u
         LEFT JOIN users creator ON u.created_by = creator.id
-        WHERE (
+        WHERE u.deleted_at IS NULL AND (
           -- Teachers assigned to this admin
           (u.role = 'teacher' AND EXISTS (
             SELECT 1 FROM teacher_admin_assignments 
