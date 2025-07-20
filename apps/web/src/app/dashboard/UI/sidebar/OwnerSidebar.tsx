@@ -35,16 +35,6 @@ const OwnerSidebar: React.FC = () => {
           </Link>
 
           <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
-            Configuración del Sistema
-          </div>
-          <Link href='/dashboard/owner/settings' className='text-gray-600 text-sm block mb-2'>
-            Configuración Global
-          </Link>
-          <Link href='/dashboard/owner/activities' className='text-gray-600 text-sm block mb-2'>
-            Gestionar Actividades
-          </Link>
-
-          <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
             Estudiantes y Datos
           </div>
           <Link href='/dashboard/owner/students' className='text-gray-600 text-sm block mb-2'>
@@ -52,19 +42,6 @@ const OwnerSidebar: React.FC = () => {
           </Link>
           <Link href='/dashboard/owner/analytics' className='text-gray-600 text-sm block mb-2'>
             Análisis del Sistema
-          </Link>
-          <Link href='/dashboard/owner/data-export' className='text-gray-600 text-sm block mb-2'>
-            Exportar Datos
-          </Link>
-
-          <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
-            Herramientas de Administración
-          </div>
-          <Link href='/dashboard/owner/password-tools' className='text-gray-600 text-sm block mb-2'>
-            Herramientas de Contraseña
-          </Link>
-          <Link href='/dashboard/owner/backup' className='text-gray-600 text-sm block mb-2'>
-            Respaldo y Restauración
           </Link>
 
           {/* Activity Tree */}

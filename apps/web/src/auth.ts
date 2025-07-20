@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 						const parsed = await signInSchema.parseAsync(credentials);
 						login = parsed.login;
 						password = parsed.password;
-					} catch (schemaError) {
+					} catch {
 						// Fall back to legacy schema (email + password) for backwards compatibility
 						try {
 							const parsed = await signInSchemaLegacy.parseAsync(credentials);

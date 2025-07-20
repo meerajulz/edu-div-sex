@@ -1,4 +1,4 @@
-import { signIn, auth } from "@/auth";
+import { signIn } from "@/auth";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { query } from "@/lib/db";
