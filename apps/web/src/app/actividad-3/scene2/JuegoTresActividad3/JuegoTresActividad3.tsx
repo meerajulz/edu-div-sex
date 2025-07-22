@@ -304,69 +304,7 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
     stopAudio
   ]);
 
-  // Handle feedback completion
-  // const handleFeedbackComplete = useCallback(() => {
-  //   console.log('📝 Feedback completed for situation', currentSituation + 1);
-  //   console.log('📝 Answer was correct:', isCorrect);
-  //   console.log('📝 Current situations correct:', situationsCorrect);
-    
-  //   setShowFeedback(false);
-    
-  //   // Stop any current audio before proceeding
-  //   stopAudio();
-    
-  //   if (isCorrect) {
-  //     // Correct answer - move to next situation
-  //     if (currentSituation >= gameConfig.situations.length - 1) {
-  //       // Game complete
-  //       console.log('🎉 Game completed!');
-  //       const finalScore = score + 1; // Add 1 for the current correct answer
-  //       const finalCorrect = [...situationsCorrect];
-  //       finalCorrect[currentSituation] = true; // Mark current as correct
-        
-  //       endSession(true, finalScore, finalCorrect);
-  //       setGamePhase('complete');
-        
-  //       setTimeout(() => {
-  //         onGameComplete();
-  //         onClose();
-  //       }, 2000);
-  //     } else {
-  //       // Move to next situation
-  //       console.log('➡️ Moving to next situation...');
-  //       nextSituation(); // This updates the state
-  //       setTimeout(() => {
-  //         // Use currentSituation + 1 since state update is async
-  //         const nextSituationIndex = currentSituation + 1;
-  //         console.log('🎮 Starting next situation:', nextSituationIndex);
-  //         startSituationPhase(nextSituationIndex);
-  //       }, 1000);
-  //     }
-  //   } else {
-  //     // Wrong answer - retry same situation (don't move to next)
-  //     console.log('❌ Wrong answer, staying on same situation');
-  //     setTimeout(() => {
-  //       setGamePhase('waiting_for_click');
-  //       setSelectedOption(null);
-  //     }, 500);
-  //   }
-  // }, [
-  //   currentSituation,
-  //   gameConfig.situations.length,
-  //   score,
-  //   isCorrect,
-  //   situationsCorrect,
-  //   endSession,
-  //   nextSituation,
-  //   onGameComplete,
-  //   onClose,
-  //   startSituationPhase,
-  //   stopAudio,
-  //   setShowFeedback,
-  //   setGamePhase,
-  //   setSelectedOption
-  // ]);
-
+  
   // Handle close button
   const handleClose = useCallback(() => {
     stopAudio();

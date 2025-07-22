@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 const getMockUserGender = (): 'male' | 'female' => {
   // TODO: Replace with real user data from backend
   // For now, you can change this to test both versions
-  return 'male'; // Change to 'female' to test female version
+  return 'female'; // Change to 'female' to test female version
 };
 
 export default function Actividad3Scene2Page() {

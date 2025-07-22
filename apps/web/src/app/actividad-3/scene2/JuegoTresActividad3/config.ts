@@ -76,7 +76,7 @@ export const GAME_CONFIG = {
             {
               id: 'option_a',
               audio: '/audio/actividad-3/juego3/males/r-c-3.mp3',
-              image: '/image/actividad_3/juego3/male/S3-1-1c.png',
+              image: '/image/actividad_3/juego3/male/correct.gif',
               isCorrect: true,
               feedback: {
                 audio: '/audio/actividad-3/juego3/males/fb-c-3.mp3'
@@ -85,7 +85,7 @@ export const GAME_CONFIG = {
             {
               id: 'option_b',
               audio: '/audio/actividad-3/juego3/males/r-w-3.mp3',
-              image: '/image/actividad_3/juego3/male/S3-1-2w.png',
+              image: '/image/actividad_3/juego3/male/slow.gif',
               isCorrect: false,
               feedback: {
                 audio: '/audio/actividad-3/juego3/males/fb-w--3.mp3' // Fixed typo
@@ -94,7 +94,7 @@ export const GAME_CONFIG = {
             {
               id: 'option_c',
               audio: '/audio/actividad-3/juego3/males/r-w-3-1.mp3',
-              image: '/image/actividad_3/juego3/male/S3-1-1w.png',
+              image: '/image/actividad_3/juego3/male/wrong.gif',
               isCorrect: false,
               feedback: {
                 audio: '/audio/actividad-3/juego3/males/fb-w-3-c.mp3'
@@ -205,7 +205,7 @@ export const GAME_CONFIG = {
             {
               id: 'option_a',
               audio: '/audio/actividad-3/juego3/female/r-c-3.mp3',
-              image: '/image/actividad_3/juego3/female/S3-1-1c.png',
+              image: '/image/actividad_3/juego3/female/correct.gif',
               isCorrect: true,
               feedback: {
                 audio: '/audio/actividad-3/juego3/female/fb-c-3.mp3'
@@ -214,7 +214,7 @@ export const GAME_CONFIG = {
             {
               id: 'option_b',
               audio: '/audio/actividad-3/juego3/female/r-w-3.mp3',
-              image: '/image/actividad_3/juego3/female/S3-1-1w.png', // Fixed: was pointing to male folder
+              image: '/image/actividad_3/juego3/female/wrong.gif', // Fixed: was pointing to male folder
               isCorrect: false,
               feedback: {
                 audio: '/audio/actividad-3/juego3/female/fb-w-3.mp3' // Fixed typo
@@ -223,10 +223,10 @@ export const GAME_CONFIG = {
             {
               id: 'option_c',
               audio: '/audio/actividad-3/juego3/female/r-w-3-1.mp3',
-              image: '/image/actividad_3/juego3/female/S3-1-2w.png',
+              image: '/image/actividad_3/juego3/female/faster.gif', //
               isCorrect: false,
               feedback: {
-                audio: '/audio/actividad-3/juego3/female/fb-w-3-c.mp3'
+                audio: '/audio/actividad-3/juego3/female/fb-w-3-3.mp3'
               }
             }
           ]
@@ -283,7 +283,7 @@ export const GAME_CONFIG = {
 export const getMockUserGender = (): 'male' | 'female' => {
   // TODO: Replace with real user data from backend
   // For now, you can change this to test both versions
-  return 'male'; // Change to 'female' to test female version
+  return 'female'; // Change to 'female' to test female version
 };
 
 // Helper function to get current game config based on gender
