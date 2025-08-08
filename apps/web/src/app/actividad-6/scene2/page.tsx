@@ -109,7 +109,7 @@ export default function Actividad6Scene2Page() {
         <JugarButton 
           onClick={handleOpenJuegoDos} 
           disabled={isAnimating}
-          text="Jugar Juego 2"
+          text="Jugar Victimización"
         />
       );
     } else {

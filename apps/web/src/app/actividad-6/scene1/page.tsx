@@ -109,7 +109,7 @@ export default function Actividad6Scene1Page() {
         <JugarButton 
           onClick={handleOpenJuegoUno} 
           disabled={isAnimating}
-          text="Jugar Juego 1"
+          text="Jugar Mis partes privadas"
         />
       );
     } else {

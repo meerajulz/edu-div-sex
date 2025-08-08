@@ -148,7 +148,7 @@ export default function Actividad5Scene1Page() {
         <JugarButton 
           onClick={handleOpenJuegoUno} 
           disabled={isAnimating}
-          text="Jugar Juego 1"
+          text="Jugar ¿Qué dice mi cara?"
         />
       );
     } else if (!juegoDosCompleted) {
@@ -156,7 +156,7 @@ export default function Actividad5Scene1Page() {
         <JugarButton 
           onClick={handleOpenJuegoDos} 
           disabled={isAnimating}
-          text="Jugar Juego 2"
+          text="Jugar ¿Qué dice mi tono de voz?"
         />
       );
     } else if (!juegoTresCompleted) {
@@ -164,7 +164,7 @@ export default function Actividad5Scene1Page() {
         <JugarButton 
           onClick={handleOpenJuegoTres} 
           disabled={isAnimating}
-          text="Jugar Juego 3"
+          text="Jugar ¿Qué cara pondrá?"
         />
       );
     } else {
@@ -181,7 +181,7 @@ export default function Actividad5Scene1Page() {
           <JugarButton 
             onClick={handleContinueToScene2} 
             disabled={isAnimating}
-            text="Continuar próxima aventura..."
+            text="Continuar..."
           />
         </div>
       );

@@ -175,12 +175,12 @@ export default function Actividad4Scene2Page() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
                       >
-                        ¡Juego Completado! 🎉
+                        ¡Actividad Completada! 🎉
                       </motion.div>
                       <JugarButton 
                         onClick={handleContinue} 
                         disabled={isAnimating}
-                        text="Continuar proxima aventura..."
+                        text="Volver al Menú Principal"
                       />
                     </div>
                   )}

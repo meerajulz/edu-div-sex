@@ -99,7 +99,7 @@ export default function Actividad5Scene2Page() {
     setTimeout(() => {
       setIsAnimating(false);
       // Navigate to next activity or page
-      router.push('/actividad-6/scene1'); // or wherever you want to go next
+      router.push('/actividad-1/'); // or wherever you want to go next
     }, 800);
   };
 
@@ -110,7 +110,7 @@ export default function Actividad5Scene2Page() {
         <JugarButton 
           onClick={handleOpenJuegoCuatro} 
           disabled={isAnimating}
-          text="Jugar Juego 4"
+          text="Jugar ¿Qué hace Noa?"
         />
       );
     } else {
@@ -122,12 +122,12 @@ export default function Actividad5Scene2Page() {
             animate={{ opacity: 1, y: 0 }}
             className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
           >
-            ¡Actividad 5 Completada! 🎉
+            ¡Actividad Completada! 🎉
           </motion.div>
           <JugarButton 
             onClick={handleContinueToNextPage} 
             disabled={isAnimating}
-            text="Continuar siguiente aventura..."
+            text="Volver al Menú Principal"
           />
         </div>
       );

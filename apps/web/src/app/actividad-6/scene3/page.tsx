@@ -109,7 +109,7 @@ export default function Actividad6Scene3Page() {
         <JugarButton 
           onClick={handleOpenJuegoTres} 
           disabled={isAnimating}
-          text="Jugar Juego 3"
+          text="Jugar Secretos buenos y malos"
         />
       );
     } else {
@@ -126,7 +126,7 @@ export default function Actividad6Scene3Page() {
           <JugarButton 
             onClick={handleContinueToScene4} 
             disabled={isAnimating}
-            text="Continuar4..."
+            text="Continuar..."
           />
         </div>
       );

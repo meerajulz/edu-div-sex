@@ -65,44 +65,44 @@ export const playSound = async (audio: HTMLAudioElement | null): Promise<void> =
 export const getDefaultItems = () => [
   {
     id: 1,
-    label: "Actividad 1",
+    label: "Aventura 1",
     url: "/actividad-1",
     svgPath: "/svg/menu/orbital/activity1-descubriendo-mi-cuerpo.svg",
     isUnlocked: true // First module is always unlocked
   },
   {
     id: 2,
-    label: "Actividad 2",
+    label: "Aventura 2",
     url: "/actividad-2",
     svgPath: "/svg/menu/orbital/activity2-intimidad.svg",
     isUnlocked: false
   },
   {
     id: 3,
-    label: "Actividad 3",
+    label: "Aventura 3",
     url: "/actividad-3",
     svgPath: "/svg/menu/orbital/activity3-placer-sexual.svg",
     isUnlocked: false
   },
   {
     id: 4,
-    label: "Actividad 4",
+    label: "Aventura 4",
     url: "/actividad-4",
     svgPath: "/svg/menu/orbital/activity4cuido-mi-sexualidad.svg",
     isUnlocked: false
   },
-  {
-    id: 5,
-    label: "Actividad 5",
-    url: "/actividad-5",
-    svgPath: "/svg/menu/orbital/activity5-entender-respectar.svg",
-    isUnlocked: false
-  },
-  {
-    id: 6,
-    label: "Actividad 6",
-    url: "/actividad-6",
-    svgPath: "/svg/menu/orbital/activity6.svg",
-    isUnlocked: false
-  }
+  // {
+  //   id: 5,
+  //   label: "Actividad 5",
+  //   url: "/actividad-5",
+  //   svgPath: "/svg/menu/orbital/activity5-entender-respectar.svg",
+  //   isUnlocked: false
+  // },
+  // {
+  //   id: 6,
+  //   label: "Actividad 6",
+  //   url: "/actividad-6",
+  //   svgPath: "/svg/menu/orbital/activity6.svg",
+  //   isUnlocked: false
+  // }
 ];
