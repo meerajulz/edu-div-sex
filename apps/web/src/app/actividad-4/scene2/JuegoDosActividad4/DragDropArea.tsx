@@ -203,7 +203,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
   const renderDropZones = () => {
     return GAME_CONFIG.dropZones.layout.map((row, rowIndex) => (
       <div 
-        key={rowIndex}
+        key={`row-${rowIndex}`}
         className={`flex justify-center gap-4 ${
           row.positions.length === 2 ? 'mb-4' : 
           row.positions.length === 3 ? 'mb-4' : 'mb-0'
@@ -211,7 +211,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
       >
         {row.positions.map(position => (
           <DropZone
-            key={position}
+            key={`dropzone-${position}`}
             position={position}
             isOver={activeDropZone === `dropzone-${position}`}
             currentImage={currentSequence[position]}
@@ -222,9 +222,9 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
   };
 
   // Render draggable images
-  const renderDraggableImage = (item: DragItem) => (
+  const renderDraggableImage = (item: DragItem, side: 'left' | 'right') => (
     <motion.div
-      key={item.id}
+      key={`${side}-${item.id}`}
       className="mb-3 touch-none"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -252,7 +252,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
         <div className="w-1/3 flex flex-col items-center justify-center gap-3 z-10">
           <div className="bg-blue-50 border-4 border-blue-300 rounded-lg p-5 min-h-[450px] w-full flex flex-col items-center gap-3 z-10">
             
-            {availableLeftImages.map(item => renderDraggableImage(item))}
+            {availableLeftImages.map(item => renderDraggableImage(item, 'left'))}
           </div>
         </div>
 
@@ -271,7 +271,8 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
         {/* Right Side Images */}
         <div className="w-1/3 flex flex-col items-center justify-center gap-3 z-10">
           <div className="bg-blue-50 border-4 border-blue-300 rounded-lg p-5 min-h-[450px] w-full flex flex-col items-center gap-3 z-10">
-            {availableRightImages.map(item => renderDraggableImage(item))}
+            
+            {availableRightImages.map(item => renderDraggableImage(item, 'right'))}
           </div>
         </div>
 
