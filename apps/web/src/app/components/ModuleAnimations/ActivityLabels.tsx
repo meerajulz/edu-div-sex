@@ -110,11 +110,11 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 4,
-      isActive: false,
-      title: "Actividad 4",
+      isActive: true,
+      title: "Cuido de mi sexualidad",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
-      url: "/actividad-4",
+      url: "/actividad-4/scene1",
       soundUrl: "/audio/whoosh.mp3",
       soundClick: "/audio/labels/label-4.mp3",
       xPosition: 40,
@@ -124,7 +124,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       rotateX: 15,
       rotateY: -10,
       delay: 1.1,
-      brightness: 0.6
+      brightness: 1
     },
     {
       id: 5,
