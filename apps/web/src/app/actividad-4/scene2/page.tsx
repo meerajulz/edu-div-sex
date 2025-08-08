@@ -94,7 +94,7 @@ export default function Actividad4Scene2Page() {
     setTimeout(() => {
       setIsAnimating(false);
       // Navigate to next scene or activity
-      // router.push('/next-activity');
+       router.push('/actividad-1');
       console.log('Continue to next activity');
     }, 800);
   };
@@ -180,7 +180,7 @@ export default function Actividad4Scene2Page() {
                       <JugarButton 
                         onClick={handleContinue} 
                         disabled={isAnimating}
-                        text="Continuar..."
+                        text="Continuar proxima aventura..."
                       />
                     </div>
                   )}

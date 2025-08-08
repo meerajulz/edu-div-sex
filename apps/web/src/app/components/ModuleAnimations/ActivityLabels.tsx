@@ -128,11 +128,11 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 5,
-      isActive: false,
-      title: "Actividad 5",
+      isActive: true,
+      title: "Nos entendemos y respetamos",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
-      url: "/actividad-4",
+      url: "/actividad-5/scene1",
       soundUrl: "/audio/whoosh.mp3",
       soundClick: "/audio/labels/label-5.mp3",
       xPosition: -150,
@@ -142,15 +142,15 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       rotateX: 10,
       rotateY: 10,
       delay: 1.5,
-      brightness: 0.6
+      brightness: 1
     },
     {
       id: 6,
-      isActive: false,
-      title: "Actividad 6",
+      isActive: true,
+      title: "Abuso",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
-      url: "/actividad-4",
+      url: "/actividad-6/scene1",
       soundUrl: "/audio/whoosh.mp3",
       soundClick: "/audio/labels/label-6.mp3",
       xPosition: 50,
@@ -160,7 +160,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       rotateX: 0,
       rotateY: -20,
       delay: 1.8,
-      brightness: 0.5
+      brightness: 1
     }
   ];
 

@@ -17,6 +17,7 @@ interface GameContentProps {
 
 export default function GameContent({ selectedCharacter, onGameComplete, onClose }: GameContentProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [completedSteps, setCompletedSteps] = useState<number>(0);
 
   const handleStepComplete = (isCorrect: boolean) => {

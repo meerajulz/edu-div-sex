@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { DndContext, DragEndEvent, useDraggable, useSensor, useSensors, useDroppable, MouseSensor, TouchSensor } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, useDraggable, useSensor, useSensors, MouseSensor, TouchSensor } from '@dnd-kit/core';
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';

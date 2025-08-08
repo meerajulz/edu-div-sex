@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { DndContext, DragEndEvent, useDraggable, useDroppable, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { motion } from 'framer-motion';
+import { DndContext, DragEndEvent, DragOverEvent, useDraggable, useDroppable, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
@@ -235,9 +235,9 @@ export default function Step6({ character, onStepComplete }: Step6Props) {
     setIsDragging(true);
   };
 
-  const handleDragOver = (event: any) => {
+  const handleDragOver = (event: DragOverEvent) => {
     const { over } = event;
-    setActiveDropZone(over?.id || null);
+    setActiveDropZone(over?.id?.toString() || null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -265,7 +265,6 @@ export default function Step6({ character, onStepComplete }: Step6Props) {
   // Get clothing items from config
   const leftClothes = stepData.elements.draggable.left || [];
   const rightClothes = stepData.elements.draggable.right || [];
-  const allClothes = [...leftClothes, ...rightClothes];
 
   return (
     <div className="relative w-full h-full flex items-center justify-center p-4">

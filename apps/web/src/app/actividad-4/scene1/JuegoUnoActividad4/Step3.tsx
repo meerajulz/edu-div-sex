@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { DndContext, DragEndEvent, useDraggable, useDroppable, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { motion } from 'framer-motion';
+import { DndContext, DragEndEvent, DragOverEvent, useDraggable, useDroppable, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
@@ -60,7 +60,7 @@ const DraggableSoap: React.FC<DraggableSoapProps> = ({ isDragging }) => {
   );
 };
 
-const DropZone: React.FC<DropZoneProps> = ({ id, image, alt, position, isOver }) => {
+const DropZone: React.FC<DropZoneProps> = ({ id, image, alt, isOver }) => {
   const { setNodeRef } = useDroppable({
     id,
   });
@@ -132,20 +132,12 @@ export default function Step3({ character, onStepComplete }: Step3Props) {
   const sensors = useSensors(mouseSensor, touchSensor);
 
   const config = getCharacterGameConfig(character!);
-  const stepData = config.steps[2]; // Step 3 data
+  const stepData = config?.steps?.[2]; // Step 3 data
 
-  // Early return if step data doesn't exist
-  if (!stepData) {
-    console.error('Step 3 data not found in config');
-    return (
-      <div className="flex items-center justify-center w-full h-full">
-        <div className="text-white text-lg">Error: Step 3 configuration not found</div>
-      </div>
-    );
-  }
-
-  // Play title audio when component mounts
+  // Play title audio when component mounts - MOVED BEFORE EARLY RETURN
   useEffect(() => {
+    if (!stepData) return;
+
     const timer = setTimeout(() => {
       try {
         const audio = new Audio(stepData.audio.title);
@@ -171,7 +163,7 @@ export default function Step3({ character, onStepComplete }: Step3Props) {
     return () => clearTimeout(timer);
   }, [stepData]);
 
-  // Cleanup audio on unmount
+  // Cleanup audio on unmount - MOVED BEFORE EARLY RETURN
   useEffect(() => {
     return () => {
       if (currentAudio) {
@@ -180,6 +172,16 @@ export default function Step3({ character, onStepComplete }: Step3Props) {
       }
     };
   }, [currentAudio]);
+
+  // Early return AFTER hooks
+  if (!stepData) {
+    console.error('Step 3 data not found in config');
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="text-white text-lg">Error: Step 3 configuration not found</div>
+      </div>
+    );
+  }
 
   const playFeedbackAudio = (correct: boolean) => {
     try {
@@ -248,9 +250,9 @@ export default function Step3({ character, onStepComplete }: Step3Props) {
     setIsDragging(true);
   };
 
-  const handleDragOver = (event: any) => {
+  const handleDragOver = (event: DragOverEvent) => {
     const { over } = event;
-    setActiveDropZone(over?.id || null);
+    setActiveDropZone(over?.id?.toString() || null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -260,7 +262,7 @@ export default function Step3({ character, onStepComplete }: Step3Props) {
 
     if (!over || soapDropped) return;
 
-    const dropZone = stepData.elements.dropZones.find(zone => zone.id === over.id);
+    const dropZone = stepData.elements.dropZones.find(zone => zone.id === over.id?.toString());
     if (!dropZone) return;
 
     setSoapDropped(true);

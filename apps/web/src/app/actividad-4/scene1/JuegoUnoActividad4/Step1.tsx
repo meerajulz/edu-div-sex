@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { DndContext, DragEndEvent, useDraggable, useDroppable, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
@@ -64,7 +64,7 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ character, isDraggi
   );
 };
 
-const DropZone: React.FC<DropZoneProps> = ({ id, image, alt, position, isOver }) => {
+const DropZone: React.FC<DropZoneProps> = ({ id, image, alt, isOver }) => {
   const { setNodeRef } = useDroppable({
     id,
   });
@@ -245,6 +245,7 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
     setIsDragging(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragOver = (event: any) => {
     const { over } = event;
     setActiveDropZone(over?.id || null);

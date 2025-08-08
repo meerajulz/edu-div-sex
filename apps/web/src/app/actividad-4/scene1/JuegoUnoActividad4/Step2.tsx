@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
@@ -28,7 +28,7 @@ interface FeedbackOverlayProps {
 }
 
 const ClickableElement: React.FC<ClickableElementProps> = ({ 
-  id, 
+  //id, 
   image, 
   alt, 
   isCorrect, 
@@ -120,20 +120,12 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
   const [elementClicked, setElementClicked] = useState(false);
 
   const config = getCharacterGameConfig(character!);
-  const stepData = config.steps[1]; // Step 2 data
+  const stepData = config?.steps?.[1]; // Step 2 data
 
-  // Early return if step data doesn't exist
-  if (!stepData) {
-    console.error('Step 2 data not found in config');
-    return (
-      <div className="flex items-center justify-center w-full h-full">
-        <div className="text-white text-lg">Error: Step 2 configuration not found</div>
-      </div>
-    );
-  }
-
-  // Play title audio when component mounts
+  // Play title audio when component mounts - MOVED BEFORE EARLY RETURN
   useEffect(() => {
+    if (!stepData) return;
+
     const timer = setTimeout(() => {
       try {
         const audio = new Audio(stepData.audio.title);
@@ -159,7 +151,7 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
     return () => clearTimeout(timer);
   }, [stepData]);
 
-  // Cleanup audio on unmount
+  // Cleanup audio on unmount - MOVED BEFORE EARLY RETURN
   useEffect(() => {
     return () => {
       if (currentAudio) {
@@ -168,6 +160,16 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
       }
     };
   }, [currentAudio]);
+
+  // Early return AFTER hooks
+  if (!stepData) {
+    console.error('Step 2 data not found in config');
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="text-white text-lg">Error: Step 2 configuration not found</div>
+      </div>
+    );
+  }
 
   const playFeedbackAudio = (correct: boolean) => {
     try {

@@ -48,7 +48,7 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ id, image, alt, isDragg
       style={style}
       {...listeners}
       {...attributes}
-      className={`relative w-28 h-28 bg-blue-100 border-4 border-blue-400 rounded-lg cursor-grab active:cursor-grabbing touch-none shadow-lg transition-all duration-200 ${
+      className={`relative w-28 h-28 bg-blue-100 rounded-lg cursor-grab active:cursor-grabbing touch-none shadow-lg transition-all duration-200 ${
         isDragging ? 'opacity-80 scale-95 z-[9999]' : 'hover:scale-105 z-10'
       }`}
     >
@@ -141,6 +141,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
   const availableLeftImages = leftSideImages.filter(img => !usedImages.includes(img.id));
   const availableRightImages = rightSideImages.filter(img => !usedImages.includes(img.id));
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragStart = (event: any) => {
     const draggedId = event.active.id.toString();
     console.log('🎮 Drag started:', draggedId);
@@ -159,7 +160,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
       }
     }
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragOver = (event: any) => {
     const { over } = event;
     setActiveDropZone(over?.id || null);
