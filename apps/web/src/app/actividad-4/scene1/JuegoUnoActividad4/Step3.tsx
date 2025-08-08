@@ -7,13 +7,12 @@ import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
 
-interface Step1Props {
+interface Step3Props {
   character: Character;
   onStepComplete: (isCorrect: boolean) => void;
 }
 
-interface DraggableClothesProps {
-  character: Character;
+interface DraggableSoapProps {
   isDragging: boolean;
 }
 
@@ -31,13 +30,10 @@ interface FeedbackOverlayProps {
   onComplete: () => void;
 }
 
-const DraggableClothes: React.FC<DraggableClothesProps> = ({ character, isDragging }) => {
+const DraggableSoap: React.FC<DraggableSoapProps> = ({ isDragging }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: 'clothes',
+    id: 'soap',
   });
-
-  const config = getCharacterGameConfig(character!);
-  const clothesData = config.steps[0].elements.draggable;
 
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -51,10 +47,10 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ character, isDraggi
       {...attributes}
       className={`cursor-grab active:cursor-grabbing touch-none z-50 ${isDragging ? 'opacity-50' : ''}`}
     >
-      <div className="relative w-36 h-36 md:w-48 md:h-48 mt-10">
+      <div className="relative w-24 h-24 md:w-32 md:h-32">
         <Image
-          src={clothesData.image}
-          alt={clothesData.alt}
+          src="/image/actividad_4/juego1/enjabonarse/jabon.png"
+          alt="Jabón"
           fill
           className="object-contain"
           priority
@@ -72,8 +68,8 @@ const DropZone: React.FC<DropZoneProps> = ({ id, image, alt, position, isOver })
   return (
     <div
       ref={setNodeRef}
-      className={`relative w-24 h-24 md:w-28 md:h-28 transition-all duration-200 ${
-        isOver ? 'scale-150' : ''
+      className={`relative w-48 h-40 md:w-48 md:h-48 transition-all duration-200 ${
+        isOver ? 'scale-110' : ''
       }`}
     >
       <Image
@@ -120,7 +116,7 @@ const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({ isVisible, isCorrect,
   );
 };
 
-export default function Step1({ character, onStepComplete }: Step1Props) {
+export default function Step3({ character, onStepComplete }: Step3Props) {
   const [titlePlayed, setTitlePlayed] = useState(false);
   const [showElements, setShowElements] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -128,7 +124,7 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
-  const [clothesDropped, setClothesDropped] = useState(false);
+  const [soapDropped, setSoapDropped] = useState(false);
 
   // Touch and mouse sensors for iPad support
   const mouseSensor = useSensor(MouseSensor);
@@ -136,7 +132,17 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
   const sensors = useSensors(mouseSensor, touchSensor);
 
   const config = getCharacterGameConfig(character!);
-  const stepData = config.steps[0];
+  const stepData = config.steps[2]; // Step 3 data
+
+  // Early return if step data doesn't exist
+  if (!stepData) {
+    console.error('Step 3 data not found in config');
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="text-white text-lg">Error: Step 3 configuration not found</div>
+      </div>
+    );
+  }
 
   // Play title audio when component mounts
   useEffect(() => {
@@ -194,22 +200,20 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
         
         // Use the actual audio duration, not config duration
         descriptionAudio.addEventListener('loadedmetadata', () => {
-          const audioDuration = Math.ceil(descriptionAudio.duration * 1000); // Convert to milliseconds
+          const audioDuration = Math.ceil(descriptionAudio.duration * 1000);
           
           descriptionAudio.play().then(() => {
             setTimeout(() => {
               setCurrentAudio(null);
               
-              // If correct, complete the step and move to next
-              // If incorrect, reset and let them try again
               if (correct) {
                 onStepComplete(true);
               } else {
                 // Reset for another attempt - wait for full feedback
-                setClothesDropped(false);
+                setSoapDropped(false);
                 setShowFeedback(false);
               }
-            }, audioDuration + 500); // Add 500ms buffer
+            }, audioDuration + 500);
           }).catch(console.warn);
         });
 
@@ -220,7 +224,7 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
             if (correct) {
               onStepComplete(true);
             } else {
-              setClothesDropped(false);
+              setSoapDropped(false);
               setShowFeedback(false);
             }
           }
@@ -233,8 +237,7 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
         if (correct) {
           onStepComplete(true);
         } else {
-          // Reset for another attempt
-          setClothesDropped(false);
+          setSoapDropped(false);
           setShowFeedback(false);
         }
       }, correct ? stepData.feedback.correct.duration : stepData.feedback.incorrect.duration);
@@ -255,12 +258,12 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
     setIsDragging(false);
     setActiveDropZone(null);
 
-    if (!over || clothesDropped) return;
+    if (!over || soapDropped) return;
 
     const dropZone = stepData.elements.dropZones.find(zone => zone.id === over.id);
     if (!dropZone) return;
 
-    setClothesDropped(true);
+    setSoapDropped(true);
     const correct = dropZone.isCorrect;
     setIsCorrect(correct);
     setShowFeedback(true);
@@ -295,40 +298,39 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
           onDragEnd={handleDragEnd}
         >
           <div className="flex flex-col items-center justify-center w-full h-full px-4 py-8">
-            {/* Center: Draggable clothes - moved down from top */}
-            {!clothesDropped && (
+            {/* Center: Draggable soap */}
+            {!soapDropped && (
               <motion.div
                 className="flex flex-col items-center space-y-3 mb-12"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <DraggableClothes character={character} isDragging={isDragging} />
-                <span className="text-blue text-sm font-medium">Arrastra la ropa</span>
+                <DraggableSoap isDragging={isDragging} />
               </motion.div>
             )}
             
             {/* Bottom: Drop zones */}
             <div className="flex items-end justify-between w-full max-w-lg mt-auto mb-6">
-              {/* Left: Basket */}
+              {/* Left: Correct area */}
               <div className="flex flex-col items-center space-y-2">
                 <DropZone
-                  id="basket"
+                  id="correct_area"
                   image={stepData.elements.dropZones[0].image}
                   alt={stepData.elements.dropZones[0].alt}
                   position="left"
-                  isOver={activeDropZone === 'basket'}
+                  isOver={activeDropZone === 'correct_area'}
                 />
               </div>
 
-              {/* Right: WC */}
+              {/* Right: Incorrect area */}
               <div className="flex flex-col items-center space-y-2">
                 <DropZone
-                  id="wc"
+                  id="incorrect_area"
                   image={stepData.elements.dropZones[1].image}
                   alt={stepData.elements.dropZones[1].alt}
                   position="right"
-                  isOver={activeDropZone === 'wc'}
+                  isOver={activeDropZone === 'incorrect_area'}
                 />
               </div>
             </div>

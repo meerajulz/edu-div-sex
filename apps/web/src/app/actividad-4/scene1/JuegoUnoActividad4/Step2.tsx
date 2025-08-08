@@ -292,7 +292,6 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
                 onClick={handleElementClick}
                 isClicked={showerClicked}
               />
-              <span className="text-white text-sm font-medium">Ducha</span>
             </motion.div>
 
             {/* Arrow pointing to shower - positioned very close */}
@@ -338,7 +337,6 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
                 onClick={handleElementClick}
                 isClicked={soapClicked}
               />
-              <span className="text-white text-sm font-medium">Jabón</span>
             </motion.div>
           </div>
         </div>

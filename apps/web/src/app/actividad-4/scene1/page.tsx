@@ -24,8 +24,8 @@ export default function Actividad4Page() {
   // Video sequence
   const videos = [
     '/video/ACTIVIDAD-4-ESCENA-1_1.mp4',
-   // '/video/ACTIVIDAD-4-ESCENA-1-TUTORIAL.mp4',
-   // '/video/ACTIVIDAD-4-ESCENA-1-TUTORIAL_1.mp4'
+    '/video/ACTIVIDAD-4-ESCENA-1-TUTORIAL.mp4',
+    '/video/ACTIVIDAD-4-ESCENA-1-TUTORIAL_1.mp4'
   ];
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function Actividad4Page() {
     setTimeout(() => {
       setIsAnimating(false);
       // Navigate to next scene or activity
-      // router.push('/next-activity');
+       router.push('/actividad-4/scene2');
       console.log('Continue to next activity');
     }, 800);
   };
