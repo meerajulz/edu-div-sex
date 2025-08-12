@@ -123,8 +123,10 @@ export default function Actividad5Scene1Page() {
   };
 
   const handleJuegoTresComplete = () => {
+    console.log('🎮 Juego Tres completed!'); // Debug log
     setJuegoTresCompleted(true);
     setShowJuegoTres(false);
+    console.log('🚪 Modal should be closed now'); // Debug log
   };
 
   // Continue to next scene
@@ -139,7 +141,17 @@ export default function Actividad5Scene1Page() {
   };
 
   // Check if all games are completed
- // const allGamesCompleted = juegoUnoCompleted && juegoDosCompleted && juegoTresCompleted;
+  const allGamesCompleted = juegoUnoCompleted && juegoDosCompleted && juegoTresCompleted;
+  
+  // Debug log to see the completion state
+  useEffect(() => {
+    console.log('🎯 Game completion status:', {
+      juegoUnoCompleted,
+      juegoDosCompleted, 
+      juegoTresCompleted,
+      allGamesCompleted
+    });
+  }, [juegoUnoCompleted, juegoDosCompleted, juegoTresCompleted, allGamesCompleted]);
 
   // Determine current button state
   const getCurrentButton = () => {
