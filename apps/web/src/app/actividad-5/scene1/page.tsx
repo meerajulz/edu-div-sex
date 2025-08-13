@@ -18,9 +18,9 @@ export default function Actividad5Scene1Page() {
   
   // Game states
   const [showJuegoUno, setShowJuegoUno] = useState(false);
-  const [juegoUnoCompleted, setJuegoUnoCompleted] = useState(true);
+  const [juegoUnoCompleted, setJuegoUnoCompleted] = useState(false);
   const [showJuegoDos, setShowJuegoDos] = useState(false);
-  const [juegoDosCompleted, setJuegoDosCompleted] = useState(true);
+  const [juegoDosCompleted, setJuegoDosCompleted] = useState(false);
   const [showJuegoTres, setShowJuegoTres] = useState(false);
   const [juegoTresCompleted, setJuegoTresCompleted] = useState(false);
   

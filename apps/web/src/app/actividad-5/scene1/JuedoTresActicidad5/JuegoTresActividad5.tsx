@@ -444,10 +444,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                         >
                           {(() => {
                             const { imageSrc, width, height } = getCurrentResponderImageInfo();
-                            // const isNoaFinal = currentScenario.responder.name === 'Noa' && 
-                            //                  gameSession.gamePhase === 'feedback' && 
-                            //                  feedbackInfo?.isCorrect;
-                            
                             return (
                               <div className={'relative overflow-hidden w-[200px] h-[150px]'}>
                                 <Image

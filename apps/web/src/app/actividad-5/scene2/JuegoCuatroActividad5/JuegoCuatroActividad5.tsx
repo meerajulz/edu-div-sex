@@ -1,7 +1,9 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { JUEGO_CUATRO_CONFIG, GamePhase, getOptionById } from './config';
 
 interface JuegoCuatroActividad5Props {
   isVisible: boolean;
@@ -11,8 +13,133 @@ interface JuegoCuatroActividad5Props {
 
 export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComplete }: JuegoCuatroActividad5Props) {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [gamePhase, setGamePhase] = useState<GamePhase>('intro');
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
 
-  const playSound = () => {
+  // Initialize game when it becomes visible
+  useEffect(() => {
+    if (isVisible) {
+      resetGame();
+    } else {
+      // Clean up any audio when component is hidden
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null);
+      }
+    }
+  }, [isVisible]);
+
+  // Handle game phase transitions
+  useEffect(() => {
+    if (!isVisible) return;
+    
+    if (gamePhase === 'intro') {
+      // Play title audio and transition to selection
+      const timer = setTimeout(() => {
+        playAudio(JUEGO_CUATRO_CONFIG.audio.title, () => {
+          setGamePhase('selection');
+        });
+      }, JUEGO_CUATRO_CONFIG.timing.titleDelay);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [gamePhase, isVisible]);
+
+  // Reset game to initial state
+  const resetGame = () => {
+    setGamePhase('intro');
+    setSelectedOption(null);
+    setShowFeedback(false);
+    setIsAnimating(false);
+  };
+
+  // Play audio helper
+  const playAudio = (src: string, onEnded?: () => void) => {
+    try {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      
+      const audio = new Audio(src);
+      audio.volume = 0.7;
+      setCurrentAudio(audio);
+      
+      if (onEnded) {
+        audio.onended = onEnded;
+      }
+      
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play audio:', error);
+      if (onEnded) onEnded();
+    }
+  };
+
+  // Handle option selection
+  const handleOptionSelect = (optionId: number) => {
+    if (isAnimating || gamePhase !== 'selection') return;
+    
+    const option = getOptionById(optionId);
+    if (!option) return;
+    
+    setIsAnimating(true);
+    setSelectedOption(optionId);
+    
+    // Play option selection sound
+    playAudio(option.clickSound, () => {
+      // Show feedback after option sound
+      setGamePhase('feedback');
+      setShowFeedback(true);
+      
+      // Play feedback sound (correct/incorrect)
+      const feedbackSound = option.isCorrect 
+        ? JUEGO_CUATRO_CONFIG.audio.correct 
+        : JUEGO_CUATRO_CONFIG.audio.incorrect;
+      
+      playAudio(feedbackSound, () => {
+        // Play feedback message
+        playAudio(option.feedbackAudio, () => {
+          setTimeout(() => {
+            setShowFeedback(false);
+            
+            if (option.isCorrect) {
+              // Correct answer - complete game
+              setGamePhase('completed');
+              setTimeout(() => {
+                playAudio(JUEGO_CUATRO_CONFIG.audio.completion, () => {
+                  setTimeout(() => {
+                    handleCompleteGame();
+                  }, JUEGO_CUATRO_CONFIG.timing.completionDelay);
+                });
+              }, JUEGO_CUATRO_CONFIG.timing.feedbackDelay);
+            } else {
+              // Wrong answer - allow retry
+              setGamePhase('selection');
+              setSelectedOption(null);
+              setIsAnimating(false);
+            }
+          }, JUEGO_CUATRO_CONFIG.timing.feedbackDelay);
+        });
+      });
+    });
+  };
+
+  // Handle exit game
+  const handleSalirJuego = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    
+    // Stop any current audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+    }
+    
     try {
       const audio = new Audio('/audio/button/Bright.mp3');
       audio.volume = 0.7;
@@ -20,28 +147,37 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
-  };
-
-  const handleSalirJuego = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    playSound();
-
+    
     setTimeout(() => {
       setIsAnimating(false);
       onClose();
     }, 300);
   };
 
+  // Handle game completion
   const handleCompleteGame = () => {
-    if (isAnimating) return;
     setIsAnimating(true);
-    playSound();
-
+    
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+    
     setTimeout(() => {
       setIsAnimating(false);
       onGameComplete();
-    }, 500);
+      onClose();
+    }, JUEGO_CUATRO_CONFIG.timing.exitDelay);
+  };
+
+  // Get feedback image based on selected option
+  const getFeedbackImage = () => {
+    if (!selectedOption) return null;
+    const option = getOptionById(selectedOption);
+    return option?.feedbackImage || null;
   };
 
   return (
@@ -50,12 +186,12 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
-
+          
           {/* Modal */}
           <motion.div
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
@@ -64,97 +200,176 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
-            <div className="bg-gradient-to-br from-blue-200 via-indigo-100 to-blue-400 rounded-xl shadow-2xl w-[80vw] h-[80vh] overflow-y-auto relative border-4 border-blue-300">
+            {/* Modal Container with background image */}
+            <div 
+              className="relative rounded-xl overflow-hidden shadow-2xl"
+              style={{
+                width: `min(${JUEGO_CUATRO_CONFIG.modal.width}px, ${JUEGO_CUATRO_CONFIG.modal.maxWidth})`,
+                height: `min(${JUEGO_CUATRO_CONFIG.modal.height}px, ${JUEGO_CUATRO_CONFIG.modal.maxHeight})`,
+                backgroundImage: `url(${JUEGO_CUATRO_CONFIG.images.background})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            >
               
-              {/* Floating particles */}
-              <div className="absolute inset-0 overflow-hidden rounded-xl">
-                {[...Array(15)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute rounded-full bg-white/30"
-                    style={{
-                      width: Math.random() * 40 + 15,
-                      height: Math.random() * 40 + 15,
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                    }}
-                    animate={{
-                      y: [0, -15, 0],
-                      x: [0, Math.random() * 15 - 7.5, 0],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: Math.random() * 2 + 2,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                      delay: Math.random() * 2,
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Header */}
+              {/* Exit button */}
               <motion.button
                 onClick={handleSalirJuego}
-                className="absolute top-4 right-4 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
+                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg font-semibold transition-colors duration-200 shadow-lg text-sm"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isAnimating}
               >
-                Salir Juego
+                Salir
               </motion.button>
+              
+              {/* Feedback overlay at top */}
+              <AnimatePresence>
+                {showFeedback && selectedOption && (
+                  <motion.div
+                    className="absolute inset-x-0 top-[22%] z-50 flex justify-center"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                  >
+                    <div className="w-16 h-16">
+                      <Image
+                        src={getOptionById(selectedOption)?.isCorrect 
+                          ? JUEGO_CUATRO_CONFIG.images.feedback.correct 
+                          : JUEGO_CUATRO_CONFIG.images.feedback.incorrect}
+                        alt={getOptionById(selectedOption)?.isCorrect ? "Correcto" : "Incorrecto"}
+                        width={64}
+                        height={64}
+                        className="object-contain"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              {/* Game Content - Placeholder */}
-              <div className="relative z-10 flex flex-col items-center justify-center h-full text-center p-8">
-                <motion.div
-                  className="text-6xl mb-6"
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    rotate: [0, 15, -15, 0],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                >
-                  🌟
-                </motion.div>
+              {/* Game Content */}
+              <div className="relative w-full h-full flex flex-col">
                 
-                <h2 className="text-3xl font-bold text-blue-800 mb-4">
-                  Juego Cuatro - Actividad 5
-                </h2>
-                
-                <p className="text-lg text-blue-700 mb-8 max-w-md">
-                  Este será el cuarto y último juego de la Actividad 5. 
-                  Una experiencia final increíble para completar tu aventura.
-                </p>
+                {/* Intro State */}
+                {gamePhase === 'intro' && (
+                  <motion.div
+                    className="h-full flex flex-col"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    {/* Initial scene image at bottom */}
+                    <div className="h-80 absolute bottom-0 left-0 right-0 overflow-hidden">
+                      <Image
+                        src={JUEGO_CUATRO_CONFIG.images.introScene}
+                        alt="Escena inicial"
+                        fill
+                        className="object-contain"
+                        onError={(e) => console.error('Image failed to load:', e)}
+                        onLoad={() => console.log('Image loaded successfully')}
+                      />
+                    </div>
+                  </motion.div>
+                )}
 
-                <div className="bg-white/50 rounded-lg p-6 mb-8">
-                  <div className="text-blue-600 font-semibold mb-2">Estado: En desarrollo</div>
-                  <div className="w-full bg-blue-200 rounded-full h-3">
-                    <div className="bg-blue-500 h-3 rounded-full w-0 animate-pulse"></div>
-                  </div>
-                </div>
+                {/* Selection Phase */}
+                {gamePhase === 'selection' && (
+                  <motion.div
+                    className="h-full flex flex-col"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    {/* Spacer to push buttons to bottom */}
+                    <div className="flex-1"></div>
+                    
+                    {/* Three option buttons at bottom */}
+                    <div className="flex h-80 justify-center items-end">
+                      {JUEGO_CUATRO_CONFIG.options.map((option) => (
+                        <motion.button
+                          key={option.id}
+                          onClick={() => handleOptionSelect(option.id)}
+                          className="flex-1 flex justify-center items-end"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          disabled={isAnimating}
+                        >
+                          <Image
+                            src={option.image}
+                            alt={`Opción ${option.id}`}
+                            width={option.size.width}
+                            height={option.size.height}
+                            className="object-contain"
+                          />
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
-                <div className="bg-blue-100/70 rounded-lg p-4 mb-6 border-2 border-blue-300">
-                  <div className="text-blue-800 font-medium mb-2">🎯 Objetivo del Juego</div>
-                  <div className="text-blue-700 text-sm">
-                    Aquí se implementará una experiencia educativa única 
-                    que completará todo el aprendizaje de la Actividad 5.
-                  </div>
-                </div>
+                  {/* Feedback Phase */}
+                {gamePhase === 'feedback' && selectedOption && (
+                  <motion.div
+                    className="absolute left-0 right-0 bottom-0 z-40 flex justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    {/* Sized container for the card (kept from yours) */}
+                    <div className="h-64 w-80 flex items-end">
+                      {/* 80% box anchored to the bottom */}
+                      <div className="relative w-[80%] h-[80%]">
+                        <Image
+                          src={getFeedbackImage()!}
+                          alt="Feedback"
+                          fill
+                          className="object-contain object-bottom"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
-                {/* Temporary Complete Button */}
-                <motion.button
-                  onClick={handleCompleteGame}
-                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold text-lg shadow-lg transition-colors duration-200"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  disabled={isAnimating}
-                >
-                  ✅ Completar Actividad 5 (Temporal)
-                </motion.button>
+                {/* Completed State */}
+                {gamePhase === 'completed' && (
+                  <motion.div
+                    className="flex items-center justify-center h-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 text-center shadow-lg">
+                      <motion.div
+                        className="w-20 h-20 mx-auto mb-4 relative"
+                        animate={{ 
+                          y: [0, -10, 0],
+                          rotate: [0, 5, 0, -5, 0],
+                        }}
+                        transition={{ 
+                          duration: 3, 
+                          repeat: Infinity,
+                          ease: "easeInOut" 
+                        }}
+                      >
+                        <Image 
+                          src={JUEGO_CUATRO_CONFIG.images.feedback.stars}
+                          alt="Estrellas"
+                          fill
+                          className="object-contain"
+                        />
+                      </motion.div>
+                      <div className="text-4xl mb-4">🎉</div>
+                      <h2 className="text-2xl font-bold text-blue-800 mb-2">
+                        ¡Felicidades!
+                      </h2>
+                      <p className="text-lg text-blue-700">
+                        Has completado el juego correctamente.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+
               </div>
             </div>
           </motion.div>
