@@ -113,9 +113,15 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
           // Correct answer - move to next scenario or complete
           setTimeout(() => {
             if (isEmotionGameCompleted(gameSession)) {
+              console.log('🎮 All scenarios completed! Moving to completed state...');
               setGameSession(prev => ({ ...prev, gamePhase: 'completed' }));
-              setTimeout(handleCompleteGame, EMOTION_GAME_CONFIG.timing.completionDelay);
+        
+              setTimeout(() => {
+                console.log('🎉 Calling handleCompleteGame...');
+                handleCompleteGame();
+              }, EMOTION_GAME_CONFIG.timing.completionDelay);
             } else {
+              console.log('🔄 Moving to next scenario...');
               setGameSession(prev => ({ ...prev, gamePhase: 'next_scenario' }));
             }
           }, EMOTION_GAME_CONFIG.timing.scenarioTransitionDelay);
@@ -134,6 +140,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
         
       case 'next_scenario':
         // Move to next scenario
+        console.log('📍 Moving to next scenario...');
         setGameSession(prev => ({
           ...prev,
           scenarioIndex: prev.scenarioIndex + 1,
@@ -147,6 +154,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
   
   // Reset entire game
   const resetGame = () => {
+    console.log('🔄 Resetting game...');
     setGameSession({
       scenarioIndex: 0,
       gamePhase: 'intro',
@@ -154,19 +162,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
       completed: false,
       correctAnswersCount: 0
     });
-    setShowFeedback(false);
-    setFeedbackInfo(null);
-    setSpeakerTalking(false);
-    setResponderTalking(false);
-  };
-  
-  // Reset current scenario
-  const resetCurrentScenario = () => {
-    setGameSession(prev => ({
-      ...prev,
-      gamePhase: 'speaker_talking',
-      selectedEmotion: null
-    }));
     setShowFeedback(false);
     setFeedbackInfo(null);
     setSpeakerTalking(false);
@@ -204,6 +199,8 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
     
     const isCorrect = emotionType === currentScenario.correctEmotion;
     const feedbackAudio = getFeedbackAudio(gameSession, emotionType);
+    
+    console.log(`🎯 Emotion selected: ${emotionType}, Correct: ${isCorrect}, Expected: ${currentScenario.correctEmotion}`);
     
     setFeedbackInfo({
       isCorrect,
@@ -256,7 +253,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
   
   // Handle game completion
   const handleCompleteGame = () => {
-    if (isAnimating) return;
+    console.log('🎉 handleCompleteGame called!');
     setIsAnimating(true);
     
     try {
@@ -268,8 +265,10 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
     }
     
     setTimeout(() => {
+      console.log('✅ Calling onGameComplete and onClose...');
       setIsAnimating(false);
-      onGameComplete();
+      onGameComplete(); // This should set juegoTresCompleted to true
+      onClose(); // This should close the modal
     }, 500);
   };
   
@@ -306,11 +305,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
     }
     
     return { imageSrc, width, height };
-  };
-  
-  // Backward compatibility function (in case it's used elsewhere)
-  const getCurrentResponderImage = () => {
-    return getCurrentResponderImageInfo().imageSrc;
   };
   
   return (
@@ -383,7 +377,9 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                   gameSession.gamePhase === 'emotion_selection' || 
                   gameSession.gamePhase === 'feedback') && currentScenario && (
                   <div className="flex flex-col h-full w-full relative">
-                                        
+                    
+         
+                    
                     {/* Main Game Area with Bus Scene */}
                     <div className="flex items-center justify-center relative h-[400px]">
                       <div className="relative w-[520px] h-[300px] mx-auto">
@@ -427,7 +423,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.5 }}
                           >
-                            <div className="relative w-[170px] h-[100px]">
+                            <div className="relative  w-[170px] h-[100px]">
                               <Image
                                 src={currentScenario.responder.speechBubble.image}
                                 alt="Responder speech bubble"
@@ -448,12 +444,12 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                         >
                           {(() => {
                             const { imageSrc, width, height } = getCurrentResponderImageInfo();
-                            const isNoaFinal = currentScenario.responder.name === 'Noa' && 
-                                             gameSession.gamePhase === 'feedback' && 
-                                             feedbackInfo?.isCorrect;
+                            // const isNoaFinal = currentScenario.responder.name === 'Noa' && 
+                            //                  gameSession.gamePhase === 'feedback' && 
+                            //                  feedbackInfo?.isCorrect;
                             
                             return (
-                              <div className="relative overflow-hidden w-[200px] h-[150px]">
+                              <div className={'relative overflow-hidden w-[200px] h-[150px]'}>
                                 <Image
                                   src={imageSrc}
                                   alt={currentScenario.responder.name}
@@ -469,7 +465,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                       </div>
                     </div>
 
-                                        {/* Emotion Selection Buttons at Top */}
+                               {/* Emotion Selection Buttons at Top */}
                     {(gameSession.gamePhase === 'emotion_selection' || gameSession.gamePhase === 'feedback') && (
                       <motion.div
                         className="flex justify-center space-x-4 mb-4 relative z-20"

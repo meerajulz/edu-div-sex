@@ -157,7 +157,7 @@ export const EMOTION_GAME_CONFIG = {
     responderToSelectionDelay: 1000,
     feedbackDuration: 3000,
     scenarioTransitionDelay: 2000,
-    completionDelay: 2000
+    completionDelay: 1000
   }
 };
 

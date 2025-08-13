@@ -18,9 +18,9 @@ export default function Actividad5Scene1Page() {
   
   // Game states
   const [showJuegoUno, setShowJuegoUno] = useState(false);
-  const [juegoUnoCompleted, setJuegoUnoCompleted] = useState(false);
+  const [juegoUnoCompleted, setJuegoUnoCompleted] = useState(true);
   const [showJuegoDos, setShowJuegoDos] = useState(false);
-  const [juegoDosCompleted, setJuegoDosCompleted] = useState(false);
+  const [juegoDosCompleted, setJuegoDosCompleted] = useState(true);
   const [showJuegoTres, setShowJuegoTres] = useState(false);
   const [juegoTresCompleted, setJuegoTresCompleted] = useState(false);
   
@@ -93,6 +93,7 @@ export default function Actividad5Scene1Page() {
   };
 
   const handleJuegoUnoComplete = () => {
+    console.log('🎮 Juego Uno completed!');
     setJuegoUnoCompleted(true);
     setShowJuegoUno(false);
   };
@@ -108,6 +109,7 @@ export default function Actividad5Scene1Page() {
   };
 
   const handleJuegoDosComplete = () => {
+    console.log('🎮 Juego Dos completed!');
     setJuegoDosCompleted(true);
     setShowJuegoDos(false);
   };
@@ -123,10 +125,10 @@ export default function Actividad5Scene1Page() {
   };
 
   const handleJuegoTresComplete = () => {
-    console.log('🎮 Juego Tres completed!'); // Debug log
+    console.log('🎮 Juego Tres completed! Setting state...');
     setJuegoTresCompleted(true);
     setShowJuegoTres(false);
-    console.log('🚪 Modal should be closed now'); // Debug log
+    console.log('🚪 Juego Tres completed and modal closed');
   };
 
   // Continue to next scene
