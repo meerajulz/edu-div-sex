@@ -14,7 +14,7 @@ import Image from 'next/image';
 import { boyBodyParts, girlBodyParts } from './config';
 import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
-import CongratsOverlay from './CongratsOverlay';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoUnoProps {
   isVisible: boolean;
@@ -43,68 +43,51 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
     : '/image/escena_1/juego/GIRL.png';
 
   // Detect when all parts are matched
-useEffect(() => {
-  if (matchedParts.length === bodyParts.length) {
-    setShowCongrats(true);
+  useEffect(() => {
+    if (matchedParts.length === bodyParts.length) {
+      setShowCongrats(true);
+    }
+  }, [matchedParts, bodyParts.length]);
 
-    setTimeout(() => {
-      setShowCongrats(false);
-
-      // Switch to the next level
-      if (gender === 'boy') {
-        setGender('girl');
-        setMatchedParts([]);
-      } else {
-        // Optionally, handle game complete
-        onClose(); // or a new overlay
-          router.push('/actividad-1/scene2');
-      }
-    }, 2500);
-  }
-}, [matchedParts, gender, onClose, router, bodyParts.length]);
-
-useEffect(() => {
-  if (isVisible) {
-    setGender('boy');
-    setMatchedParts([]);
-    setFeedback(null);
+  // Handle congratulations completion
+  const handleCongratsComplete = () => {
     setShowCongrats(false);
-  }
-}, [isVisible]);
 
+    // Switch to the next level
+    if (gender === 'boy') {
+      setGender('girl');
+      setMatchedParts([]);
+    } else {
+      // Game complete - navigate to next scene
+      onClose();
+      router.push('/actividad-1/scene2');
+    }
+  };
 
-  // const handleDragEnd = (event: any) => {
-  //   const { over, active } = event;
-  //   if (!over) return;
-
-  //   if (over.id === active.id) {
-  //     setMatchedParts((prev) => [...prev, active.id]);
-  //     setFeedback('ok');
-  //     new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
-  //   } else {
-  //     setFeedback('wrong');
-  //     new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
-  //   }
-
-  //   setTimeout(() => setFeedback(null), 1000);
-  // };
+  useEffect(() => {
+    if (isVisible) {
+      setGender('boy');
+      setMatchedParts([]);
+      setFeedback(null);
+      setShowCongrats(false);
+    }
+  }, [isVisible]);
 
   const handleDragEnd = (event: DragEndEvent) => {
-  const { over, active } = event;
-  if (!over) return;
+    const { over, active } = event;
+    if (!over) return;
 
-  if (over.id === active.id) {
-    setMatchedParts((prev) => [...prev, String(active.id)]);
-    setFeedback('ok');
-    new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
-  } else {
-    setFeedback('wrong');
-    new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
-  }
+    if (over.id === active.id) {
+      setMatchedParts((prev) => [...prev, String(active.id)]);
+      setFeedback('ok');
+      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+    } else {
+      setFeedback('wrong');
+      new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
+    }
 
-  setTimeout(() => setFeedback(null), 1000);
-};
-
+    setTimeout(() => setFeedback(null), 1000);
+  };
 
   const handleClose = () => {
     setMatchedParts([]);
@@ -138,14 +121,14 @@ useEffect(() => {
                 className="object-contain"
                 priority
               />
-                          {bodyParts.map((part) => (
-              <DropZone
-                key={part.id}
-                id={part.id}
-                position={part.position}
-                isMatched={matchedParts.includes(part.id)}
-              />
-            ))}
+              {bodyParts.map((part) => (
+                <DropZone
+                  key={part.id}
+                  id={part.id}
+                  position={part.position}
+                  isMatched={matchedParts.includes(part.id)}
+                />
+              ))}
             </div>
 
           </div>
@@ -181,14 +164,21 @@ useEffect(() => {
             </div>
           )}
         </div>
-     {showCongrats && (
-  <CongratsOverlay onComplete={() => setShowCongrats(false)} />
-)}
+
+        {/* Congratulations Overlay using new CongratsOverlay component */}
+        <CongratsOverlay
+          isVisible={showCongrats}
+          title={gender === 'boy' ? "¡Muy Bien!" : "¡Excelente!"}
+          subtitle={gender === 'boy' ? "Ahora vamos con la niña" : "Has completado el juego de las partes del cuerpo"}
+          emoji="🎉"
+          bgColor="bg-blue-500/20"
+          textColor="text-blue-800"
+          onComplete={handleCongratsComplete}
+          autoCloseDelay={2500}
+        />
       </div>
     </DndContext>
   );
 };
 
 export default JuegoUno;
-
-

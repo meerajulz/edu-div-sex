@@ -139,7 +139,8 @@ export const GAME_CONFIG = {
     audioSequenceDelay: 4000, // Increased for proper audio timing
     feedbackDuration: 3000,
     buttonDelay: 2000,
-    retryDelay: 3000
+    retryDelay: 3000,
+    congratsDuration: 3000  // Add this line
   }
 } as const;
 

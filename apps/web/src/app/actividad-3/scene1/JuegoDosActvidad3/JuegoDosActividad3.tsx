@@ -7,6 +7,7 @@ import { getMockUserGender } from './config';
 import SituationDisplay from './SituationDisplay';
 import OkNoButtons from './OkNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoDosActividad3Props {
   isVisible: boolean;
@@ -201,11 +202,6 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
         
         endSession(true, finalScore, finalCorrect);
         setGamePhase('complete');
-        
-        setTimeout(() => {
-          onGameComplete();
-          onClose();
-        }, 2000);
       } else {
         // Move to next situation
         console.log('➡️ Moving to next situation...');
@@ -234,11 +230,27 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
     situationsCorrect,
     endSession,
     nextSituation,
-    onGameComplete,
-    onClose,
     startSituationPhase,
     stopAudio
   ]);
+
+  // Handle game completion
+  const handleGameComplete = useCallback(() => {
+    console.log('🎮 Game completion sequence finished');
+    
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+    
+    setTimeout(() => {
+      onGameComplete();
+      onClose();
+    }, 1000);
+  }, [onGameComplete, onClose]);
 
   // Handle close button
   const handleClose = useCallback(() => {
@@ -351,37 +363,17 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
           />
         )}
 
-        {/* Game Complete */}
-        {gamePhase === 'complete' && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-white bg-green-500/80 p-8 rounded-xl">
-              <motion.div
-                className="text-4xl mb-4"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 360, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                🎉
-              </motion.div>
-              <h3 className="text-3xl font-bold mb-4">¡Juego Completado!</h3>
-              <p className="text-xl mb-4">
-                Puntuación Final: {score} / {gameConfig.situations.length}
-              </p>
-              <div className="text-lg">
-                {score === gameConfig.situations.length 
-                  ? '¡Perfecto! 🎉' 
-                  : '¡Buen trabajo! 👏'
-                }
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Congratulations Overlay using CongratsOverlay component */}
+        <CongratsOverlay
+          isVisible={gamePhase === 'complete'}
+          title="¡Muy Bien!"
+          subtitle={`Has completado todas las situaciones correctamente. Puntuación: ${score}/${gameConfig.situations.length}`}
+          emoji="🎉"
+          bgColor="bg-blue-500/20"
+          textColor="text-blue-800"
+          onComplete={handleGameComplete}
+          autoCloseDelay={3000}
+        />
 
       </div>
     </div>

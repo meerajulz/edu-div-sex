@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { bodyParts } from './config';
 import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
-import CongratsOverlay from './CongratsOverlay';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoDosProps {
   isVisible: boolean;
@@ -22,8 +22,6 @@ interface JuegoDosProps {
 }
 
 const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete }) => {
-
-
 
   const [matchedParts, setMatchedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);
@@ -38,17 +36,30 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
   useEffect(() => {
     if (matchedParts.length === bodyParts.length) {
       setShowCongrats(true);
-
-      setTimeout(() => {
-        setShowCongrats(false);
-        // Game complete - close and trigger completion callback
-        onClose();
-        if (onGameComplete) {
-          onGameComplete();
-        }
-      }, 2500);
     }
-  }, [matchedParts, onClose, onGameComplete]);
+  }, [matchedParts]);
+
+  // Handle congratulations completion
+  const handleCongratsComplete = () => {
+    setShowCongrats(false);
+    
+    // Play completion sound
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+    
+    // Game complete - close and trigger completion callback
+    setTimeout(() => {
+      onClose();
+      if (onGameComplete) {
+        onGameComplete();
+      }
+    }, 500);
+  };
 
   useEffect(() => {
     if (isVisible) {
@@ -148,9 +159,17 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
           )}
         </div>
         
-        {showCongrats && (
-          <CongratsOverlay onComplete={() => setShowCongrats(false)} />
-        )}
+        {/* Congratulations Overlay using new CongratsOverlay component */}
+        <CongratsOverlay
+          isVisible={showCongrats}
+          title="¡Felicidades!"
+          subtitle="Has completado el juego de identificar las partes del cuerpo"
+          emoji="🎉"
+          bgColor="bg-purple-500/20"
+          textColor="text-purple-800"
+          onComplete={handleCongratsComplete}
+          autoCloseDelay={2500}
+        />
       </div>
     </DndContext>
   );

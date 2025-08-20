@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import CharacterSelection from './CharacterSelection';
 import GameContent from './GameContent';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoUnoActividad4Props {
   isVisible: boolean;
@@ -12,7 +13,7 @@ interface JuegoUnoActividad4Props {
 }
 
 export type Character = 'dani' | 'cris' | null;
-export type GameState = 'intro' | 'character-selection' | 'game';
+export type GameState = 'intro' | 'character-selection' | 'game' | 'completed';
 
 export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete }: JuegoUnoActividad4Props) {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -129,6 +130,24 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
     }, 300);
   };
 
+  // Handle game completion from GameContent
+  const handleGameContentComplete = () => {
+    // Transition to completed state to show CongratsOverlay
+    setGameState('completed');
+  };
+
+  // Handle final game completion
+  const handleFinalGameComplete = () => {
+    setIsAnimating(true);
+    playBrightSound();
+    
+    setTimeout(() => {
+      setIsAnimating(false);
+      onGameComplete();
+      onClose();
+    }, 500);
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -220,10 +239,22 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
                 {gameState === 'game' && selectedCharacter && (
                   <GameContent 
                     selectedCharacter={selectedCharacter}
-                    onGameComplete={onGameComplete}
-                    onClose={onClose}
+                    onGameComplete={handleGameContentComplete}
+                   // onClose={onClose}
                   />
                 )}
+
+                {/* Congratulations Overlay */}
+                <CongratsOverlay
+                  isVisible={gameState === 'completed'}
+                  title="¡Excelente!"
+                  subtitle="Has completado la actividad de higiene personal"
+                  emoji="🧼"
+                  bgColor="bg-blue-500/20"
+                  textColor="text-blue-800"
+                  onComplete={handleFinalGameComplete}
+                  autoCloseDelay={3000}
+                />
 
               </div>
             </div>

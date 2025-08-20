@@ -135,7 +135,8 @@ export const GAME_CONFIG = {
     buttonDelay: 1000,
     titleAudioDelay: 1000,
     subtitleAudioDelay: 2000, // NEW: Delay before playing subtitle
-    incorrectAudioDelay: 1500 // Delay between incorrect audio and specific feedback
+    incorrectAudioDelay: 1500, // Delay between incorrect audio and specific feedback
+    congratsDuration: 3000  // Add this line to fix the error
   },
 
   // Animation settings

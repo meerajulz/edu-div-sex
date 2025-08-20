@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TONE_GAME_CONFIG, ToneGameSession, isScenarioCompleted, isToneGameCompleted, getCurrentScenario } from './config';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoDosActividad5Props {
   isVisible: boolean;
@@ -67,7 +68,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
         const timer = setTimeout(() => {
           playAudio(TONE_GAME_CONFIG.audio.title, () => {
             setGameSession(prev => ({ ...prev, gamePhase: 'robot_speaking' }));
-          }); // Remove duration parameter to let audio play completely
+          });
         }, TONE_GAME_CONFIG.timing.titleDelay);
         
         return () => clearTimeout(timer);
@@ -113,7 +114,6 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
               const timer = setTimeout(() => {
                 playAudio(TONE_GAME_CONFIG.audio.finalGame, () => {
                   setGameSession(prev => ({ ...prev, gamePhase: 'completed' }));
-                  setTimeout(handleCompleteGame, TONE_GAME_CONFIG.timing.completionDelay);
                 });
               }, TONE_GAME_CONFIG.timing.transitionDelay);
               
@@ -374,9 +374,6 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
               
               {/* Header with exit button */}
               <div className="relative z-10 flex justify-between items-center p-4">
-                {/* <div className="text-2xl font-bold text-teal-800">
-                  {TONE_GAME_CONFIG.title}
-                </div> */}
                 <motion.button
                   onClick={handleSalirJuego}
                   className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
@@ -434,18 +431,6 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
                       >
-                        {/* Robot Speech Bubble - positioned above character */}
-                        {robotSpeaking && (
-                          <motion.div
-                            className="absolute -top-32 left-1/2 transform -translate-x-1/2 z-10"
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.5 }}
-                          >
-  
-                          </motion.div>
-                        )}
-                        
                         {/* Robot Character */}
                         <div className="relative w-[400px] h-[400px] mb-0">
                           <Image
@@ -457,8 +442,6 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                             className="object-contain"
                           />
                         </div>
-                        
-                 
                       </motion.div>
                     </div>
                     
@@ -506,32 +489,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                                 }}
                               >
                                 <div className="flex flex-col items-center space-y-3 relative">
-                                  {/* NOA Speech Bubble - positioned above character */}
-                                  {noaSpeaking.type === option.type && noaSpeaking.speaking && (
-                                    <motion.div
-                                      className="absolute -top-40 left-1/2 transform -translate-x-1/2 z-10"
-                                      initial={{ opacity: 0, scale: 0.5 }}
-                                      animate={{ opacity: 1, scale: 1 }}
-                                      exit={{ opacity: 0, scale: 0.5 }}
-                                    >
-                                      {/* <div className="relative">
-                                        <Image
-                                          src={TONE_GAME_CONFIG.speechBubbles.noa}
-                                          alt="NOA speech bubble"
-                                          width={280}
-                                          height={140}
-                                          className="object-contain"
-                                        />
-                                        <div className="absolute inset-0 flex items-center justify-center px-6 py-4">
-                                          <p className="text-sm font-bold text-gray-800 text-center leading-tight max-w-[220px]">
-                                            {currentScenario.robotText}
-                                          </p>
-                                        </div>
-                                      </div> */}
-                                    </motion.div>
-                                  )}
-                                  
-                                  {/* NOA Character - FIXED TYPESCRIPT ERROR */}
+                                  {/* NOA Character */}
                                   <div className="relative w-48 h-80">
                                     <Image
                                       src={
@@ -604,44 +562,17 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                   </div>
                 )}
                 
-                {/* Completed State */}
-                {gameSession.gamePhase === 'completed' && (
-                  <motion.div
-                    className="flex flex-col items-center justify-center h-full w-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 max-w-lg text-center shadow-lg">
-                      <div className="text-5xl mb-4">🎉</div>
-                      <h2 className="text-2xl font-bold text-teal-800 mb-4">
-                        ¡Felicidades!
-                      </h2>
-                      <p className="text-lg text-teal-700 mb-6">
-                        Has aprendido sobre los tonos de voz. Recuerda: si queremos que una persona haga algo, no podemos hablar obligándole.
-                      </p>
-                      <motion.div
-                        className="w-40 h-40 mx-auto mb-6 relative"
-                        animate={{ 
-                          y: [0, -10, 0],
-                          rotate: [0, 5, 0, -5, 0],
-                        }}
-                        transition={{ 
-                          duration: 3, 
-                          repeat: Infinity,
-                          ease: "easeInOut" 
-                        }}
-                      >
-                        <Image 
-                          src={TONE_GAME_CONFIG.feedback.stars}
-                          alt="Estrellas"
-                          fill
-                          className="object-contain"
-                        />
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                )}
+                {/* Congratulations Overlay using CongratsOverlay component */}
+                <CongratsOverlay
+                  isVisible={gameSession.gamePhase === 'completed'}
+                  title="¡Felicidades!"
+                  subtitle="Has aprendido sobre los tonos de voz. Recuerda: si queremos que una persona haga algo, no podemos hablar obligándole."
+                  emoji="🎉"
+                  bgColor="bg-teal-500/20"
+                  textColor="text-teal-800"
+                  onComplete={handleCompleteGame}
+                  autoCloseDelay={3000}
+                />
                 
                 {/* Progress indicator */}
                 {(gameSession.gamePhase === 'robot_speaking' || 
@@ -649,7 +580,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                   gameSession.gamePhase === 'noa_listening' || 
                   gameSession.gamePhase === 'noa_selection' || 
                   gameSession.gamePhase === 'feedback') && (
-                  <div className="absolute bottom-4  transform -translate-x-1/2 w-full max-w-md px-4">
+                  <div className="absolute bottom-4 transform -translate-x-1/2 w-full max-w-md px-4">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-teal-800">Progreso</span>
                       <span className="text-sm font-medium text-teal-800">

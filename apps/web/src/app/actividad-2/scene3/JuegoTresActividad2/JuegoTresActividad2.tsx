@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import DropZones from './DropZones';
 import SituationItems from './SituationItems';
-import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+// Update import to use the central CongratsOverlay component
+import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 import JugarButton from '../../../components/JugarButton/JugarButton';
 
 interface JuegoTresActividad2Props {
@@ -39,6 +40,9 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     addDroppedItem
   } = useGameState();
 
+  // State for congratulations overlay
+  const [showCongrats, setShowCongrats] = useState(false);
+
   // Session tracking
   const { currentSession, startSession, endSession } = useGameSession();
   
@@ -60,6 +64,7 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
   useEffect(() => {
     if (isVisible) {
       resetGame();
+      setShowCongrats(false);
     }
   }, [isVisible, resetGame]);
 
@@ -144,7 +149,7 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
         if (currentCompletedCount + 1 >= GAME_CONFIG.situations.length) {
           console.log('🎮 All situations completed! Showing celebration...');
           setTimeout(() => {
-            setGamePhase('celebrating');
+            setShowCongrats(true);
           }, 1000); // Small delay after feedback completes
         }
       }, 1000);
@@ -172,7 +177,7 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     if (gamePhase === 'playing' && completedSituations.size >= GAME_CONFIG.situations.length) {
       console.log('🎮 Game completed via effect! Showing celebration...');
       setTimeout(() => {
-        setGamePhase('celebrating');
+        setShowCongrats(true);
       }, 2000); // Give time for any ongoing audio
     }
   }, [completedSituations.size, gamePhase]);
@@ -293,10 +298,17 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
           />
         )}
 
-        {/* Celebration Overlay - ¡Muy bien! with sparkles */}
-        {gamePhase === 'celebrating' && (
-          <CongratsOverlay onComplete={handleCelebrationComplete} />
-        )}
+        {/* Enhanced Congratulations Overlay */}
+        <CongratsOverlay 
+          isVisible={showCongrats}
+          onComplete={handleCelebrationComplete}
+          title="¡Excelente trabajo!"
+          subtitle={`Has clasificado correctamente ${score} de ${GAME_CONFIG.situations.length} situaciones`}
+          emoji="🏆"
+          bgColor="bg-gradient-to-r from-teal-400/30 to-yellow-300/30"
+          textColor="text-teal-800"
+          autoCloseDelay={GAME_CONFIG.timing.congratsDuration || 3000}
+        />
 
         {/* Game Complete - Simple JugarButton */}
         {gamePhase === 'complete' && (

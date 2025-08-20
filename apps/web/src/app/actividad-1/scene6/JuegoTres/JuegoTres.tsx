@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
-import CongratsOverlay from './CongratsOverlay';
+import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoTresProps {
   isVisible: boolean;
@@ -243,10 +243,17 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
           )}
         </div>
 
-        {/* Congratulations Overlay */}
-        {showCongrats && (
-          <CongratsOverlay onComplete={() => setShowCongrats(false)} />
-        )}
+        {/* Congratulations Overlay - Updated to use isVisible prop */}
+        <CongratsOverlay 
+          isVisible={showCongrats} 
+          onComplete={() => setShowCongrats(false)}
+          title="¡Muy Bien!"
+          subtitle="Has elegido la opción correcta"
+          bgColor="bg-fuchsia-500/30"
+          textColor="text-white"
+          emoji="🎉"
+          autoCloseDelay={GAME_CONFIG.timing.congratsDuration}
+        />
       </div>
     </div>
   );

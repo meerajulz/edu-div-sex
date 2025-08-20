@@ -127,7 +127,8 @@ export const GAME_CONFIG = {
     feedbackAudioDelay: 800, // Delay before playing feedback audio
     nextSituationDelay: 4000, // 6 seconds for feedback + 500ms buffer
     congratsDelay: 1000, // Delay before showing congratulations
-    retryDelay: 6500 // 6 seconds for feedback + 500ms buffer before allowing retry
+    retryDelay: 6500, // 6 seconds for feedback + 500ms buffer before allowing retry
+    congratsDuration: 3000 // Duration for the congratulations message
   },
 
   // Animation configuration

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { JUEGO_CUATRO_CONFIG, GamePhase, getOptionById } from './config';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoCuatroActividad5Props {
   isVisible: boolean;
@@ -110,11 +111,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
               // Correct answer - complete game
               setGamePhase('completed');
               setTimeout(() => {
-                playAudio(JUEGO_CUATRO_CONFIG.audio.completion, () => {
-                  setTimeout(() => {
-                    handleCompleteGame();
-                  }, JUEGO_CUATRO_CONFIG.timing.completionDelay);
-                });
+                playAudio(JUEGO_CUATRO_CONFIG.audio.completion);
               }, JUEGO_CUATRO_CONFIG.timing.feedbackDelay);
             } else {
               // Wrong answer - allow retry
@@ -266,8 +263,6 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                         alt="Escena inicial"
                         fill
                         className="object-contain"
-                        onError={(e) => console.error('Image failed to load:', e)}
-                        onLoad={() => console.log('Image loaded successfully')}
                       />
                     </div>
                   </motion.div>
@@ -308,7 +303,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                   </motion.div>
                 )}
 
-                  {/* Feedback Phase */}
+                {/* Feedback Phase */}
                 {gamePhase === 'feedback' && selectedOption && (
                   <motion.div
                     className="absolute left-0 right-0 bottom-0 z-40 flex justify-center"
@@ -316,7 +311,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    {/* Sized container for the card (kept from yours) */}
+                    {/* Sized container for the card */}
                     <div className="h-64 w-80 flex items-end">
                       {/* 80% box anchored to the bottom */}
                       <div className="relative w-[80%] h-[80%]">
@@ -331,44 +326,17 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                   </motion.div>
                 )}
 
-                {/* Completed State */}
-                {gamePhase === 'completed' && (
-                  <motion.div
-                    className="flex items-center justify-center h-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 text-center shadow-lg">
-                      <motion.div
-                        className="w-20 h-20 mx-auto mb-4 relative"
-                        animate={{ 
-                          y: [0, -10, 0],
-                          rotate: [0, 5, 0, -5, 0],
-                        }}
-                        transition={{ 
-                          duration: 3, 
-                          repeat: Infinity,
-                          ease: "easeInOut" 
-                        }}
-                      >
-                        <Image 
-                          src={JUEGO_CUATRO_CONFIG.images.feedback.stars}
-                          alt="Estrellas"
-                          fill
-                          className="object-contain"
-                        />
-                      </motion.div>
-                      <div className="text-4xl mb-4">🎉</div>
-                      <h2 className="text-2xl font-bold text-blue-800 mb-2">
-                        ¡Felicidades!
-                      </h2>
-                      <p className="text-lg text-blue-700">
-                        Has completado el juego correctamente.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
+                {/* Congratulations Overlay using CongratsOverlay component */}
+                <CongratsOverlay
+                  isVisible={gamePhase === 'completed'}
+                  title="¡Felicidades!"
+                  subtitle="Has completado el juego correctamente"
+                  emoji="🎉"
+                  bgColor="bg-blue-500/20"
+                  textColor="text-blue-800"
+                  onComplete={handleCompleteGame}
+                  autoCloseDelay={3000}
+                />
 
               </div>
             </div>

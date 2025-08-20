@@ -11,6 +11,7 @@ import {
   getCurrentScenario,
   getFeedbackAudio
 } from './config';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoTresActividad5Props {
   isVisible: boolean;
@@ -113,15 +114,8 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
           // Correct answer - move to next scenario or complete
           setTimeout(() => {
             if (isEmotionGameCompleted(gameSession)) {
-              console.log('🎮 All scenarios completed! Moving to completed state...');
               setGameSession(prev => ({ ...prev, gamePhase: 'completed' }));
-        
-              setTimeout(() => {
-                console.log('🎉 Calling handleCompleteGame...');
-                handleCompleteGame();
-              }, EMOTION_GAME_CONFIG.timing.completionDelay);
             } else {
-              console.log('🔄 Moving to next scenario...');
               setGameSession(prev => ({ ...prev, gamePhase: 'next_scenario' }));
             }
           }, EMOTION_GAME_CONFIG.timing.scenarioTransitionDelay);
@@ -140,7 +134,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
         
       case 'next_scenario':
         // Move to next scenario
-        console.log('📍 Moving to next scenario...');
         setGameSession(prev => ({
           ...prev,
           scenarioIndex: prev.scenarioIndex + 1,
@@ -154,7 +147,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
   
   // Reset entire game
   const resetGame = () => {
-    console.log('🔄 Resetting game...');
     setGameSession({
       scenarioIndex: 0,
       gamePhase: 'intro',
@@ -199,8 +191,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
     
     const isCorrect = emotionType === currentScenario.correctEmotion;
     const feedbackAudio = getFeedbackAudio(gameSession, emotionType);
-    
-    console.log(`🎯 Emotion selected: ${emotionType}, Correct: ${isCorrect}, Expected: ${currentScenario.correctEmotion}`);
     
     setFeedbackInfo({
       isCorrect,
@@ -253,7 +243,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
   
   // Handle game completion
   const handleCompleteGame = () => {
-    console.log('🎉 handleCompleteGame called!');
     setIsAnimating(true);
     
     try {
@@ -265,10 +254,9 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
     }
     
     setTimeout(() => {
-      console.log('✅ Calling onGameComplete and onClose...');
       setIsAnimating(false);
-      onGameComplete(); // This should set juegoTresCompleted to true
-      onClose(); // This should close the modal
+      onGameComplete();
+      onClose();
     }, 500);
   };
   
@@ -378,7 +366,46 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                   gameSession.gamePhase === 'feedback') && currentScenario && (
                   <div className="flex flex-col h-full w-full relative">
                     
-         
+                    {/* Emotion Selection Buttons at Top */}
+                    {(gameSession.gamePhase === 'emotion_selection' || gameSession.gamePhase === 'feedback') && (
+                      <motion.div
+                        className="flex justify-center space-x-4 mb-4 relative z-20"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        {EMOTION_GAME_CONFIG.emotionOptions.map((emotion) => {
+                          let currentImage = emotion.images.normal;
+                          
+                          if (gameSession.selectedEmotion === emotion.type && showFeedback) {
+                            currentImage = feedbackInfo?.isCorrect 
+                              ? emotion.images.correct 
+                              : emotion.images.error;
+                          }
+                          
+                          return (
+                            <motion.button
+                              key={emotion.id}
+                              onClick={() => handleEmotionSelect(emotion.type)}
+                              className="relative transition-transform duration-200 hover:scale-105 disabled:cursor-not-allowed"
+                              whileHover={gameSession.gamePhase === 'emotion_selection' ? { scale: 1.1 } : {}}
+                              whileTap={gameSession.gamePhase === 'emotion_selection' ? { scale: 0.95 } : {}}
+                              disabled={gameSession.gamePhase !== 'emotion_selection' || isAnimating}
+                            >
+                              <div className="relative w-[120px] h-[80px]">
+                                <Image
+                                  src={currentImage}
+                                  alt={`${emotion.type} emotion`}
+                                  width={120}
+                                  height={80}
+                                  className="object-contain"
+                                />
+                              </div>
+                            </motion.button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
                     
                     {/* Main Game Area with Bus Scene */}
                     <div className="flex items-center justify-center relative h-[400px]">
@@ -423,7 +450,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.5 }}
                           >
-                            <div className="relative  w-[170px] h-[100px]">
+                            <div className="relative w-[170px] h-[100px]">
                               <Image
                                 src={currentScenario.responder.speechBubble.image}
                                 alt="Responder speech bubble"
@@ -460,47 +487,6 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                         
                       </div>
                     </div>
-
-                               {/* Emotion Selection Buttons at Top */}
-                    {(gameSession.gamePhase === 'emotion_selection' || gameSession.gamePhase === 'feedback') && (
-                      <motion.div
-                        className="flex justify-center space-x-4 mb-4 relative z-20"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        {EMOTION_GAME_CONFIG.emotionOptions.map((emotion) => {
-                          let currentImage = emotion.images.normal;
-                          
-                          if (gameSession.selectedEmotion === emotion.type && showFeedback) {
-                            currentImage = feedbackInfo?.isCorrect 
-                              ? emotion.images.correct 
-                              : emotion.images.error;
-                          }
-                          
-                          return (
-                            <motion.button
-                              key={emotion.id}
-                              onClick={() => handleEmotionSelect(emotion.type)}
-                              className="relative transition-transform duration-200 hover:scale-105 disabled:cursor-not-allowed"
-                              whileHover={gameSession.gamePhase === 'emotion_selection' ? { scale: 1.1 } : {}}
-                              whileTap={gameSession.gamePhase === 'emotion_selection' ? { scale: 0.95 } : {}}
-                              disabled={gameSession.gamePhase !== 'emotion_selection' || isAnimating}
-                            >
-                              <div className="relative w-[120px] h-[80px]">
-                                <Image
-                                  src={currentImage}
-                                  alt={`${emotion.type} emotion`}
-                                  width={120}
-                                  height={80}
-                                  className="object-contain"
-                                />
-                              </div>
-                            </motion.button>
-                          );
-                        })}
-                      </motion.div>
-                    )}
                     
                     {/* Feedback overlay */}
                     <AnimatePresence>
@@ -531,25 +517,17 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                   </div>
                 )}
                 
-                {/* Completed State */}
-                {gameSession.gamePhase === 'completed' && (
-                  <motion.div
-                    className="flex flex-col items-center justify-center h-full w-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 max-w-lg text-center shadow-lg">
-                      <div className="text-5xl mb-4">🎉</div>
-                      <h2 className="text-2xl font-bold text-orange-800 mb-4">
-                        ¡Felicidades!
-                      </h2>
-                      <p className="text-lg text-orange-700 mb-6">
-                        Has aprendido a reconocer las expresiones faciales correctas según las emociones.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
+                {/* Congratulations Overlay using CongratsOverlay component */}
+                <CongratsOverlay
+                  isVisible={gameSession.gamePhase === 'completed'}
+                  title="¡Felicidades!"
+                  subtitle="Has aprendido a reconocer las expresiones faciales correctas según las emociones"
+                  emoji="🎉"
+                  bgColor="bg-orange-500/20"
+                  textColor="text-orange-800"
+                  onComplete={handleCompleteGame}
+                  autoCloseDelay={3000}
+                />
                 
                 {/* Progress indicator */}
                 {(gameSession.gamePhase === 'item_question' || 

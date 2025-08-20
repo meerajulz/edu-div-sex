@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { FACIAL_EXPRESSION_GAME_CONFIG, GameSession, isScenarioCompleted, isGameCompleted } from './config';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoUnoActividad5Props {
   isVisible: boolean;
@@ -28,6 +29,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
   
   // Track which tone and gesture are selected
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedGesture, setSelectedGesture] = useState<string | null>(null);
   
   // Track feedback state
@@ -78,7 +80,6 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
       if (isGameCompleted(gameSession)) {
         const timer = setTimeout(() => {
           setGameState('completed');
-          setTimeout(handleCompleteGame, FACIAL_EXPRESSION_GAME_CONFIG.timing.completionDelay);
         }, FACIAL_EXPRESSION_GAME_CONFIG.timing.transitionDelay);
         
         return () => clearTimeout(timer);
@@ -360,9 +361,6 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
               
               {/* Header with exit button */}
               <div className="relative z-10 flex justify-between items-center p-4">
-                {/* <div className="text-2xl font-bold text-green-800">
-                  {FACIAL_EXPRESSION_GAME_CONFIG.title}
-                </div> */}
                 <motion.button
                   onClick={handleSalirJuego}
                   className="absolute top-4 right-4 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
@@ -441,10 +439,9 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                     
                     {/* Face section at the top */}
                     <div className="relative mb-5">
-
                       {/* Face card image */}
                       <motion.div
-                        className="w-36 h-36 md:w-48 md:h-48 relative mx-auto  rounded-lg overflow-hidden "
+                        className="w-36 h-36 md:w-48 md:h-48 relative mx-auto rounded-lg overflow-hidden"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
@@ -477,7 +474,6 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                               <motion.button
                                 key={tone.id}
                                 className={`relative w-20 h-20 md:w-28 md:h-28 rounded-lg overflow-hidden
-                                  ${selectedTone === tone.id ? '' : ''}
                                   ${gameSession.toneCorrect && tone.isCorrect 
                                     ? 'ring-4 ring-green-500' 
                                     : ''
@@ -518,7 +514,6 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                               <motion.button
                                 key={gesture.id}
                                 className={`relative w-28 h-36 md:w-32 md:h-48 rounded-lg overflow-hidden bg-white
-                                  ${selectedGesture === gesture.id ? '' : ''}
                                   ${gameSession.gestureCorrect && gesture.isCorrect 
                                     ? 'ring-4 ring-green-500' 
                                     : ''
@@ -562,44 +557,17 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                   </div>
                 )}
                 
-                {/* Completed State - handled automatically through onGameComplete and onClose */}
-                {gameState === 'completed' && (
-                  <motion.div
-                    className="flex flex-col items-center justify-center h-full w-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 max-w-lg text-center shadow-lg">
-                      <div className="text-5xl mb-4">🎉</div>
-                      <h2 className="text-2xl font-bold text-green-800 mb-4">
-                        ¡Felicidades!
-                      </h2>
-                      <p className="text-lg text-green-700 mb-6">
-                        Has completado exitosamente la actividad.
-                      </p>
-                      <motion.div
-                        className="w-40 h-40 mx-auto mb-6 relative"
-                        animate={{ 
-                          y: [0, -10, 0],
-                          rotate: [0, 5, 0, -5, 0],
-                        }}
-                        transition={{ 
-                          duration: 3, 
-                          repeat: Infinity,
-                          ease: "easeInOut" 
-                        }}
-                      >
-                        <Image 
-                          src={FACIAL_EXPRESSION_GAME_CONFIG.feedback.stars || "/image/actividad_5/juego1/stars.png"}
-                          alt="Estrellas"
-                          fill
-                          className="object-contain"
-                        />
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                )}
+                {/* Congratulations Overlay using CongratsOverlay component */}
+                <CongratsOverlay
+                  isVisible={gameState === 'completed'}
+                  title="¡Felicidades!"
+                  subtitle="Has completado exitosamente la actividad"
+                  emoji="🎉"
+                  bgColor="bg-green-500/20"
+                  textColor="text-green-800"
+                  onComplete={handleCompleteGame}
+                  autoCloseDelay={3000}
+                />
                 
               </div>
             </div>

@@ -158,7 +158,19 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
   const handleGameComplete = useCallback(() => {
     console.log('🎮 Game completion sequence finished');
     endSession(true, score, currentSequence);
+    setIsAnimating(true);
+    
+    // Play completion sound
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+    
     setTimeout(() => {
+      setIsAnimating(false);
       onClose();
       if (onGameComplete) {
         onGameComplete();
@@ -278,14 +290,17 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
             />
           )}
 
-          {/* Congratulations Overlay */}
-          {gamePhase === 'complete' && (
-            <CongratsOverlay
-              isVisible={true}
-              onComplete={handleGameComplete}
-              duration={5000}
-            />
-          )}
+          {/* Congratulations Overlay using CongratsOverlay component */}
+          <CongratsOverlay
+            isVisible={gamePhase === 'complete'}
+            title="¡Muy Bien!"
+            subtitle="Has aprendido sobre la higiene menstrual correctamente"
+            emoji="🩸"
+            bgColor="bg-pink-500/20"
+            textColor="text-purple-800"
+            onComplete={handleGameComplete}
+            autoCloseDelay={3000}
+          />
 
         </div>
       </motion.div>

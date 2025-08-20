@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import SituationDisplay from './SituationDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
+import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoUnoActividad2Props {
   isVisible: boolean;
@@ -34,6 +35,9 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
     resetGame,
     nextSituation
   } = useGameState();
+
+  // State for congratulations overlay
+  const [showCongrats, setShowCongrats] = useState(false);
 
   // Session tracking
   const { currentSession, startSession, endSession } = useGameSession();
@@ -78,6 +82,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
       console.log('🎮 Modal opened, starting game...');
       resetGame();
       startSession(userId);
+      setShowCongrats(false);
       
       // Start game sequence for first situation
       setTimeout(() => {
@@ -149,15 +154,19 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
           }, GAME_CONFIG.timing.situationDelay);
         }, 1000);
       } else {
-        // All situations completed - end game
-        console.log('🎮 Game completed!');
-        endSession(true, score);
+        // All situations completed - show congrats before ending game
+        console.log('🎮 Game completed! Showing congrats overlay');
+        setShowCongrats(true);
+        
+        // Automatically end game after congrats duration
         setTimeout(() => {
+          endSession(true, score);
+          setShowCongrats(false);
           onClose();
           if (onGameComplete) {
             onGameComplete();
           }
-        }, 1000);
+        }, GAME_CONFIG.timing.congratsDuration || 3000);
       }
     } else {
       // Wrong answer - retry same situation
@@ -277,7 +286,25 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             duration={GAME_CONFIG.timing.feedbackDuration}
           />
         )}
-
+        
+        {/* Congratulations Overlay - Added for game completion */}
+        <CongratsOverlay 
+          isVisible={showCongrats}
+          onComplete={() => {
+            setShowCongrats(false);
+            endSession(true, score);
+            onClose();
+            if (onGameComplete) {
+              onGameComplete();
+            }
+          }}
+          title="¡Felicidades!"
+          subtitle={`¡Has completado todas las situaciones con ${score} puntos!`}
+          bgColor="bg-fuchsia-500/30"
+          textColor="text-white"
+          emoji="🏆"
+          autoCloseDelay={GAME_CONFIG.timing.congratsDuration || 3000}
+        />
       </div>
     </div>
   );

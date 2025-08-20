@@ -12,10 +12,10 @@ import Step6 from './Step6';
 interface GameContentProps {
   selectedCharacter: Exclude<Character, null>; // ✅ only 'dani' | 'cris'
   onGameComplete: () => void;
-  onClose: () => void;
+  //onClose: () => void;
 }
 
-export default function GameContent({ selectedCharacter, onGameComplete, onClose }: GameContentProps) {
+export default function GameContent({ selectedCharacter, onGameComplete }: GameContentProps) {
   const [currentStep, setCurrentStep] = useState(1);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [completedSteps, setCompletedSteps] = useState<number>(0);
@@ -48,8 +48,8 @@ export default function GameContent({ selectedCharacter, onGameComplete, onClose
             break;
           case 6:
             console.log('Step 6 completed! Game finished!');
+            // Instead of calling onClose directly, just trigger the congratulations
             onGameComplete();
-            onClose();
             break;
           default:
             break;
@@ -71,7 +71,7 @@ export default function GameContent({ selectedCharacter, onGameComplete, onClose
       case 5:
         return <Step5 character={selectedCharacter} onStepComplete={handleStepComplete} />;
       case 6:
-      return <Step6 character={selectedCharacter} onStepComplete={handleStepComplete} />;
+        return <Step6 character={selectedCharacter} onStepComplete={handleStepComplete} />;
       default:
         return <Step1 character={selectedCharacter} onStepComplete={handleStepComplete} />;
     }

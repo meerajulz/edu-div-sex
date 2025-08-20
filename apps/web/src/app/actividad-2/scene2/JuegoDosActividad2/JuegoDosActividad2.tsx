@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import BodyPartDisplay from './BodyPartDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
-import CongratsOverlay from './CongratsOverlay';
+// Update import to use the central CongratsOverlay component
+import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoDosActividad2Props {
   isVisible: boolean;
@@ -19,6 +20,7 @@ interface JuegoDosActividad2Props {
 const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({ 
   isVisible, 
   onClose, 
+  onGameComplete,
   userId 
 }) => {
   const {
@@ -37,6 +39,9 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
     nextBodyPart
   } = useGameState();
 
+  // State for congratulations overlay
+  const [showCongrats, setShowCongrats] = useState(false);
+
   const { currentSession, startSession, endSession } = useGameSession();
   const { recordAttempt } = useGameTracking();
   const { playButtonSound, playTitleAudio, playSubtitleAudio, playFeedbackAudio, playCorrectAudio, playIncorrectAudio, stopAudio } = useAudioManager();
@@ -46,6 +51,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
   useEffect(() => {
     if (isVisible) {
       resetGame();
+      setShowCongrats(false);
     }
   }, [isVisible, resetGame]);
 
@@ -114,7 +120,8 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           }, GAME_CONFIG.timing.imageAnimation);
         }, 500);
       } else {
-        setGamePhase('celebrating');
+        // Game completed - show congratulations overlay
+        setShowCongrats(true);
       }
     } else {
       setTimeout(() => {
@@ -125,7 +132,16 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
   };
 
   const handleCelebrationComplete = () => {
-    setGamePhase('complete');
+    // End session as successful
+    endSession(true, score);
+    
+    // Notify parent component that game is complete
+    if (onGameComplete) {
+      onGameComplete();
+    }
+    
+    // Close the game
+    onClose();
   };
 
   const handleClose = () => {
@@ -135,7 +151,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
     onClose();
   };
 
-  if (!isVisible || gamePhase === 'complete') return null;
+  if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto p-4">
@@ -208,9 +224,17 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           />
         )}
 
-        {gamePhase === 'celebrating' && (
-          <CongratsOverlay onComplete={handleCelebrationComplete} />
-        )}
+        {/* Enhanced Congratulations Overlay */}
+        <CongratsOverlay 
+          isVisible={showCongrats}
+          onComplete={handleCelebrationComplete}
+          title="¡Fantástico!"
+          subtitle={`Has identificado correctamente ${score} de ${shuffledBodyParts.length} partes del cuerpo`}
+          emoji="🌟"
+          bgColor="bg-blue-500/30"
+          textColor="text-blue-900"
+          autoCloseDelay={GAME_CONFIG.timing.congratsDuration || 3000}
+        />
       </motion.div>
     </div>
   );

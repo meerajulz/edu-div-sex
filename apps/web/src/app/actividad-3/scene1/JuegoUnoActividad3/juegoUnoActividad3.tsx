@@ -199,6 +199,15 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
   const handleGameComplete = () => {
     console.log('🎮 Game completion sequence finished');
     endSession(true, score, situationsCorrect);
+    
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+    
     setTimeout(() => {
       onClose();
       if (onGameComplete) {
@@ -337,14 +346,17 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
           />
         )}
 
-        {/* Congratulations Overlay */}
-        {gamePhase === 'complete' && (
-          <CongratsOverlay
-            isVisible={true}
-            onComplete={handleGameComplete}
-            duration={5000}
-          />
-        )}
+        {/* Congratulations Overlay using CongratsOverlay component */}
+        <CongratsOverlay
+          isVisible={gamePhase === 'complete'}
+          title="¡Excelente!"
+          subtitle="Has aprendido sobre las respuestas corporales normales"
+          emoji="🎯"
+          bgColor="bg-purple-500/20"
+          textColor="text-purple-800"
+          onComplete={handleGameComplete}
+          autoCloseDelay={3000}
+        />
 
       </div>
     </div>

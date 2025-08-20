@@ -1,16 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useJuegoCuatroGame } from './hooks';
-import CongratsOverlay from './CongratsOverlay';
+// Update import to use the central CongratsOverlay component
+import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoCuatroActividad2Props {
   isOpen: boolean;
   onClose: () => void;
+  onGameComplete?: () => void;
 }
 
-export default function JuegoCuatroActividad2({ isOpen, onClose }: JuegoCuatroActividad2Props) {
+export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete }: JuegoCuatroActividad2Props) {
   const {
     gameState,
     getCurrentSituation,
@@ -20,12 +22,27 @@ export default function JuegoCuatroActividad2({ isOpen, onClose }: JuegoCuatroAc
     config
   } = useJuegoCuatroGame();
 
+  // State for congratulations overlay
+  const [showCongrats, setShowCongrats] = useState(false);
+
   // Auto-start game when modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen && gameState.phase === 'intro') {
       startGame();
     }
+    
+    // Reset congrats state when game opens
+    if (isOpen) {
+      setShowCongrats(false);
+    }
   }, [isOpen, gameState.phase, startGame]);
+
+  // Watch for game completion
+  useEffect(() => {
+    if (gameState.gameCompleted && !showCongrats) {
+      setShowCongrats(true);
+    }
+  }, [gameState.gameCompleted, showCongrats]);
 
   if (!isOpen) return null;
 
@@ -37,6 +54,10 @@ export default function JuegoCuatroActividad2({ isOpen, onClose }: JuegoCuatroAc
   };
 
   const handleCongratsComplete = () => {
+    // Call onGameComplete if provided
+    if (onGameComplete) {
+      onGameComplete();
+    }
     handleClose();
   };
 
@@ -70,8 +91,6 @@ export default function JuegoCuatroActividad2({ isOpen, onClose }: JuegoCuatroAc
         >
           Salir juego
         </button>
-
-        {/* Feedback Images - Fixed position on the left - REMOVED since we moved it to center */}
 
         {/* Game Content */}
         <div className="w-full h-full p-6 pt-16 flex flex-col">
@@ -125,7 +144,7 @@ export default function JuegoCuatroActividad2({ isOpen, onClose }: JuegoCuatroAc
                     <img
                       src={currentSituation.images.correct}
                       alt="Opción correcta"
-                      className="w-full max-h-[300px] object-contain  duration-200"
+                      className="w-full max-h-[300px] object-contain duration-200"
                     />
                   </motion.div>
 
@@ -213,10 +232,17 @@ export default function JuegoCuatroActividad2({ isOpen, onClose }: JuegoCuatroAc
           )}
         </div>
 
-        {/* Congratulations Overlay */}
-        {gameState.gameCompleted && (
-          <CongratsOverlay onComplete={handleCongratsComplete} />
-        )}
+        {/* Enhanced Congratulations Overlay */}
+        <CongratsOverlay 
+          isVisible={showCongrats}
+          onComplete={handleCongratsComplete}
+          title="¡Felicidades!"
+          subtitle='Has completado el juego!'
+          emoji="🎮"
+          bgColor="bg-gradient-to-b from-yellow-300/40 to-green-300/40"
+          textColor="text-green-900"
+          autoCloseDelay={config.timing?.congratsDuration || 3000}
+        />
       </motion.div>
     </motion.div>
   );

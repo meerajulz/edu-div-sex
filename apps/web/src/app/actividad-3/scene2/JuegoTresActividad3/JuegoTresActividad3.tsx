@@ -235,11 +235,6 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
                 
                 endSession(true, finalScore, finalCorrect);
                 setGamePhase('complete');
-                
-                setTimeout(() => {
-                  onGameComplete();
-                  onClose();
-                }, 2000);
               } else {
                 // Move to next situation - FIXED: Don't update currentSituation here
                 console.log('➡️ Moving to next situation...');
@@ -297,13 +292,28 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
     score,
     situationsCorrect,
     endSession,
-    onGameComplete,
-    onClose,
     setGamePhase,
     startSituationPhase,
     stopAudio
   ]);
 
+  // Handle game completion
+  const handleGameComplete = useCallback(() => {
+    console.log('🎮 Game completion sequence finished');
+    
+    try {
+      const audio = new Audio('/audio/button/Bright.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(console.warn);
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+    
+    setTimeout(() => {
+      onGameComplete();
+      onClose();
+    }, 500);
+  }, [onGameComplete, onClose]);
   
   // Handle close button
   const handleClose = useCallback(() => {
@@ -423,17 +433,17 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
           />
         )}
 
-        {/* Game Complete */}
-        {gamePhase === 'complete' && (
-          <CongratsOverlay
-            isVisible={true}
-            onComplete={() => {
-              onGameComplete();
-              onClose();
-            }}
-            duration={5000}
-          />
-        )}
+        {/* Congratulations Overlay using CongratsOverlay component with proper props */}
+        <CongratsOverlay
+          isVisible={gamePhase === 'complete'}
+          title="¡Excelente!"
+          subtitle="Has completado exitosamente todas las situaciones"
+          emoji="🎯"
+          bgColor="bg-emerald-500/20"
+          textColor="text-emerald-800"
+          onComplete={handleGameComplete}
+          autoCloseDelay={3000}
+        />
 
       </div>
     </div>

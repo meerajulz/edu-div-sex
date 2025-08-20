@@ -128,7 +128,8 @@ export const GAME_CONFIG = {
     itemShowDelay: 500, // Delay between showing each item
     feedbackDuration: 5000, // 4-5 seconds for feedback
     errorBackgroundDuration: 5500, // Slightly longer than feedback
-    congratsDelay: 1000
+    congratsDelay: 1000,
+    congratsDuration: 3000
   },
 
   // Animation configuration

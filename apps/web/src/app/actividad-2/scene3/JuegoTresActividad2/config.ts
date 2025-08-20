@@ -130,7 +130,8 @@ export const GAME_CONFIG = {
     dragAudioDelay: 300,
     feedbackDuration: 5000,
     tryAgainDelay: 2000,
-    titleAudioDelay: 1000
+    titleAudioDelay: 1000,
+    congratsDuration: 3000  // Add this line to fix the error
   },
 
   // Animation settings

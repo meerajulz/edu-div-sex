@@ -1,16 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useJuegoCincoGame } from './hooks';
-import CongratsOverlay from './CongratsOverlay';
+// Update import to use the central CongratsOverlay component
+import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 
 interface JuegoCincoActividad2Props {
   isOpen: boolean;
   onClose: () => void;
+  onGameComplete?: () => void;
 }
 
-export default function JuegoCincoActividad2({ isOpen, onClose }: JuegoCincoActividad2Props) {
+export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }: JuegoCincoActividad2Props) {
   const {
     gameState,
     // sessionData, // Removed unused variable
@@ -24,8 +26,11 @@ export default function JuegoCincoActividad2({ isOpen, onClose }: JuegoCincoActi
     config
   } = useJuegoCincoGame();
 
+  // State for congratulations overlay
+  const [showCongrats, setShowCongrats] = useState(false);
+
   // Auto-start game when modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen && gameState.phase === 'intro') {
       // Add a small delay to ensure the modal is fully rendered
       const timer = setTimeout(() => {
@@ -33,9 +38,29 @@ export default function JuegoCincoActividad2({ isOpen, onClose }: JuegoCincoActi
       }, 100);
       return () => clearTimeout(timer);
     }
+    
+    // Reset congrats state when game opens
+    if (isOpen) {
+      setShowCongrats(false);
+    }
   }, [isOpen, gameState.phase, startGame]);
+  
+  // Watch for game completion
+  useEffect(() => {
+    if (gameState.gameCompleted && !showCongrats) {
+      // Add a delay to allow the chest closing animation to play
+      const timer = setTimeout(() => {
+        setShowCongrats(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.gameCompleted, showCongrats]);
 
   if (!isOpen) return null;
+
+  // Calculate game stats for congratulations message
+  const privateItemsCount = config.items.filter(item => item.isPrivate).length;
+  const correctItemsCount = gameState.itemStates.filter(state => state.isInChest && getItemById(state.id)?.isPrivate).length;
 
   const handleClose = () => {
     resetGame();
@@ -43,6 +68,10 @@ export default function JuegoCincoActividad2({ isOpen, onClose }: JuegoCincoActi
   };
 
   const handleCongratsComplete = () => {
+    // Call onGameComplete if provided
+    if (onGameComplete) {
+      onGameComplete();
+    }
     handleClose();
   };
 
@@ -127,11 +156,13 @@ export default function JuegoCincoActividad2({ isOpen, onClose }: JuegoCincoActi
         {/* Game Content */}
         <div className="relative w-full h-full p-6 pt-16">
           {/* Debug info */}
-          <div className="absolute top-2 left-2 text-xs bg-black text-white p-2 z-50 rounded">
-            Phase: {gameState.phase} | Chest: {gameState.cofreOpen.toString()} | Items: {gameState.itemsVisible.toString()}
-            <br />
-            In Chest: {gameState.itemStates.filter(s => s.isInChest).map(s => s.id).join(', ')}
-          </div>
+          {process.env.NODE_ENV === 'development' && (
+            <div className="absolute top-2 left-2 text-xs bg-black text-white p-2 z-50 rounded">
+              Phase: {gameState.phase} | Chest: {gameState.cofreOpen.toString()} | Items: {gameState.itemsVisible.toString()}
+              <br />
+              In Chest: {gameState.itemStates.filter(s => s.isInChest).map(s => s.id).join(', ')}
+            </div>
+          )}
 
           {/* Intro Phase - Show title and closed chest */}
           {gameState.phase === 'intro' && (
@@ -365,18 +396,17 @@ export default function JuegoCincoActividad2({ isOpen, onClose }: JuegoCincoActi
           )}
         </div>
 
-        {/* Congratulations Overlay - Delayed to allow chest closing animation */}
-        <AnimatePresence>
-          {gameState.gameCompleted && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.0, duration: 0.5 }} // Delay for chest closing
-            >
-              <CongratsOverlay onComplete={handleCongratsComplete} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Enhanced Congratulations Overlay */}
+        <CongratsOverlay 
+          isVisible={showCongrats}
+          onComplete={handleCongratsComplete}
+          title="¡Tesoro Guardado!"
+          subtitle={`Has protegido ${correctItemsCount} de ${privateItemsCount} objetos privados en tu cofre`}
+          emoji="🔒"
+          bgColor="bg-gradient-to-r from-amber-300/40 to-amber-500/40"
+          textColor="text-amber-900"
+          autoCloseDelay={config.timing?.congratsDuration || 3000}
+        />
       </motion.div>
     </motion.div>
   );
