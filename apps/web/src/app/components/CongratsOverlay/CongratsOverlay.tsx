@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface CongratsOverlayProps {
@@ -24,9 +24,30 @@ export default function CongratsOverlay({
   onComplete,
   autoCloseDelay = 3000
 }: CongratsOverlayProps) {
+  // Audio setup for congratulations sound
+  useEffect(() => {
+    if (isVisible) {
+      // Play the congratulations sound when component becomes visible
+      try {
+        const audio = new Audio('/audio/muy_bien_bright.mp3');
+        audio.volume = 0.7;
+        audio.play().catch(error => {
+          console.warn('Could not play congratulations sound:', error);
+        });
+        
+        // Clean up function to stop audio if component unmounts
+        return () => {
+          audio.pause();
+          audio.currentTime = 0;
+        };
+      } catch (error) {
+        console.warn('Could not create audio object:', error);
+      }
+    }
+  }, [isVisible]);
 
   // Auto-close after delay
-  React.useEffect(() => {
+  useEffect(() => {
     if (isVisible && onComplete && autoCloseDelay > 0) {
       const timer = setTimeout(() => {
         onComplete();
