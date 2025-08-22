@@ -163,7 +163,7 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
 
           {/* Modal - 70% of screen */}
           <motion.div
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}

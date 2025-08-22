@@ -131,7 +131,7 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto">
       <div className="relative w-[80%] h-[50%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
         {/* Close Button */}

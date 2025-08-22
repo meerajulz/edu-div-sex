@@ -189,7 +189,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto p-4">
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-4">
       {/* Modal with background image - 800x500 responsive */}
       <div 
         className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-cover bg-center"
@@ -256,7 +256,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             )}
 
             {gamePhase === 'question' && (
-              <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20">
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-20">
                 <div className="text-center">
                   <div className="bg-transparent backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
                     <div className="text-xl font-bold text-fuchsia-900 mb-4">

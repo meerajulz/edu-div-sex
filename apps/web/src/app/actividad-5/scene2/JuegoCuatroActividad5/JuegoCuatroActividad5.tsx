@@ -183,7 +183,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -191,7 +191,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
           
           {/* Modal */}
           <motion.div
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}

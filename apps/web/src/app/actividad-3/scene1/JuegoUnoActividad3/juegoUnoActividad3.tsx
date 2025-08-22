@@ -227,7 +227,7 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto p-4">
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-4">
       {/* Modal with gradient background - 800x500 responsive */}
       <div 
         className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600"

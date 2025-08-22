@@ -48,6 +48,20 @@ export default function JuegoDosActividad6({
     }
   }, [currentScenario, showFeedback, showCongrats]);
 
+  // Reset game state when modal closes
+  useEffect(() => {
+    if (!isVisible && !showIntro) {
+      // Reset all states when modal is closed
+      setCurrentScenarioIndex(0);
+      setShowIntro(true);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+      setIsCorrect(false);
+      setShowCongrats(false);
+      setIsPlayingAudio(false);
+    }
+  }, [isVisible]);
+
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
@@ -209,7 +223,7 @@ export default function JuegoDosActividad6({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-black/50"
+            className="fixed inset-0 z-50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

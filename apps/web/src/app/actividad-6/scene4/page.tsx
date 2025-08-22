@@ -17,13 +17,13 @@ export default function Actividad6Scene4Page() {
   
   // Video states
   const [showInitialVideo, setShowInitialVideo] = useState(false);
-  const [initialVideoEnded, setInitialVideoEnded] = useState(false);
+  const [initialVideoEnded, setInitialVideoEnded] = useState(true);
   const [showFinalVideo, setShowFinalVideo] = useState(false);
   const [finalVideoEnded, setFinalVideoEnded] = useState(false);
   
   // Game states
   const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
-  const [juegoCuatroCompleted, setJuegoCuatroCompleted] = useState(false);
+  const [juegoCuatroCompleted, setJuegoCuatroCompleted] = useState(true);
   const [showJuegoCinco, setShowJuegoCinco] = useState(false);
   const [juegoCincoCompleted, setJuegoCincoCompleted] = useState(false);
   const [showJuegoSeis, setShowJuegoSeis] = useState(false);
