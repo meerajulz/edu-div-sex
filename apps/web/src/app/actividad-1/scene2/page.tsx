@@ -5,6 +5,7 @@ import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Scene2Page() {
   const router = useRouter();
@@ -107,6 +108,9 @@ export default function Scene2Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+        <div className="">
+          <LogoComponent aventuraNumber={1} />
+        </div>
 
       {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">

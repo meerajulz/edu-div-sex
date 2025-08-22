@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
+import LogoComponent from '../../components/LogoComponent/LogoComponent';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import ButtonGlobe from '../../components/ButtonGlobe/ButtonGlobe';
 import Cris from '../../components/Cris/Cris';
@@ -161,6 +162,10 @@ export default function Scene1Page() {
 
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
+       
+      </div>
+      <div className="">
+         <LogoComponent aventuraNumber={1} />
       </div>
 
       {!showVideo ? (
