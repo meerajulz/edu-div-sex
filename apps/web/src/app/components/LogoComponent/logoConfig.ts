@@ -9,85 +9,45 @@ export const logoConfigs: Record<string, LogoConfig> = {
   // Actividad 1 Scenes - Red background
   'actividad-1-scene1': {
     image: '/image/logo-image/aventura-1.png',
-    text: 'AVENTURA 1',
-    bgColor: 'bg-red-500'
+    text: 'AVENTURA 1 -  Descubriendo el cuerpo humano',
+    bgColor: 'bg-green-500'
   },
-  'actividad-1-scene2': {
-    image: '/image/logo-image/aventura-1.png',
-    text: 'AVENTURA 1',
-    bgColor: 'bg-red-500'
-  },
-  
   // Actividad 2 Scenes - Blue background
   'actividad-2-scene1': {
     image: '/image/logo-image/aventura-2.png',
-    text: 'AVENTURA 2',
+    text: 'AVENTURA 2 - Intimidad',
     bgColor: 'bg-blue-500'
-  },
-  'actividad-2-scene2': {
-    image: '/image/logo-image/aventura-2.png',
-    text: 'AVENTURA 2',
-    bgColor: 'bg-blue-500'
-  },
-  
+  },  
   // Actividad 3 Scenes - Green background
   'actividad-3-scene1': {
     image: '/image/logo-image/aventura-3.png',
-    text: 'AVENTURA 3',
-    bgColor: 'bg-green-500'
-  },
-  'actividad-3-scene2': {
-    image: '/image/logo-image/aventura-3.png',
-    text: 'AVENTURA 3',
+    text: 'AVENTURA 3. Placer sexual',
     bgColor: 'bg-green-500'
   },
   
   // Actividad 4 Scenes - Purple background
   'actividad-4-scene1': {
     image: '/image/logo-image/aventura-4.png',
-    text: 'AVENTURA 4',
-    bgColor: 'bg-purple-500'
-  },
-  'actividad-4-scene2': {
-    image: '/image/logo-image/aventura-4.png',
-    text: 'AVENTURA 4',
-    bgColor: 'bg-purple-500'
-  },
-  
+    text: 'AVENTURA 4 - Cuido de mi sexualidad.',
+    bgColor: 'bg-pink-300'
+  },  
   // Actividad 5 Scenes - Orange background
   'actividad-5-scene1': {
     image: '/image/logo-image/aventura-5.png',
-    text: 'AVENTURA 5',
+    text: 'AVENTURA 5 - Nos entendemos y respetamos',
     bgColor: 'bg-orange-500'
   },
-  'actividad-5-scene2': {
-    image: '/image/logo-image/aventura-5.png',
-    text: 'AVENTURA 5',
-    bgColor: 'bg-orange-500'
-  },
-  
   // Actividad 6 Scenes - Pink background
   'actividad-6-scene1': {
     image: '/image/logo-image/aventura-6.png',
-    text: 'AVENTURA 6',
-    bgColor: 'bg-pink-500'
+    text: 'AVENTURA 6 -  Abuso',
+    bgColor: 'bg-red-500'
   },
   'actividad-6-scene2': {
     image: '/image/logo-image/aventura-6.png',
-    text: 'AVENTURA 6',
-    bgColor: 'bg-pink-500'
+    text: 'AVENTURA 6 - Abuso',
+    bgColor: 'bg-yellow-500'
   },
-  'actividad-6-scene3': {
-    image: '/image/logo-image/aventura-6.png',
-    text: 'AVENTURA 6',
-    bgColor: 'bg-pink-500'
-  },
-  'actividad-6-scene4': {
-    image: '/image/logo-image/aventura-6.png',
-    text: 'AVENTURA 6',
-    bgColor: 'bg-pink-500'
-  },
-  
   // Default fallback
   'default': {
     image: '/image/logo-image/aventura-1.png',
