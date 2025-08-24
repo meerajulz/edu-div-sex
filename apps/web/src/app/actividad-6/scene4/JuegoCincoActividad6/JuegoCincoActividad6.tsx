@@ -26,6 +26,7 @@ export default function JuegoCincoActividad6({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isGameCompleting, setIsGameCompleting] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
