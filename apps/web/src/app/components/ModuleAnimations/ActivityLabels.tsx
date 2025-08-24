@@ -62,7 +62,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
       url: "/actividad-1/scene1/",
       soundUrl: "/audio/whoosh.mp3",
-      soundClick: "/audio/labels/label-1.mp3",
+      soundClick: "/audio/labels/actividad1.mp3",
       xPosition: -60,
       yPosition: 280,
       zPosition: 150,
@@ -80,7 +80,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
       url: "/actividad-2/scene1",
       soundUrl: "/audio/whoosh.mp3",
-      soundClick: "/audio/labels/label-2.mp3",
+      soundClick: "/audio/labels/actividad2.mp3",
       xPosition: 100,
       yPosition: 350,
       zPosition: -50,
@@ -92,13 +92,13 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 3,
-      isActive: true,
+      isActive: false,
       title: "Placer sexual",
       activeImage: "/svg/menu-actividad/cartell-3-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-3-hover.svg",
       url: "/actividad-3/scene1",
       soundUrl: "/audio/whoosh.mp3",
-      soundClick: "/audio/labels/label-3.mp3",
+      soundClick: "/audio/labels/actividad3.mp3",
       xPosition: -150,
       yPosition: 280,
       zPosition: -300,
@@ -110,13 +110,13 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 4,
-      isActive: true,
+      isActive: false,
       title: "Cuido de mi sexualidad",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       url: "/actividad-4/scene1",
       soundUrl: "/audio/whoosh.mp3",
-      soundClick: "/audio/labels/label-4.mp3",
+      soundClick: "/audio/labels/actividad4.mp3",
       xPosition: 40,
       yPosition: 350,
       zPosition: -500,
@@ -128,13 +128,13 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 5,
-      isActive: true,
+      isActive: false,
       title: "Nos entendemos y respetamos",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       url: "/actividad-5/scene1",
       soundUrl: "/audio/whoosh.mp3",
-      soundClick: "/audio/labels/label-5.mp3",
+      soundClick: "/audio/labels/actividad5.mp3",
       xPosition: -150,
       yPosition: 190,
       zPosition: -700,
@@ -146,13 +146,13 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 6,
-      isActive: true,
+      isActive: false,
       title: "Abuso",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       url: "/actividad-6/scene1",
       soundUrl: "/audio/whoosh.mp3",
-      soundClick: "/audio/labels/label-6.mp3",
+      soundClick: "/audio/labels/actividad6.mp3",
       xPosition: 50,
       yPosition: 180,
       zPosition: -690,
@@ -181,8 +181,8 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
 
 const handleClick = (activity: ActivityLabel) => {
   if (!activity.isActive) return;
-  playAudio('/audio/labels/descubiriendo-mi-cuerpo.mp3', undefined, 0.7).catch(console.warn); // ✅ Uses each activity's specific sound
-  //playAudio(activity.soundClick).catch(console.warn); // ✅ Uses each activity's specific sound
+  //playAudio('/audio/labels/descubiriendo-mi-cuerpo.mp3', undefined, 0.7).catch(console.warn); // ✅ Uses each activity's specific sound
+  playAudio(activity.soundClick).catch(console.warn); // ✅ Uses each activity's specific sound
   if (onLabelClick) {
     onLabelClick(activity.id, activity.url);
   } else {
@@ -286,20 +286,7 @@ const handleClick = (activity: ActivityLabel) => {
               </motion.div>
             ))}
 
-            {/* Render the Arrow near the last active activity */}
            
-            {/* {lastActive && hasAnimated && (
-              <ArrowButton3D
-                visible={true}
-                x={lastActive.xPosition || 0}
-                y={lastActive.yPosition || 0}
-                z={lastActive.zPosition || 0}
-                scale={lastActive.scale}
-                rotateX={lastActive.rotateX}
-                rotateY={lastActive.rotateY}
-              />
-            )} */}
-
           </div>
         </div>
       </div>
