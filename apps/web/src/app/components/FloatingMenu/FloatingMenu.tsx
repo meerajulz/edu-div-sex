@@ -49,27 +49,27 @@ const FloatingMenu = () => {
 			href: "/home",
 			sound: "/ui-sound/click.mp3",
 		},
-		{
-			id: "hola",
-			icon1: "/svg/menu/hola1.svg",
-			icon2: "/svg/menu/hola2.svg",
-			href: "#",
-			sound: "/ui-sound/click.mp3",
-		},
-		{
-			id: "volumen",
-			icon1: "/svg/menu/vol1.svg",
-			icon2: "/svg/menu/vol2.svg",
-			href: "#",
-			sound: "/ui-sound/click.mp3",
-		},
-		{
-			id: "info",
-			icon1: "/svg/menu/infoPadres1.svg",
-			icon2: "/svg/menu/infoPadres2.svg",
-			href: "/info",
-			sound: "/ui-sound/click.mp3",
-		},
+		// {
+		// 	id: "hola",
+		// 	icon1: "/svg/menu/hola1.svg",
+		// 	icon2: "/svg/menu/hola2.svg",
+		// 	href: "#",
+		// 	sound: "/ui-sound/click.mp3",
+		// },
+		// {
+		// 	id: "volumen",
+		// 	icon1: "/svg/menu/vol1.svg",
+		// 	icon2: "/svg/menu/vol2.svg",
+		// 	href: "#",
+		// 	sound: "/ui-sound/click.mp3",
+		// },
+		// {
+		// 	id: "info",
+		// 	icon1: "/svg/menu/infoPadres1.svg",
+		// 	icon2: "/svg/menu/infoPadres2.svg",
+		// 	href: "/info",
+		// 	sound: "/ui-sound/click.mp3",
+		// },
 		{
 			id: "exit",
 			icon1: "/svg/menu/puerta1.svg",
@@ -108,8 +108,24 @@ const FloatingMenu = () => {
 		await playSound();
 		setActiveId(item.id);
 
+		// Handle logout
 		if (item.id === "exit") {
-			await signOut({ callbackUrl: '/auth/login' });
+			// Reset icon state
+			setTimeout(() => {
+				setIconStates((prev) => ({
+					...prev,
+					[item.id]: false,
+				}));
+			}, 600);
+			
+			// Wait for animation to complete
+			await new Promise((resolve) => setTimeout(resolve, 600));
+			
+			// Sign out without redirect, then manually navigate
+			await signOut({ redirect: false });
+			
+			// Manually redirect to login page
+			router.push('/auth/login');
 			return;
 		}
 

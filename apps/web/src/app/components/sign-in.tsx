@@ -33,11 +33,11 @@ async function getStudentRedirectPath(studentId: string): Promise<string> {
 		}
 		
 		// If all completed, go to first activity
-		return '/actividad-1';
+		return '/home';
 	} catch (error) {
 		console.error('Error getting student redirect:', error);
 		// Fallback to first activity
-		return '/actividad-1';
+		return '/';
 	}
 }
 
