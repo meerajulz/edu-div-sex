@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -9,19 +8,19 @@ import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
 import VideoBackground from '../components/VideoBackground';
 import AudioPreloader from '../components/AudioPreloader/AudioPreloader';
 import { initAudio } from '../utils/audioHandler';
+import { motion } from 'framer-motion';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
   const [isExiting, setIsExiting] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [videoHasPlayed, setVideoHasPlayed] = useState(false); // Changed back to false - only show after video ends
 
   const [showWelcome, setShowWelcome] = useState(false);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [audioPreloadProgress, setAudioPreloadProgress] = useState(0);
 
-
-  
   // For development only
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
 
@@ -43,6 +42,11 @@ const Dashboard: React.FC = () => {
       logDebug(`Navigating to: ${pendingNavigation}`);
       router.push(pendingNavigation);
     }
+  };
+
+  const handleVideoEnd = () => {
+    logDebug("Video has ended");
+    setVideoHasPlayed(true);
   };
 
   const handleStartClick = async () => {
@@ -109,6 +113,7 @@ const Dashboard: React.FC = () => {
               backgroundImagePath='/svg/HOME_1.svg'
               isExiting={isExiting}
               onExitComplete={handleExitComplete}
+              onVideoEnd={handleVideoEnd}
               debug={showDebug}
             />
           </div>
@@ -119,8 +124,66 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          <div className='absolute top-0 left-0 right-0 z-50 flex justify-center'>
-            <OrbitalCarousel onSelectActivity={handleSelectActivity} />
+          <div className='absolute top-0 left-0 right-0 z-50'>
+            <div className='flex justify-center'>
+              <OrbitalCarousel 
+                onSelectActivity={handleSelectActivity} 
+              />
+            </div>
+            
+            {/* Arrow indicator - show only after video has played */}
+            {videoHasPlayed && !isExiting && (
+              <motion.div
+                className="absolute  -translate-x-1/2 pointer-events-none"
+                style={{
+                  top: '350px', // Adjust based on your carousel height
+                  left: '52%',
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: [0, -10, 0]
+                }}
+                transition={{
+                  opacity: { duration: 0.3 },
+                  y: {
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    ease: "easeInOut"
+                  }
+                }}
+              >
+                <svg
+                  className="text-pink-500 drop-shadow-lg"
+                  width="60"
+                  height="60"
+                  viewBox="0 0 64 64"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{
+                    transform: 'rotate(180deg)',
+                    filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
+                  }}
+                >
+                  <path d="M32 4 C30 4 28 6 28 8 L28 40 L16 28 C14 26 10 26 8 28 C6 30 6 34 8 36 L30 58 C31 59 33 59 34 58 L56 36 C58 34 58 30 56 28 C54 26 50 26 48 28 L36 40 L36 8 C36 6 34 4 32 4 Z" />
+                </svg>
+                
+                <motion.span
+                  className="absolute whitespace-nowrap text-pink-600 font-bold text-sm top-15 left-1/2 -translate-x-1/2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    ease: "easeInOut"
+                  }}
+                >
+                  ¡JUGAR!
+                </motion.span>
+              </motion.div>
+            )}
           </div>
 
           <div className='absolute top-0 right-0 z-50 flex'>
@@ -133,6 +196,7 @@ const Dashboard: React.FC = () => {
               <div>pendingNav: {pendingNavigation || 'none'}</div>
               <div>audioInit: {audioInitialized ? 'true' : 'false'}</div>
               <div>audioProgress: {audioPreloadProgress}%</div>
+              <div>videoPlayed: {videoHasPlayed ? 'true' : 'false'}</div>
               {debugInfo.map((log, i) => (
                 <div key={i}>{log}</div>
               ))}

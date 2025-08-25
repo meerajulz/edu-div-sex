@@ -75,14 +75,14 @@ export const getDefaultItems = () => [
     label: "Aventura 2",
     url: "/actividad-2",
     svgPath: "/svg/menu/orbital/activity2-intimidad.svg",
-    isUnlocked: false
+    isUnlocked: true
   },
   {
     id: 3,
     label: "Aventura 3",
     url: "/actividad-3",
     svgPath: "/svg/menu/orbital/activity3-placer-sexual.svg",
-    isUnlocked: false
+    isUnlocked: true
   },
   {
     id: 4,

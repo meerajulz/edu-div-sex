@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -24,6 +23,7 @@ interface VideoBackgroundProps {
   backgroundImagePath?: string;
   isExiting?: boolean;
   onExitComplete?: () => void;
+  onVideoEnd?: () => void; // Add this callback
   debug?: boolean;
   hotspots?: Hotspot[];
 }
@@ -46,18 +46,17 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   backgroundImagePath = '/svg/HOME.svg',
   isExiting = false,
   onExitComplete,
+  onVideoEnd, // Add this
   debug = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
-  //const [volume, setVolume] = useState(0.7);
-  // const [isMuted, setIsMuted] = useState(false);
 
   const aspectRatio = 16 / 9;
 
@@ -104,6 +103,10 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     const handleEnded = () => {
       setIsPlaying(false);
       setVideoFinished(true);
+      // Call the callback when video ends
+      if (onVideoEnd) {
+        onVideoEnd();
+      }
     };
     const handleError = () => {
       const errorMessage = video.error ? video.error.message : 'Unknown video error';
@@ -124,7 +127,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('error', handleError);
     };
-  }, [videoPath]);
+  }, [videoPath, onVideoEnd]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -147,14 +150,6 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
-
-  // useEffect(() => {
-  //   if (videoRef.current) {
-  //     videoRef.current.volume = isMuted ? 0 : volume;
-  //   }
-  // }, [volume, isMuted]);
-
- // const toggleMute = () => setIsMuted(!isMuted);
 
   useEffect(() => {
     if (isExiting && onExitComplete) {
@@ -226,9 +221,9 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
                   <div className="flex justify-center">
                     <svg
                       onClick={() => console.log('Arrow clicked!')}
-                      className="cursor-pointer  text-orange-500 hover:brightness-125 active:animate-ping transition duration-200 animate-bounce drop-shadow-md"
-                      width="36"
-                      height="36"
+                      className="cursor-pointer  text-pink-500 hover:brightness-125 active:animate-ping transition duration-200 animate-bounce drop-shadow-md"
+                      width="40"
+                      height="40"
                       viewBox="0 0 64 64"
                       fill="currentColor"
                       xmlns="http://www.w3.org/2000/svg"
@@ -236,7 +231,6 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
                       <path d="M32 4 C30 4 28 6 28 8 L28 40 L16 28 C14 26 10 26 8 28 C6 30 6 34 8 36 L30 58 C31 59 33 59 34 58 L56 36 C58 34 58 30 56 28 C54 26 50 26 48 28 L36 40 L36 8 C36 6 34 4 32 4 Z" />
                     </svg>
                   </div>
-
                 </div>
               )}
             </div>
@@ -340,35 +334,6 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
               )}
             </div>
           )}
-
-          {/* Volume Controls */}
-          {/* {isPlaying && (
-            <div className="absolute bottom-4 right-4 z-50 bg-black/60 rounded-lg p-2 flex items-center space-x-2">
-              <button onClick={toggleMute} className="text-white hover:text-blue-300 transition p-1">
-                {isMuted ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" strokeWidth="2" />
-                    <path d="M23 9L17 15M17 9L23 15" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" strokeWidth="2" />
-                    <path d="M15.54 8.46C16.48 9.4 17 10.67 17 12s-.52 2.6-1.46 3.54" stroke="currentColor" strokeWidth="2" />
-                    <path d="M19 5c1.43 1.55 2.25 3.58 2.25 5.69 0 2.11-.82 4.14-2.25 5.68" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                )}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-24 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-          )} */}
 
           {videoError && (
             <div className="absolute inset-0 z-100 flex items-center justify-center bg-black/50">
