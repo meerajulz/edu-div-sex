@@ -6,6 +6,7 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoTresActividad3 from './JuegoTresActividad3/JuegoTresActividad3'; // FIXED: Correct import name
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 // Mock gender detection function - Replace with real backend data later
 const getMockUserGender = (): 'male' | 'female' => {
@@ -188,6 +189,10 @@ export default function Actividad3Scene2Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+
+          <div className="">
+            <LogoComponent configKey="actividad-3-scene1" />
+          </div>
 
       {/* Debug Info (development only) */}
       {process.env.NODE_ENV === 'development' && (

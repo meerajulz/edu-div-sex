@@ -7,6 +7,7 @@ import JuegoUnoActividad3 from './JuegoUnoActividad3/juegoUnoActividad3';
 import JuegoDosActividad3 from './JuegoDosActvidad3/JuegoDosActividad3';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Actividad3Scene1Page() {
   const router = useRouter();
@@ -212,6 +213,9 @@ export default function Actividad3Scene1Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+            <div className="">
+                <LogoComponent configKey="actividad-3-scene1" />
+            </div>
 
       {!showVideo && !showVideo2 ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">

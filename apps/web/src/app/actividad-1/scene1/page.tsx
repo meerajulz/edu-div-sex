@@ -165,7 +165,7 @@ export default function Scene1Page() {
        
       </div>
       <div className="">
-         <LogoComponent aventuraNumber={1} />
+         <LogoComponent configKey="actividad-1-scene1" />
       </div>
 
       {!showVideo ? (

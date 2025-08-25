@@ -6,6 +6,7 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoTresActividad6 from './JuegoTresActividad6/JuegoTresActividad6';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Actividad6Scene3Page() {
   const router = useRouter();
@@ -171,6 +172,10 @@ export default function Actividad6Scene3Page() {
 
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
+      </div>
+
+      <div className="">
+        <LogoComponent configKey="actividad-6-scene1" />
       </div>
 
       {!showVideo ? (

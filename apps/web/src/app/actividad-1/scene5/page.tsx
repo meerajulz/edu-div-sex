@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Scene5Page() {
   const router = useRouter();
@@ -128,6 +129,9 @@ export default function Scene5Page() {
 
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
+      </div>
+      <div className="">
+        <LogoComponent configKey="actividad-1-scene1" />
       </div>
 
       {!showVideo ? (

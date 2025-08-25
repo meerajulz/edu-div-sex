@@ -31,12 +31,12 @@ export default function LogoComponent({
 
   // Default colors for each aventura number
   const aventuraColors = {
-    1: 'bg-red-500',
+    1: 'bg-green-500',
     2: 'bg-blue-500',
-    3: 'bg-green-500',
-    4: 'bg-purple-500',
-    5: 'bg-orange-500',
-    6: 'bg-pink-500'
+    3: 'bg-pink-500',
+    4: 'bg-red-500',
+    5: 'bg-yellow-500',
+    6: 'bg-orange-500'
   };
 
   // Priority: custom values > config key > aventura number > default

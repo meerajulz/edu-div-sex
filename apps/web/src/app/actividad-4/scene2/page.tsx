@@ -6,6 +6,7 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoDosActividad4 from './JuegoDosActividad4/JuegoDosActividad4';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Actividad4Scene2Page() {
   const router = useRouter();
@@ -138,6 +139,9 @@ export default function Actividad4Scene2Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+            <div className="">
+              <LogoComponent configKey="actividad-4-scene1" />
+            </div>
 
       {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoTres from './JuegoTres/JuegoTres';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Scene6Page() {
   const router = useRouter();
@@ -152,6 +153,9 @@ export default function Scene6Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+            <div className="">
+              <LogoComponent configKey="actividad-1-scene1" />
+            </div>
 
       {/* Background change for JuegoTres */}
       {showJuegoTres && (

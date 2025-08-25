@@ -21,7 +21,7 @@ export const logoConfigs: Record<string, LogoConfig> = {
   // Actividad 3 Scenes - Green background
   'actividad-3-scene1': {
     image: '/image/logo-image/aventura-3.png',
-    text: 'AVENTURA 3. Placer sexual',
+    text: 'AVENTURA 3 - Placer sexual',
     bgColor: 'bg-green-500'
   },
   

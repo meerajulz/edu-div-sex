@@ -92,7 +92,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 3,
-      isActive: false,
+      isActive: true,
       title: "Placer sexual",
       activeImage: "/svg/menu-actividad/cartell-3-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-3-hover.svg",
@@ -110,7 +110,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 4,
-      isActive: false,
+      isActive: true,
       title: "Cuido de mi sexualidad",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
@@ -128,7 +128,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 5,
-      isActive: false,
+      isActive: true,
       title: "Nos entendemos y respetamos",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
@@ -146,7 +146,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
     },
     {
       id: 6,
-      isActive: false,
+      isActive: true,
       title: "Abuso",
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",

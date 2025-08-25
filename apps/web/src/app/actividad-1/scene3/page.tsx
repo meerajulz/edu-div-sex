@@ -109,7 +109,7 @@ export default function Scene3Page() {
         <FloatingMenu />
       </div>
       <div className="">
-        <LogoComponent aventuraNumber={4} />
+        <LogoComponent configKey="actividad-1-scene1" />
       </div>
 
       {!showVideo ? (

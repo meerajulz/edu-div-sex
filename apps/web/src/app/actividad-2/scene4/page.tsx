@@ -7,6 +7,7 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState, useRef, useEffect } from 'react';
 import JuegoCuatroActividad2 from './JuegoCuatroActividad2/JuegoCuatroActividad2';
 import JuegoCincoActividad2 from './JuegoCincoActividad2/JuegoCincoActividad2';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 
 export default function Actividad2Scene4Page() {
@@ -160,13 +161,14 @@ export default function Actividad2Scene4Page() {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        {/* Dark overlay for better text visibility */}
-        <div className="absolute inset-0 bg-black/20 z-0" />
-
+  
         <div className="absolute top-0 right-0 z-50 flex">
           <FloatingMenu />
         </div>
 
+      <div className="">
+          <LogoComponent configKey="actividad-2-scene1" />
+      </div>
         {/* Alex GIF and Congratulations */}
         <div className="relative z-20 flex flex-col items-center justify-center min-h-screen p-4">
           <AnimatePresence mode="wait">
@@ -266,7 +268,7 @@ export default function Actividad2Scene4Page() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.6 }}
                 >
-                  <span className="text-xl sm:text-2xl">Ir al Siguiente Nivel</span>
+                  <span className="text-xl sm:text-2xl">Ir a la Siguiente Aventura </span>
                 </motion.button>
               </motion.div>
             )}
@@ -316,6 +318,10 @@ export default function Actividad2Scene4Page() {
 
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
+      </div>
+      
+      <div className="">
+          <LogoComponent configKey="actividad-2-scene1" />
       </div>
 
       {/* JugarButton - shows initially and after video ends, but not if both games are completed */}

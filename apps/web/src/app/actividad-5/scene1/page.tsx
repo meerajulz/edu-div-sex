@@ -8,6 +8,7 @@ import JuegoDosActividad5 from './JuegoDosActividad5/JuegoDosActividad5';
 import JuegoTresActividad5 from './JuedoTresActicidad5/JuegoTresActividad5';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 
 export default function Actividad5Scene1Page() {
   const router = useRouter();
@@ -241,6 +242,9 @@ export default function Actividad5Scene1Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+                <div className="">
+                    <LogoComponent configKey="actividad-5-scene1" />
+                  </div>
 
       {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
