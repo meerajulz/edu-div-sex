@@ -160,29 +160,31 @@ export default function Scene7Page() {
             />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
-              <motion.h2
-                className="text-2xl font-bold mb-6 drop-shadow text-pink-600"
-                initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.2, 1], rotate: [0, 3, -3, 0] }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-              >
-                ¡Enhorabuena! Has acabado la Aventura
-              </motion.h2>
-              <motion.h3
-                  className="text-2xl font-bold mb-6 drop-shadow text-orange-500"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.2, 1], rotate: [0, 3, -3, 0] }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-              >
-               Descubriendo el cuerpo humano
-              </motion.h3>
-              <motion.div
-                animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <JugarButton text="IR A LA PROXIMA AVENTURA! " onClick={handleBackClick} disabled={isAnimating} />
-              </motion.div>
-            </div>
+                        <motion.div
+                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
+                            initial={{ rotate: -5 }}
+                            animate={{ rotate: [0, 2, -2, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                        >
+                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                                ¡Felicidades!
+                            </h1>
+                            <p className="text-xl sm:text-2xl text-white/90 font-semibold">
+                                Haz completado la aventura.
+                            </p>
+                        </motion.div>
+                        <motion.div
+                            className="inline-block"
+                            animate={{ rotate: [0, -5, 5, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                            style={{ transformOrigin: 'center center' }}
+                        >
+                            <div className="whitespace-nowrap">
+                                <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleBackClick} disabled={isAnimating} />
+                            </div>
+                        </motion.div>
+                    </div>
+                    
           )}
         </div>
       )}

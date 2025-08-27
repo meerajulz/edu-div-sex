@@ -21,7 +21,6 @@ export default function Actividad3Scene1Page() {
   const [showJuegoDos, setShowJuegoDos] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [juego1Completed, setJuego1Completed] = useState(false);
-  const [showCongratulations, setShowCongratulations] = useState(false); // NEW: Congratulations state
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -112,36 +111,20 @@ export default function Actividad3Scene1Page() {
     setShowJuegoDos(false);
   };
 
-  // UPDATED: Handle Game 2 completion with congratulations
+  // Handle Game 2 completion
   const handleJuego2Complete = () => {
     setGameCompleted(true);
     setShowJuegoDos(false);
-    
-    // Show congratulations screen after a brief delay
-    setTimeout(() => {
-      setShowCongratulations(true);
-    }, 500);
   };
 
-  // NEW: Handle congratulations continue
-  const handleCongratulationsContinue = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    playSound();
-    
-    setTimeout(() => {
-      setIsAnimating(false);
-      router.push('/actividad-3/scene2');
-    }, 800);
-  };
-
+  // Handle go to next scene
   const handleGoToScene2 = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
     setTimeout(() => {
       setIsAnimating(false);
-      router.push('/actividad-3/scene2'); // Go to Scene 2
+      router.push('/actividad-3/scene2');
     }, 800);
   };
 
@@ -213,9 +196,9 @@ export default function Actividad3Scene1Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
-            <div className="">
-                <LogoComponent configKey="actividad-3-scene1" />
-            </div>
+      <div className="">
+        <LogoComponent configKey="actividad-3-scene1" />
+      </div>
 
       {!showVideo && !showVideo2 ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
@@ -223,7 +206,7 @@ export default function Actividad3Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Continuar...' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : showVideo2 ? (
@@ -239,14 +222,26 @@ export default function Actividad3Scene1Page() {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
-              {!showJuegoDos && (
-                <motion.div
-                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                >
-                  <JugarButton onClick={handleOpenJuegoDos} disabled={isAnimating} text="Jugar Juego 2" />
-                </motion.div>
-              )}
+              <motion.div
+                animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+              >
+                {!gameCompleted ? (
+                  <JugarButton 
+                    text="Juego: ¿Qué pasa cuando me excito?" 
+                    onClick={handleOpenJuegoDos} 
+                    disabled={isAnimating} 
+                  />
+                ) : (
+                  <div className="flex flex-col items-center space-y-4">
+                    <JugarButton 
+                      text="Continuar..." 
+                      onClick={handleGoToScene2} 
+                      disabled={isAnimating}
+                    />
+                  </div>
+                )}
+              </motion.div>
             </div>
           )}
         </div>
@@ -263,42 +258,16 @@ export default function Actividad3Scene1Page() {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
-              {!showJuegoUno && !showJuegoDos && (
+              {!juego1Completed && (
                 <motion.div
                   animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
-                  {!juego1Completed ? (
-                    <JugarButton onClick={handleOpenJuegoUno} disabled={isAnimating} />
-                  ) : !gameCompleted ? (
-                    <div className="text-center text-white">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-xl font-bold bg-blue-500/80 px-6 py-3 rounded-full mb-4"
-                      >
-                        ¡Juego 1 Completado! 🎉
-                      </motion.div>
-                      <div className="text-lg">
-                        Preparando segundo video...
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-                      >
-                        ¡Juego Completado! 🎉
-                      </motion.div>
-                      <JugarButton 
-                        onClick={handleGoToScene2} 
-                        disabled={isAnimating}
-                        text="Ir a Escena 2"
-                      />
-                    </div>
-                  )}
+                  <JugarButton 
+                    text='JUEGO 1 ¿Qué pasa cuando me excito?' 
+                    onClick={handleOpenJuegoUno} 
+                    disabled={isAnimating} 
+                  />
                 </motion.div>
               )}
             </div>
@@ -319,81 +288,6 @@ export default function Actividad3Scene1Page() {
         onClose={handleCloseJuegoDos}
         onGameComplete={handleJuego2Complete}
       />
-
-      {/* NEW: Congratulations Screen */}
-      {showCongratulations && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <motion.div
-            className="bg-gradient-to-br from-green-400 to-blue-500 rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 300, 
-              damping: 20,
-              delay: 0.2 
-            }}
-          >
-            {/* Celebration Icon */}
-            <motion.div
-              className="text-6xl mb-6"
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 10, -10, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              🎉
-            </motion.div>
-
-            {/* Congratulations Message */}
-            <motion.h2
-              className="text-2xl font-bold text-white mb-6"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              ¡Felicidades! Acabaste la actividad
-            </motion.h2>
-
-            {/* Success Icons */}
-            <motion.div
-              className="flex justify-center gap-4 mb-8"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <span className="text-3xl">⭐</span>
-              <span className="text-3xl">🏆</span>
-              <span className="text-3xl">⭐</span>
-            </motion.div>
-
-            {/* Continue Button */}
-            <motion.button
-              onClick={handleCongratulationsContinue}
-              disabled={isAnimating}
-              className="bg-white text-blue-600 font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:bg-blue-50 hover:scale-105 transition-all duration-200 w-full disabled:opacity-50"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Continuar jugando...
-            </motion.button>
-
-            {/* Decorative Elements */}
-            <div className="absolute -top-4 -left-4 w-8 h-8 bg-yellow-300 rounded-full opacity-70"></div>
-            <div className="absolute -top-2 -right-6 w-6 h-6 bg-pink-300 rounded-full opacity-70"></div>
-            <div className="absolute -bottom-3 -left-6 w-5 h-5 bg-purple-300 rounded-full opacity-70"></div>
-            <div className="absolute -bottom-4 -right-4 w-7 h-7 bg-green-300 rounded-full opacity-70"></div>
-          </motion.div>
-        </div>
-      )}
     </motion.div>
   );
 }

@@ -299,7 +299,7 @@ export default function JuegoCuatroActividad6({
                     {isPlayingAudio && (
                       <div className="mt-8">
                         <motion.div
-                          animate={{ scale: [1, 1.2, 1] }}
+                          animate={{ scale: [2.5, 1.8, 2.2] }}
                           transition={{ duration: 1, repeat: Infinity }}
                           className="inline-block"
                         >

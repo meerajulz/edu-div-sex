@@ -13,7 +13,7 @@ export default function Actividad6Scene1Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(true);
+  const [videoEnded, setVideoEnded] = useState(false);
   
   // Game states
   const [showJuegoUno, setShowJuegoUno] = useState(false);

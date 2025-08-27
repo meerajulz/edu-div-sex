@@ -169,7 +169,7 @@ export default function Actividad2Scene1Page() {
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
                   {!gameCompleted ? (
-                    <JugarButton onClick={handleOpenJuegoUno} disabled={isAnimating} />
+                    <JugarButton text='Jugar ¿Es privado?' onClick={handleOpenJuegoUno} disabled={isAnimating} />
                   ) : (
                     <div className="flex flex-col items-center space-y-4">
                       <motion.div

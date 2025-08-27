@@ -122,21 +122,45 @@ export default function Actividad2Scene4Page() {
     }, 800);
   };
 
+  // Get appropriate button text based on current state
+  const getButtonText = () => {
+    if (!videoEnded) {
+      return 'Continuar...';
+    } else if (!game4Completed) {
+      return 'Juego ¿Qué hacer si alguien no respeta tu intimidad?';
+    } else if (!game5Completed) {
+      return 'Juego Tu cofre de la Intimidad';
+    }
+    return 'Continuar...';
+  };
+
   const handleVideoEnd = () => {
     setVideoEnded(true);
     setShowVideo(false);
   };
 
-  const handleCloseModalGame4 = () => {
+  // Handle Game 4 completion (called ONLY when game is actually completed)
+  const handleGame4Complete = () => {
     setShowModalGame4(false);
-    // Mark game 4 as completed when modal closes (assuming it was completed)
     setGame4Completed(true);
   };
 
+  // Handle Game 4 close without completion
+  const handleCloseModalGame4 = () => {
+    setShowModalGame4(false);
+    // Don't mark as completed, just close
+  };
+
+  // Handle Game 5 completion (called ONLY when game is actually completed)
+  const handleGame5Complete = () => {
+    setShowModalGame5(false);
+    setGame5Completed(true);
+  };
+
+  // Handle Game 5 close without completion
   const handleCloseModalGame5 = () => {
     setShowModalGame5(false);
-    // Mark game 5 as completed when modal closes (assuming it was completed)
-    setGame5Completed(true);
+    // Don't mark as completed, just close
   };
 
   const handleNextLevel = () => {
@@ -213,64 +237,63 @@ export default function Actividad2Scene4Page() {
               </motion.div>
             ) : (
               // Congratulations message and next level button
+           <motion.div
+            key="congratulations"
+            className="flex flex-col items-center text-center"
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          >
+            {/* Congratulations text */}
+            <motion.div
+              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
+              initial={{ rotate: -5 }}
+              animate={{ rotate: [0, 2, -2, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                ¡Felicidades!
+              </h1>
+              <p className="text-xl sm:text-2xl text-white/90 font-semibold">
+                ¡Acabaste la Aventura Intimidad!
+              </p>
+            </motion.div>
+
+            {/* Sparkle effects */}
+            {[...Array(15)].map((_, i) => (
               <motion.div
-                key="congratulations"
-                className="flex flex-col items-center text-center"
-                initial={{ opacity: 0, scale: 0.5, y: 50 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-              >
-                {/* Congratulations text */}
-                <motion.div
-                  className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
-                  initial={{ rotate: -5 }}
-                  animate={{ rotate: [0, 2, -2, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                    ¡Felicidades!
-                  </h1>
-                  <p className="text-xl sm:text-2xl text-white/90 font-semibold">
-                    Acabaste la a Actividad 2
-                  </p>
-                </motion.div>
+                key={i}
+                className="absolute w-4 h-4 bg-yellow-300 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  scale: [0, 1.5, 0],
+                  opacity: [0, 1, 0],
+                  rotate: [0, 180, 360],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                  ease: 'easeInOut',
+                }}
+              />
+            ))}
 
-                {/* Sparkle effects */}
-                {[...Array(15)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-4 h-4 bg-yellow-300 rounded-full"
-                    style={{
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                    }}
-                    animate={{
-                      scale: [0, 1.5, 0],
-                      opacity: [0, 1, 0],
-                      rotate: [0, 180, 360],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      delay: Math.random() * 2,
-                      ease: 'easeInOut',
-                    }}
-                  />
-                ))}
-
-                {/* Next Level Button */}
-                <motion.button
-                  onClick={handleNextLevel}
-                  className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                >
-                  <span className="text-xl sm:text-2xl">Ir a la Siguiente Aventura </span>
-                </motion.button>
-              </motion.div>
+            {/* Next Level Button - FIXED */}
+            <motion.div
+              className="inline-block"
+              animate={{ rotate: [0, -5, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ transformOrigin: 'center center' }}
+            >
+              <div className="whitespace-nowrap">
+                <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleNextLevel} disabled={isAnimating} />
+              </div>
+            </motion.div>
+          </motion.div>
             )}
           </AnimatePresence>
         </div>
@@ -331,7 +354,7 @@ export default function Actividad2Scene4Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text={getButtonText()} onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       )}
@@ -355,6 +378,7 @@ export default function Actividad2Scene4Page() {
         <JuegoCuatroActividad2 
           isOpen={showModalGame4}
           onClose={handleCloseModalGame4}
+          onGameComplete={handleGame4Complete}
         />
       )}
 
@@ -363,6 +387,7 @@ export default function Actividad2Scene4Page() {
         <JuegoCincoActividad2 
           isOpen={showModalGame5}
           onClose={handleCloseModalGame5}
+          onGameComplete={handleGame5Complete}
         />
       )}
     </motion.div>

@@ -12,7 +12,7 @@ import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 const getMockUserGender = (): 'male' | 'female' => {
   // TODO: Replace with real user data from backend
   // For now, you can change this to test both versions
-  return 'female'; // Change to 'female' to test female version
+  return 'male'; // Change to 'female' to test female version
 };
 
 export default function Actividad3Scene2Page() {
@@ -239,7 +239,7 @@ export default function Actividad3Scene2Page() {
                   <JugarButton 
                     onClick={handleOpenJuegoCuatro} 
                     disabled={isAnimating}
-                    text="Jugar"
+                    text="Jugar La masturbación"
                   />
                 </motion.div>
               )}
@@ -250,27 +250,33 @@ export default function Actividad3Scene2Page() {
 
       {/* Game Completed Screen */}
       {gameCompleted && (
-        <div className="relative z-20 flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center space-y-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-            >
-              ¡Actividad Completada! 🎉
-            </motion.div>
-            <motion.div
-              animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-              transition={{ duration: 0.8, ease: 'easeInOut' }}
-            >
-              <JugarButton 
-                onClick={handleGoToNextActivity} 
-                disabled={isAnimating}
-                text="Volver al Menú Principal"
-              />
-            </motion.div>
-          </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
+          <motion.div
+            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
+            initial={{ rotate: -5 }}
+            animate={{ rotate: [0, 2, -2, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+              ¡Felicidades!
+            </h1>
+            <p className="text-xl sm:text-2xl text-white/90 font-semibold">
+              ¡Acabaste la aventura Placer Sexual!
+            </p>
+          </motion.div>
+          <motion.div
+            className="inline-block"
+            animate={{ rotate: [0, -5, 5, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ transformOrigin: 'center center' }}
+          >
+            <div className="whitespace-nowrap">
+              <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleGoToNextActivity} disabled={isAnimating} />
+            </div>
+          </motion.div>
         </div>
+      
+
       )}
 
       {/* FIXED: Correct component name - JuegoTresActividad3 */}

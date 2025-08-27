@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   DndContext,
   TouchSensor,
@@ -31,6 +31,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
   const sensors = useSensors(mouseSensor, touchSensor);
 
   const [showCongrats, setShowCongrats] = useState(false);
+  const titleAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Detect when all parts are matched
   useEffect(() => {
@@ -66,6 +67,21 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
       setMatchedParts([]);
       setFeedback(null);
       setShowCongrats(false);
+      
+      // Play the title audio when game opens
+      try {
+        titleAudioRef.current = new Audio('/audio/actividad-1/escena_1/scene4/t-actividad-1-scene-4.mp3');
+        titleAudioRef.current.volume = 0.8;
+        titleAudioRef.current.play().catch(console.warn);
+      } catch (error) {
+        console.warn('Could not play title audio:', error);
+      }
+    } else {
+      // Stop the audio if the game is closed
+      if (titleAudioRef.current) {
+        titleAudioRef.current.pause();
+        titleAudioRef.current = null;
+      }
     }
   }, [isVisible]);
 
@@ -86,6 +102,11 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
   };
 
   const handleClose = () => {
+    // Stop title audio when closing
+    if (titleAudioRef.current) {
+      titleAudioRef.current.pause();
+      titleAudioRef.current = null;
+    }
     setMatchedParts([]);
     setFeedback(null);
     onClose();

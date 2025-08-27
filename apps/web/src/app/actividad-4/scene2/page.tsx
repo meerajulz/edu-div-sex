@@ -149,7 +149,7 @@ export default function Actividad4Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Continuar...' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -171,21 +171,30 @@ export default function Actividad4Scene2Page() {
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
                   {!gameCompleted ? (
-                    <JugarButton onClick={handleOpenJuegoDos} disabled={isAnimating} />
+                    <JugarButton text='Juego Higiene menstrual' onClick={handleOpenJuegoDos} disabled={isAnimating} />
                   ) : (
-                    <div className="flex flex-col items-center space-y-4">
+
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
+                        <motion.div
+                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
+                            initial={{ rotate: -5 }}
+                            animate={{ rotate: [0, 2, -2, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                          >
+                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                                ¡Felicidades!
+                            </h1>
+                            <p className="text-lg sm:text-xl text-white drop-shadow-md">
+                               Has completado la actividad.
+                            </p>
+                        </motion.div>
                       <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
+                      //scale: [1, 1.1, 1], 
+                        animate={{ rotate: [0, -5, 5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                       >
-                        ¡Actividad Completada! 🎉
+                        <JugarButton text="IR A LA PROXIMA AVENTURA! " onClick={handleContinue} disabled={isAnimating} />
                       </motion.div>
-                      <JugarButton 
-                        onClick={handleContinue} 
-                        disabled={isAnimating}
-                        text="Volver al Menú Principal"
-                      />
                     </div>
                   )}
                 </motion.div>

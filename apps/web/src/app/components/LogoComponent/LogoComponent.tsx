@@ -90,7 +90,7 @@ export default function LogoComponent({
 
       {/* Text */}
       <motion.div
-        className="backdrop-blur-sm"
+        className=""
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.2 }}
       >

@@ -118,7 +118,7 @@ export default function Scene3Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Continuar...' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (

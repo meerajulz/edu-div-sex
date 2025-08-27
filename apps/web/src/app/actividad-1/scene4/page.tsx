@@ -169,7 +169,7 @@ export default function Scene4Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text='Continuar...' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -190,7 +190,7 @@ export default function Scene4Page() {
                 transition={{ duration: 0.8, ease: 'easeInOut' }}
               >
                 {!gameCompleted ? (
-                  <JugarButton onClick={handleOpenJuegoDos} disabled={isAnimating} />
+                  <JugarButton text='Jugar ¿Qué ha cambiado?' onClick={handleOpenJuegoDos} disabled={isAnimating} />
                 ) : (
                   <div className="flex flex-col items-center space-y-4">
                     <JugarButton 

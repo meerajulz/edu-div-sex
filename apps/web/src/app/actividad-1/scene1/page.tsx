@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import LogoComponent from '../../components/LogoComponent/LogoComponent';
@@ -13,7 +13,7 @@ import JuegoUno from './JuegoUno/JuegoUno';
 import Image from 'next/image';
 
 export default function Scene1Page() {
-  const router = useRouter();
+
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
@@ -59,9 +59,9 @@ export default function Scene1Page() {
     setIsHydrated(true);
   }, []);
 
-  const handleBackClick = () => {
-    router.push('/actividad-1');
-  };
+  // const handleBackClick = () => {
+  //   router.push('/actividad-1');
+  // };
   
   const handleJugarClick = () => {
     setShowVideo(true);
@@ -174,9 +174,9 @@ export default function Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text="Jugar" onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
-
+{/* 
           <motion.button
             className="mt-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 hover:border-white/50 transition-all duration-300 shadow-lg"
             initial={{ opacity: 0, y: 50 }}
@@ -187,7 +187,7 @@ export default function Scene1Page() {
             onClick={handleBackClick}
           >
             ← Volver a Actividades
-          </motion.button>
+          </motion.button> */}
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>

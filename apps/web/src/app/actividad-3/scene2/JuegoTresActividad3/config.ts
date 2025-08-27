@@ -283,7 +283,7 @@ export const GAME_CONFIG = {
 export const getMockUserGender = (): 'male' | 'female' => {
   // TODO: Replace with real user data from backend
   // For now, you can change this to test both versions
-  return 'female'; // Change to 'female' to test female version
+  return 'male'; // Change to 'female' to test female version
 };
 
 // Helper function to get current game config based on gender

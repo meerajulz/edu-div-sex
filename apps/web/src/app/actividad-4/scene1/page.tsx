@@ -165,7 +165,7 @@ export default function Actividad4Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Continuar...' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -188,7 +188,7 @@ export default function Actividad4Page() {
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
                   {!gameCompleted ? (
-                    <JugarButton onClick={handleOpenJuegoUno} disabled={isAnimating} />
+                    <JugarButton text='Juego Ayuda a Cris o Dani en su higiene.' onClick={handleOpenJuegoUno} disabled={isAnimating} />
                   ) : (
                     <div className="flex flex-col items-center space-y-4">
                       <motion.div
