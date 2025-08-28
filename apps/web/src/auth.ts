@@ -110,6 +110,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				token.username = (user as { username?: string }).username;
 				token.first_name = (user as { first_name?: string }).first_name;
 				token.last_name = (user as { last_name?: string }).last_name;
+				token.sex = (user as { sex?: string }).sex;
 			}
 			return token;
 		},
@@ -121,6 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				(session.user as { username?: string }).username = token.username as string;
 				(session.user as { first_name?: string }).first_name = token.first_name as string;
 				(session.user as { last_name?: string }).last_name = token.last_name as string;
+				(session.user as { sex?: string }).sex = token.sex as string;
 			}
 			return session;
 		},
@@ -137,7 +139,7 @@ async function getUserFromDb(login: string, password: string) {
 		let result;
 		try {
 			result = await query(
-				'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
+				'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name, sex FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
 				[login]
 			);
 		} catch (err) {
@@ -145,7 +147,7 @@ async function getUserFromDb(login: string, password: string) {
 			console.log('Falling back to basic query:', err instanceof Error ? err.message : 'Unknown error');
 			try {
 				result = await query(
-					'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
+					'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
 					[login]
 				);
 			} catch (fallbackErr) {
@@ -195,6 +197,7 @@ async function getUserFromDb(login: string, password: string) {
 			username: user.username || null,
 			first_name: user.first_name || null,
 			last_name: user.last_name || null,
+			sex: user.sex || null,
 		};
 	} catch (error) {
 		console.error('Error in getUserFromDb:', error);

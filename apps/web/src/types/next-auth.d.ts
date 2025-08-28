@@ -11,6 +11,7 @@ declare module "next-auth" {
       username?: string
       first_name?: string
       last_name?: string
+      sex?: string
     }
   }
 
@@ -22,6 +23,7 @@ declare module "next-auth" {
     username?: string
     first_name?: string
     last_name?: string
+    sex?: string
   }
 }
 
@@ -31,5 +33,6 @@ declare module "next-auth/jwt" {
     username?: string
     first_name?: string
     last_name?: string
+    sex?: string
   }
 }

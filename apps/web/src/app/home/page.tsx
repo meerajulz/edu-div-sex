@@ -10,9 +10,11 @@ import VideoBackground from '../components/VideoBackground';
 import AudioPreloader from '../components/AudioPreloader/AudioPreloader';
 import { initAudio } from '../utils/audioHandler';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isExiting, setIsExiting] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
@@ -209,6 +211,11 @@ const Dashboard: React.FC = () => {
               <div>audioInit: {audioInitialized ? 'true' : 'false'}</div>
               <div>audioProgress: {audioPreloadProgress}%</div>
               <div>videoPlayed: {videoHasPlayed ? 'true' : 'false'}</div>
+              <div className="border-t border-white/30 mt-1 pt-1">
+                <div>👤 User: {session?.user?.username || session?.user?.email}</div>
+                <div>🏷️ Role: {session?.user?.role || 'none'}</div>
+                <div>⚧️ Sex: {session?.user?.sex || 'none'}</div>
+              </div>
               {debugInfo.map((log, i) => (
                 <div key={i}>{log}</div>
               ))}
