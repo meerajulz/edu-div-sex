@@ -104,7 +104,7 @@ export default function StudentsPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Lista de Estudiantes</h1>
           <button
-            onClick={() => router.push('/dashboard/add-user')}
+            onClick={() => router.push('/dashboard/admin/users/create?role=student')}
             className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
             + Agregar Estudiante
@@ -115,7 +115,7 @@ export default function StudentsPage() {
           <div className="bg-gray-50 text-gray-600 p-8 rounded-lg text-center">
             <p className="text-lg mb-4">No hay estudiantes registrados</p>
             <button
-              onClick={() => router.push('/dashboard/add-user')}
+              onClick={() => router.push('/dashboard/admin/users/create?role=student')}
               className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded-lg transition-colors"
             >
               Crear primer estudiante

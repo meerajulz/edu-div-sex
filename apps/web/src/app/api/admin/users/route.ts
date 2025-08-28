@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, name, role, username, evaluation } = body;
+    const { email, password, name, role, username, evaluation, sex } = body;
 
     // Validate required fields
     if (!email || !password || !name || !role) {
@@ -174,10 +174,10 @@ export async function POST(request: NextRequest) {
       
       // Create user
       const result = await query(`
-        INSERT INTO users (email, password_hash, name, role, created_by, is_active, username, first_name, last_name)
-        VALUES ($1, $2, $3, $4, $5, true, $6, $7, $8)
+        INSERT INTO users (email, password_hash, name, role, created_by, is_active, username, first_name, last_name, sex)
+        VALUES ($1, $2, $3, $4, $5, true, $6, $7, $8, $9)
         RETURNING id, email, name, role, username, created_at
-      `, [email, hashedPassword, name, role, session.user.id, finalUsername, firstName, lastName]);
+      `, [email, hashedPassword, name, role, session.user.id, finalUsername, firstName, lastName, sex || null]);
 
       const newUser = result.rows[0];
 

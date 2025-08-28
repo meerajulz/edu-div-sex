@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
       // Login creation fields
       create_login = false,
       email,
+      username: custom_username, // Optional: custom username instead of auto-generated
       use_generated_password = true,
       custom_password, // Optional: teacher can set custom simple password
       
@@ -185,10 +186,23 @@ export async function POST(request: NextRequest) {
 
     // If creating login credentials for student
     if (create_login) {
-      // Generate username from first and last name
-      const existingUsernames = await query('SELECT username FROM users WHERE username IS NOT NULL');
-      const usernameList = existingUsernames.rows.map(row => row.username);
-      username = generateUsername(first_name, last_name, usernameList);
+      if (custom_username) {
+        // Use provided custom username
+        username = custom_username;
+        
+        // Check if username already exists
+        const existingUsername = await query('SELECT id FROM users WHERE username = $1', [custom_username]);
+        if (existingUsername.rows.length > 0) {
+          return NextResponse.json({ 
+            error: 'El nombre de usuario ya existe' 
+          }, { status: 400 });
+        }
+      } else {
+        // Generate username from first and last name
+        const existingUsernames = await query('SELECT username FROM users WHERE username IS NOT NULL');
+        const usernameList = existingUsernames.rows.map(row => row.username);
+        username = generateUsername(first_name, last_name, usernameList);
+      }
 
       // Handle password
       let passwordToUse = custom_password;
@@ -198,17 +212,7 @@ export async function POST(request: NextRequest) {
         passwordToUse = generated.password;
       }
 
-      // Validate custom password if provided
-      if (custom_password) {
-        const { validateSimplePassword, getPasswordStrengthDescription } = await import('@/lib/passwordGenerator');
-        if (!validateSimplePassword(custom_password)) {
-          return NextResponse.json({ 
-            error: 'La contraseña personalizada debe ser 3 palabras simples separadas por espacios',
-            error_en: 'Custom password must be 3 simple words separated by spaces',
-            validation_message: getPasswordStrengthDescription(custom_password)
-          }, { status: 400 });
-        }
-      }
+      // Custom passwords are accepted as-is, no validation required
 
       // Generate email if not provided
       const emailToUse = email || `${username}@student.local`;

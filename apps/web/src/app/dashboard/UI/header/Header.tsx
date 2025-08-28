@@ -12,8 +12,14 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ userName, userEmail, userRole, isLoading = false }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: '/auth/login' });
+  const handleSignOut = async () => {
+    try {
+      await signOut({ callbackUrl: '/auth/login' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: redirect manually if signOut fails
+      window.location.href = '/auth/login';
+    }
   };
 
   return (

@@ -155,7 +155,7 @@ export default function TeacherProfilePage() {
               </Link>
 
               <Link
-                href="/dashboard/add-user"
+                href="/dashboard/admin/users/create?role=student"
                 className="flex items-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-colors"
               >
                 <div className="p-2 bg-blue-100 rounded-lg mr-3">

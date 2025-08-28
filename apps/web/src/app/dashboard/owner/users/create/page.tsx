@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardWrapper from '../../../DashboardWrapper';
 import { Question, questionsData } from '../../../../data/questions';
 
@@ -12,11 +13,13 @@ interface UserFormData {
   username: string;
   password: string;
   confirmPassword: string;
+  sex: 'male' | 'female' | '';
 }
 
 function OwnerCreateUserForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const defaultRole = (searchParams.get('role') as 'owner' | 'admin' | 'teacher' | 'student') || '';
 
   const [formData, setFormData] = useState<UserFormData>({
@@ -25,7 +28,8 @@ function OwnerCreateUserForm() {
     role: defaultRole,
     username: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    sex: ''
   });
 
   const [error, setError] = useState('');
@@ -56,8 +60,8 @@ function OwnerCreateUserForm() {
       return false;
     }
 
-    // Username required for students
-    if (formData.role === 'student' && !formData.username.trim()) {
+    // Username and sex required for students
+    if (formData.role === 'student' && (!formData.username.trim() || !formData.sex)) {
       return false;
     }
 
@@ -261,8 +265,8 @@ function OwnerCreateUserForm() {
       return;
     }
 
-    if (formData.role === 'student' && !formData.username) {
-      setError('El nombre de usuario es requerido para estudiantes.');
+    if (formData.role === 'student' && (!formData.username || !formData.sex)) {
+      setError('El nombre de usuario y sexo son requeridos para estudiantes.');
       return;
     }
 
@@ -279,33 +283,73 @@ function OwnerCreateUserForm() {
     setIsLoading(true);
 
     try {
-      // Prepare user data with evaluation for students
-      const userData: Record<string, unknown> = {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        username: formData.role === 'student' ? formData.username : undefined,
-        password: formData.password
-      };
-
-      // Add evaluation data for students
-      if (formData.role === 'student') {
+      const userRole = (session?.user as { role?: string })?.role;
+      const isCreatingStudent = formData.role === 'student';
+      
+      let response;
+      
+      if (isCreatingStudent) {
+        // Use students API for creating students
         const abilities = calculateAbilityLevels();
-        userData.evaluation = {
+        const nameParts = formData.name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || firstName;
+        
+        const studentData = {
+          first_name: firstName,
+          last_name: lastName,
+          age: null, // We don't collect age in this form
+          sex: formData.sex,
+          create_login: true,
+          email: formData.email,
+          username: formData.username,
+          use_generated_password: useGeneratedPassword,
+          custom_password: useGeneratedPassword ? undefined : formData.password,
           ...abilities,
-          evaluation_responses: questions.filter(q => q.supportType !== null),
-          evaluation_date: new Date().toISOString(),
+          additional_abilities: {
+            evaluation_responses: questions.filter(q => q.supportType !== null),
+            evaluation_date: new Date().toISOString()
+          },
           notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`
         };
-      }
 
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+        response = await fetch('/api/students', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(studentData),
+        });
+      } else {
+        // Use admin/users API for non-students (owners, admins, teachers)
+        const userData: Record<string, unknown> = {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          username: formData.role === 'student' ? formData.username : undefined,
+          password: formData.password,
+          sex: formData.role === 'student' ? formData.sex : undefined
+        };
+
+        // Add evaluation data for students (fallback, shouldn't reach here for students)
+        if (formData.role === 'student') {
+          const abilities = calculateAbilityLevels();
+          userData.evaluation = {
+            ...abilities,
+            evaluation_responses: questions.filter(q => q.supportType !== null),
+            evaluation_date: new Date().toISOString(),
+            notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`
+          };
+        }
+
+        response = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+      }
 
       const result = await response.json();
 
@@ -313,15 +357,30 @@ function OwnerCreateUserForm() {
         throw new Error(result.error || 'Error al crear el usuario');
       }
 
-      // Prepare credentials for the success page
-      const credentialsData = {
-        id: result.user.id,
-        name: formData.name,
-        email: formData.email,
-        username: formData.role === 'student' ? formData.username : undefined,
-        password: formData.password,
-        role: formData.role
-      };
+      // Prepare credentials for the success page based on API response format
+      let credentialsData;
+      
+      if (isCreatingStudent) {
+        // Handle students API response
+        credentialsData = {
+          id: result.student.id,
+          name: formData.name,
+          email: result.login_credentials?.email || formData.email,
+          username: result.login_credentials?.username || formData.username,
+          password: result.login_credentials?.generated_password || formData.password,
+          role: 'student'
+        };
+      } else {
+        // Handle admin/users API response  
+        credentialsData = {
+          id: result.user.id,
+          name: formData.name,
+          email: formData.email,
+          username: formData.role === 'student' ? formData.username : undefined,
+          password: formData.password,
+          role: formData.role
+        };
+      }
       
       // Encode credentials and redirect to success page
       const credentialsParam = btoa(JSON.stringify(credentialsData));
@@ -469,28 +528,50 @@ function OwnerCreateUserForm() {
               )}
             </div>
 
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Rol *
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value as 'owner' | 'admin' | 'teacher' | 'student' | ''})}
-                className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                required
-              >
-                <option value="">Seleccionar rol...</option>
-                <option value="owner">Propietario</option>
-                <option value="admin">Administrador</option>
-                <option value="teacher">Profesor</option>
-                <option value="student">Estudiante</option>
-              </select>
-              {formData.role && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {getRoleDescription()}
-                </p>
-              )}
-            </div>
+            {/* Only show role dropdown if no default role is set */}
+            {!defaultRole && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Rol *
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value as 'owner' | 'admin' | 'teacher' | 'student' | ''})}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  required
+                >
+                  <option value="">Seleccionar rol...</option>
+                  <option value="owner">Propietario</option>
+                  <option value="admin">Administrador</option>
+                  <option value="teacher">Profesor</option>
+                  <option value="student">Estudiante</option>
+                </select>
+                {formData.role && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {getRoleDescription()}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Show selected role as read-only when pre-selected */}
+            {defaultRole && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Rol
+                </label>
+                <div className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                  {formData.role === 'owner' ? 'Propietario' : 
+                   formData.role === 'admin' ? 'Administrador' :
+                   formData.role === 'teacher' ? 'Profesor' : 'Estudiante'}
+                </div>
+                {formData.role && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {getRoleDescription()}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Username field - only for students */}
             {formData.role === 'student' && (
@@ -545,6 +626,25 @@ function OwnerCreateUserForm() {
                     El estudiante usará este nombre de usuario para iniciar sesión en lugar del email.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* Sex field - only for students */}
+            {formData.role === 'student' && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Sexo *
+                </label>
+                <select
+                  value={formData.sex}
+                  onChange={(e) => setFormData({...formData, sex: e.target.value as 'male' | 'female' | ''})}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  required
+                >
+                  <option value="">Seleccionar sexo...</option>
+                  <option value="male">Masculino</option>
+                  <option value="female">Femenino</option>
+                </select>
               </div>
             )}
 
@@ -655,6 +755,13 @@ function OwnerCreateUserForm() {
                           )}
                         </button>
                       </div>
+                      
+                      {/* Password requirements help text */}
+                      {formData.role && (
+                        <div className="text-sm text-gray-600 mt-2">
+                          <p>La contraseña debe tener al menos 8 caracteres</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -769,6 +876,7 @@ function OwnerCreateUserForm() {
                   {emailStatus.available === false && <li>• Email válido y disponible</li>}
                   {formData.role === 'student' && !formData.username.trim() && <li>• Nombre de usuario</li>}
                   {formData.role === 'student' && usernameStatus.available === false && <li>• Nombre de usuario válido y disponible</li>}
+                  {formData.role === 'student' && !formData.sex && <li>• Sexo</li>}
                   {!useGeneratedPassword && !formData.password && <li>• Contraseña</li>}
                   {!useGeneratedPassword && formData.password && formData.password !== formData.confirmPassword && <li>• Las contraseñas deben coincidir</li>}
                   {!useGeneratedPassword && formData.password && formData.password.length < 8 && <li>• Contraseña de al menos 8 caracteres</li>}
