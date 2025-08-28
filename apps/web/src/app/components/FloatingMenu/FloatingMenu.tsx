@@ -25,6 +25,7 @@ const FloatingMenu = () => {
 	>([]);
 	const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 	const [isMobile, setIsMobile] = useState(false);
+	const [isReady, setIsReady] = useState(false);
 
 	// Initialize audio and check screen size on mount
 	useEffect(() => {
@@ -38,7 +39,17 @@ const FloatingMenu = () => {
 
 		checkMobile();
 		window.addEventListener("resize", checkMobile);
-		return () => window.removeEventListener("resize", checkMobile);
+		
+		// Add a delay to prevent accidental triggering on page load
+		const readyTimer = setTimeout(() => {
+			setIsReady(true);
+			console.log('🔍 FloatingMenu is ready for interactions');
+		}, 1000);
+		
+		return () => {
+			window.removeEventListener("resize", checkMobile);
+			clearTimeout(readyTimer);
+		};
 	}, []);
 
 	const menuItems: MenuItem[] = [
@@ -91,6 +102,16 @@ const FloatingMenu = () => {
 	};
 
 	const handleClick = async (item: MenuItem, e: React.MouseEvent) => {
+		console.log('🔍 FloatingMenu handleClick triggered for item:', item.id);
+		console.log('🔍 Event details:', e.type, e.target);
+		console.log('🔍 FloatingMenu ready state:', isReady);
+		
+		// Prevent accidental clicks during initial load
+		if (!isReady) {
+			console.log('🔍 FloatingMenu not ready yet, ignoring click');
+			return;
+		}
+		
 		const button = e.currentTarget as HTMLButtonElement;
 		const rect = button.getBoundingClientRect();
 		const x = e.clientX - rect.left;
@@ -110,6 +131,7 @@ const FloatingMenu = () => {
 
 		// Handle logout
 		if (item.id === "exit") {
+			console.log('🚪 EXIT button clicked - initiating logout');
 			// Reset icon state
 			setTimeout(() => {
 				setIconStates((prev) => ({
@@ -148,7 +170,7 @@ const FloatingMenu = () => {
 	return (
 		<motion.div
 			className={`
-        fixed z-50 bg-white/10 backdrop-blur-sm shadow-lg
+        fixed z-[9999] bg-white/10 backdrop-blur-sm shadow-lg
         ${
 					isMobile
 						? "bottom-0 left-0 right-0 p-2 flex justify-around items-center rounded-t-xl"

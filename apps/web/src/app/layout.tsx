@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import LandscapeLayout from "./LandscapeLayout";
 import { SessionProvider } from "next-auth/react";
+import { ActivityProtectionWrapper } from "./components/ActivityGuard/useActivityProtection";
 
 const inter = Inter({
   subsets: ['latin']
@@ -25,9 +26,11 @@ export default function RootLayout({
         className={`${inter.className} antialiased`}
       >
         <SessionProvider>
-          <LandscapeLayout>
-            {children}
-          </LandscapeLayout>
+          <ActivityProtectionWrapper>
+            <LandscapeLayout>
+              {children}
+            </LandscapeLayout>
+          </ActivityProtectionWrapper>
         </SessionProvider>
       </body>
     </html>
