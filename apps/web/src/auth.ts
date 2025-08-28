@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { signInSchema, signInSchemaLegacy } from "./lib/zod";
 import bcrypt from "bcryptjs";
 import { query } from "./lib/db";
+import { hasStudentStartedActivities, getCurrentStudentActivity } from './lib/studentProgress';
 
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -64,7 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ url, baseUrl }) {
+		async redirect({ url, baseUrl, token }) {
 			// Handle logout redirects to login page
 			if (url === `${baseUrl}/auth/login`) {
 				return url;
@@ -74,7 +75,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			if (url.startsWith("/")) return `${baseUrl}${url}`;
 			if (url.startsWith(baseUrl)) return url;
 			
-			// Default redirect to dashboard for login
+			// For students, check their activity progress to determine redirect
+			if (token?.role === 'student' && token?.sub) {
+				try {
+					const hasStartedActivities = await hasStudentStartedActivities(token.sub);
+					
+					if (!hasStartedActivities) {
+						// First-time student - redirect to home
+						return `${baseUrl}/home`;
+					} else {
+						// Returning student - check for current activity
+						const currentActivity = await getCurrentStudentActivity(token.sub);
+						if (currentActivity) {
+							return `${baseUrl}${currentActivity}`;
+						} else {
+							// Has progress but no current activity, go to dashboard
+							return `${baseUrl}/dashboard`;
+						}
+					}
+				} catch (error) {
+					console.error('Error checking student progress:', error);
+					// On error, default to dashboard
+					return `${baseUrl}/dashboard`;
+				}
+			}
+			
+			// Default redirect to dashboard for login (non-students)
 			return `${baseUrl}/dashboard`;
 		},
 		async jwt({ token, user }) {
@@ -111,16 +137,25 @@ async function getUserFromDb(login: string, password: string) {
 		let result;
 		try {
 			result = await query(
-				'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
+				'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
 				[login]
 			);
 		} catch (err) {
-			// Fallback for databases without username or deleted_at columns
-			console.log('Falling back to basic email query:', err instanceof Error ? err.message : 'Unknown error');
-			result = await query(
-				'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = $1',
-				[login]
-			);
+			// Fallback for databases without newer columns
+			console.log('Falling back to basic query:', err instanceof Error ? err.message : 'Unknown error');
+			try {
+				result = await query(
+					'SELECT id, email, username, password_hash, name, role, is_active FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
+					[login]
+				);
+			} catch (fallbackErr) {
+				// Final fallback for minimal schema
+				console.log('Final fallback to email-only query');
+				result = await query(
+					'SELECT id, email, password_hash, name, role FROM users WHERE email = $1',
+					[login]
+				);
+			}
 		}
 		
 		console.log('📊 Query result:', result.rows.length, 'users found');
@@ -151,12 +186,15 @@ async function getUserFromDb(login: string, password: string) {
 		
 		console.log('✅ Authentication successful for:', user.email);
 		
-		// Return user data
+		// Return user data with safe defaults for new fields
 		return {
 			id: user.id.toString(),
 			email: user.email,
 			name: user.name,
 			role: user.role,
+			username: user.username || null,
+			first_name: user.first_name || null,
+			last_name: user.last_name || null,
 		};
 	} catch (error) {
 		console.error('Error in getUserFromDb:', error);

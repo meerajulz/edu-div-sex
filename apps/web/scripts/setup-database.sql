@@ -26,6 +26,7 @@ CHECK (role IN ('owner', 'admin', 'teacher', 'student'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_change TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
 -- Add student-specific fields
 ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE;
@@ -184,27 +185,40 @@ CREATE TRIGGER update_students_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column_students();
 
--- Insert test users with different roles
+-- Insert test users with different roles (password: testpass123)
 INSERT INTO users (email, password_hash, name, role, username, first_name, last_name) 
-VALUES ('test@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj0kw0/t2FV6', 'Test User', 'owner', 'testuser', 'Test', 'User')
+VALUES ('test@example.com', '$2b$12$ZacLJuTu6S3frCLVN0OGn.mp.r9xYCvVydlwvP9YRh5WI8tpmq3MK', 'Test User', 'owner', 'testuser', 'Test', 'User')
 ON CONFLICT (email) DO UPDATE SET 
     role = EXCLUDED.role,
     username = EXCLUDED.username,
     first_name = EXCLUDED.first_name,
-    last_name = EXCLUDED.last_name;
+    last_name = EXCLUDED.last_name,
+    password_hash = EXCLUDED.password_hash;
 
 INSERT INTO users (email, password_hash, name, role, username, first_name, last_name) 
-VALUES ('admin@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj0kw0/t2FV6', 'Admin User', 'admin', 'adminuser', 'Admin', 'User')
+VALUES ('admin@example.com', '$2b$12$ZacLJuTu6S3frCLVN0OGn.mp.r9xYCvVydlwvP9YRh5WI8tpmq3MK', 'Admin User', 'admin', 'adminuser', 'Admin', 'User')
 ON CONFLICT (email) DO UPDATE SET 
     role = EXCLUDED.role,
     username = EXCLUDED.username,
     first_name = EXCLUDED.first_name,
-    last_name = EXCLUDED.last_name;
+    last_name = EXCLUDED.last_name,
+    password_hash = EXCLUDED.password_hash;
 
 INSERT INTO users (email, password_hash, name, role, username, first_name, last_name) 
-VALUES ('teacher@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj0kw0/t2FV6', 'Teacher User', 'teacher', 'teacheruser', 'Teacher', 'User')
+VALUES ('teacher@example.com', '$2b$12$ZacLJuTu6S3frCLVN0OGn.mp.r9xYCvVydlwvP9YRh5WI8tpmq3MK', 'Teacher User', 'teacher', 'teacheruser', 'Teacher', 'User')
 ON CONFLICT (email) DO UPDATE SET 
     role = EXCLUDED.role,
     username = EXCLUDED.username,
     first_name = EXCLUDED.first_name,
-    last_name = EXCLUDED.last_name;
+    last_name = EXCLUDED.last_name,
+    password_hash = EXCLUDED.password_hash;
+
+INSERT INTO users (email, password_hash, name, role, username, first_name, last_name, sex) 
+VALUES ('bill@example.com', '$2b$12$ZacLJuTu6S3frCLVN0OGn.mp.r9xYCvVydlwvP9YRh5WI8tpmq3MK', 'Bill Student', 'student', 'bill', 'Bill', 'Student', 'male')
+ON CONFLICT (email) DO UPDATE SET 
+    role = EXCLUDED.role,
+    username = EXCLUDED.username,
+    first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    sex = EXCLUDED.sex,
+    password_hash = EXCLUDED.password_hash;

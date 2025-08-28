@@ -2,42 +2,41 @@ import { signIn } from "@/auth";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { query } from "@/lib/db";
+import { hasStudentStartedActivities, getCurrentStudentActivity } from "@/lib/studentProgress";
 
 interface SignInProps {
 	error?: string;
 }
 
-async function getStudentRedirectPath(studentId: string): Promise<string> {
+async function getStudentRedirectPath(userId: string): Promise<string> {
 	try {
-		// Query student's progress to find next incomplete activity/scene
-		const progress = await query(`
-			SELECT 
-				a.slug as activity_slug,
-				s.slug as scene_slug,
-				s.order_number as scene_order,
-				sp.status
-			FROM activities a
-			JOIN scenes s ON s.activity_id = a.id
-			LEFT JOIN student_progress sp ON sp.activity_id = a.id 
-				AND sp.scene_id = s.id 
-				AND sp.student_id = $1
-			WHERE a.is_active = true AND s.is_active = true
-			ORDER BY a.order_number, s.order_number
-		`, [studentId]);
-
-		// Find first incomplete scene or default to first activity
-		for (const row of progress.rows) {
-			if (!row.status || row.status !== 'completed') {
-				return `/${row.activity_slug}/${row.scene_slug}`;
+		console.log('🎯 Getting redirect path for student user ID:', userId);
+		
+		// Use the same logic as NextAuth redirect callback
+		const hasStartedActivities = await hasStudentStartedActivities(userId);
+		console.log('🎯 Student has started activities:', hasStartedActivities);
+		
+		if (!hasStartedActivities) {
+			// First-time student - redirect to home
+			console.log('🎯 First-time student - redirecting to /home');
+			return '/home';
+		} else {
+			// Returning student - check for current activity
+			console.log('🎯 Returning student - checking current activity...');
+			const currentActivity = await getCurrentStudentActivity(userId);
+			if (currentActivity) {
+				console.log('🎯 Current activity found, redirecting to:', currentActivity);
+				return currentActivity;
+			} else {
+				// Has progress but no current activity, go to dashboard
+				console.log('🎯 No current activity, redirecting to dashboard');
+				return '/dashboard';
 			}
 		}
-		
-		// If all completed, go to first activity
-		return '/home';
 	} catch (error) {
 		console.error('Error getting student redirect:', error);
-		// Fallback to first activity
-		return '/';
+		// Fallback to home for first-time students
+		return '/home';
 	}
 }
 
