@@ -283,6 +283,7 @@ function OwnerCreateUserForm() {
     setIsLoading(true);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const userRole = (session?.user as { role?: string })?.role;
       const isCreatingStudent = formData.role === 'student';
       

@@ -4,7 +4,6 @@ import Credentials from "next-auth/providers/credentials";
 import { signInSchema, signInSchemaLegacy } from "./lib/zod";
 import bcrypt from "bcryptjs";
 import { query } from "./lib/db";
-import { hasStudentStartedActivities, getCurrentStudentActivity } from './lib/studentProgress';
 
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -69,7 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ url, baseUrl, token }) {
+		async redirect({ url, baseUrl }) {
 			// Handle logout redirects to login page
 			if (url === `${baseUrl}/auth/login`) {
 				return url;
@@ -79,32 +78,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			if (url.startsWith("/")) return `${baseUrl}${url}`;
 			if (url.startsWith(baseUrl)) return url;
 			
-			// For students, check their activity progress to determine redirect
-			if (token?.role === 'student' && token?.sub) {
-				try {
-					const hasStartedActivities = await hasStudentStartedActivities(token.sub);
-					
-					if (!hasStartedActivities) {
-						// First-time student - redirect to home
-						return `${baseUrl}/home`;
-					} else {
-						// Returning student - check for current activity
-						const currentActivity = await getCurrentStudentActivity(token.sub);
-						if (currentActivity) {
-							return `${baseUrl}${currentActivity}`;
-						} else {
-							// Has progress but no current activity, go to dashboard
-							return `${baseUrl}/dashboard`;
-						}
-					}
-				} catch (error) {
-					console.error('Error checking student progress:', error);
-					// On error, default to dashboard
-					return `${baseUrl}/dashboard`;
-				}
-			}
+			// Note: Student-specific redirects based on activity progress are handled
+			// in the sign-in component (sign-in.tsx) which has access to the user data
+			// after successful authentication
 			
-			// Default redirect to dashboard for login (non-students)
+			// Default redirect to dashboard for login
 			return `${baseUrl}/dashboard`;
 		},
 		async jwt({ token, user }) {
@@ -154,7 +132,7 @@ async function getUserFromDb(login: string, password: string) {
 					'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
 					[login]
 				);
-			} catch (fallbackErr) {
+			} catch {
 				// Final fallback for minimal schema
 				console.log('Final fallback to email-only query');
 				result = await query(
