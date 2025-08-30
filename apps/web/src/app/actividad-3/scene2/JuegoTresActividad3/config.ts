@@ -279,12 +279,8 @@ export const GAME_CONFIG = {
   }
 } as const;
 
-// Mock gender detection (easy to replace with real backend data)
-export const getMockUserGender = (): 'male' | 'female' => {
-  // TODO: Replace with real user data from backend
-  // For now, you can change this to test both versions
-  return 'male'; // Change to 'female' to test female version
-};
+// Gender detection now uses real session data
+// The gender is obtained directly from the user session in the component
 
 // Helper function to get current game config based on gender
 export const getCurrentGameConfig = (gender: 'male' | 'female') => {

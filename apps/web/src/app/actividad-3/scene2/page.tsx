@@ -6,20 +6,29 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoTresActividad3 from './JuegoTresActividad3/JuegoTresActividad3'; // FIXED: Correct import name
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-//import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 
-// Mock gender detection function - Replace with real backend data later
-const getMockUserGender = (): 'male' | 'female' => {
-  // TODO: Replace with real user data from backend
-  // For now, you can change this to test both versions
-  return 'male'; // Change to 'female' to test female version
+// Helper function to get user gender from session
+const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'female' => {
+  const sessionSex = session?.user?.sex?.toLowerCase();
+  
+  // Handle various possible values from the session
+  if (sessionSex === 'male' || sessionSex === 'm' || sessionSex === 'masculino') {
+    return 'male';
+  } else if (sessionSex === 'female' || sessionSex === 'f' || sessionSex === 'femenino') {
+    return 'female';
+  }
+  
+  // Default fallback
+  console.warn('⚠️ No valid gender found in session, defaulting to female');
+  return 'female';
 };
 
 export default function Actividad3Scene2Page() {
-  //const { data: session } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   
@@ -31,9 +40,13 @@ export default function Actividad3Scene2Page() {
   const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   
-  // Get user gender
-  const userGender = getMockUserGender();
-  console.log('🔍 Current user gender in Scene 2:', userGender);
+  // Get user gender from session
+  const userGender = getUserGender(session);
+  
+  // Debug logging
+  console.log('🎯 User gender from session:', session?.user?.sex);
+  console.log('🎯 Parsed user gender:', userGender);
+  console.log('🎯 Full session user data:', session?.user);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });

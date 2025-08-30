@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
-import { getMockUserGender } from './config';
 import SituationDisplay from './SituationDisplay';
 import OptionsList from './OptionsList';
 import FeedbackOverlay from './FeedbackOverlay';
@@ -22,8 +22,31 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
   onGameComplete,
   userId
 }) => {
-  const userGender = getMockUserGender();
-  console.log('🔍 Current user gender:', userGender); // Debug log
+  // Get the actual user session
+  const { data: session } = useSession();
+  
+  // Convert session sex to the expected format and provide fallback
+  const getUserGender = (): 'male' | 'female' => {
+    const sessionSex = session?.user?.sex?.toLowerCase();
+    
+    // Handle various possible values from the session
+    if (sessionSex === 'male' || sessionSex === 'm' || sessionSex === 'masculino') {
+      return 'male';
+    } else if (sessionSex === 'female' || sessionSex === 'f' || sessionSex === 'femenino') {
+      return 'female';
+    }
+    
+    // Default fallback
+    console.warn('⚠️ No valid gender found in session, defaulting to female');
+    return 'female';
+  };
+
+  const userGender = getUserGender();
+  
+  // Debug logging
+  console.log('🎯 User gender from session:', session?.user?.sex);
+  console.log('🎯 Parsed user gender:', userGender);
+  console.log('🎯 Full session user data:', session?.user);
   
   // Game hooks
   const {
