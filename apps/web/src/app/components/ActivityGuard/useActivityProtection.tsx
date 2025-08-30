@@ -21,9 +21,14 @@ export function useActivityProtection() {
         return; // Not an activity page
       }
 
-      // Wait for session to load
-      if (status === 'loading') return;
+      // Wait for session to load - this is critical to prevent false redirects
+      if (status === 'loading') {
+        console.log('🔒 Session is loading, waiting...');
+        return;
+      }
       
+      // Only redirect to login if we're certain the user is not authenticated
+      // After the session has fully loaded
       if (status === 'unauthenticated') {
         console.log('🔒 User not authenticated - redirecting to login');
         router.push('/auth/login');
@@ -31,7 +36,8 @@ export function useActivityProtection() {
       }
 
       // Only check access for students
-      if (!session?.user?.id || session.user.role !== 'student') {
+      const userRole = (session?.user as { role?: string })?.role;
+      if (!session?.user?.id || userRole !== 'student') {
         return; // Allow access for non-students
       }
 
@@ -40,6 +46,12 @@ export function useActivityProtection() {
 
       try {
         console.log(`🔒 Checking access to ${activitySlug}${sceneSlug ? `/${sceneSlug}` : ''}`);
+        console.log(`🔒 User info:`, { 
+          userId: session.user.id, 
+          role: userRole 
+        });
+
+        console.log('🔒 About to make API call to /api/student/activity-access');
 
         const response = await fetch('/api/student/activity-access', {
           method: 'POST',
@@ -52,11 +64,17 @@ export function useActivityProtection() {
           }),
         });
 
+        console.log('🔒 API response received:', response.status, response.statusText);
+
         if (!response.ok) {
-          throw new Error(`Access check failed: ${response.status}`);
+          const errorText = await response.text();
+          console.error('🔒 API error response:', errorText);
+          throw new Error(`Access check failed: ${response.status} - ${errorText}`);
         }
 
         const result = await response.json();
+        
+        console.log('🔒 Access check result:', result);
         
         if (!result.canAccess) {
           const redirectUrl = result.redirectTo || '/home';
@@ -66,15 +84,19 @@ export function useActivityProtection() {
           console.log('🔒 Access granted');
         }
       } catch (error) {
-        console.error('Error checking activity access:', error);
+        console.error('🔒 Error checking activity access:', error);
         console.log('🔒 Error occurred - redirecting to home');
         router.push('/home');
       }
     }
 
-    // Small delay to ensure page is fully loaded
-    const timeoutId = setTimeout(checkAccess, 100);
-    return () => clearTimeout(timeoutId);
+    // Only run the check if session status is not loading
+    // This prevents premature redirects
+    if (status !== 'loading') {
+      // Small delay to ensure page is fully loaded
+      const timeoutId = setTimeout(checkAccess, 100);
+      return () => clearTimeout(timeoutId);
+    }
 
   }, [pathname, session, status, router]);
 }

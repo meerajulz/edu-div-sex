@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useProgressSaver } from '../../../hooks/useProgressSaver';
 import { 
   DndContext,
   TouchSensor,
@@ -24,6 +25,7 @@ interface JuegoUnoProps {
 const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
 
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
 
   const [matchedParts, setMatchedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);
@@ -42,30 +44,52 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
     ? '/image/escena_1/juego/BOY.png'
     : '/image/escena_1/juego/GIRL.png';
 
+
   // Detect when all parts are matched
   useEffect(() => {
+    console.log(`🎮 JuegoUno: Matched ${matchedParts.length}/${bodyParts.length} parts for ${gender}`);
     if (matchedParts.length === bodyParts.length) {
+      console.log(`🎉 JuegoUno: All parts matched for ${gender}, showing congrats!`);
+      console.log(`🔔 JuegoUno: setShowCongrats(true) called - CongratsOverlay should appear`);
       setShowCongrats(true);
     }
-  }, [matchedParts, bodyParts.length]);
+  }, [matchedParts, bodyParts.length, gender]);
 
   // Handle congratulations completion
-  const handleCongratsComplete = () => {
+  const handleCongratsComplete = async () => {
+    console.log(`🎯 JuegoUno: handleCongratsComplete called for ${gender}`);
+    console.log(`🔔 JuegoUno: CongratsOverlay callback triggered after autoCloseDelay`);
     setShowCongrats(false);
 
     // Switch to the next level
     if (gender === 'boy') {
+      // Save progress as in_progress since only boy part is done
+      await saveProgress('actividad-1', 'scene1', 'in_progress', 50, {
+        game: 'JuegoUno',
+        gender_completed: 'boy',
+        completed_at: new Date().toISOString()
+      });
       setGender('girl');
       setMatchedParts([]);
     } else {
-      // Game complete - navigate to next scene
+      // Game complete - save as completed before navigating
+      await saveProgress('actividad-1', 'scene1', 'completed', 100, {
+        game: 'JuegoUno',
+        gender_completed: 'both',
+        completed_at: new Date().toISOString()
+      });
       onClose();
-      router.push('/actividad-1/scene2');
+      
+      // Small delay to ensure progress is saved before navigation
+      setTimeout(() => {
+        router.push('/actividad-1/scene2');
+      }, 200);
     }
   };
 
   useEffect(() => {
     if (isVisible) {
+      console.log(`🎯 JuegoUno: Game opened, initializing...`);
       setGender('boy');
       setMatchedParts([]);
       setFeedback(null);
@@ -73,12 +97,23 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
     }
   }, [isVisible]);
 
+  // Debug gender changes and body parts count
+  useEffect(() => {
+    console.log(`🎮 JuegoUno: Gender changed to ${gender}, bodyParts.length = ${bodyParts.length}`);
+    console.log(`🎮 JuegoUno: Body parts for ${gender}:`, bodyParts.map(p => p.id));
+  }, [gender, bodyParts]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
     if (!over) return;
 
     if (over.id === active.id) {
-      setMatchedParts((prev) => [...prev, String(active.id)]);
+      console.log(`🎯 JuegoUno: Correct match! Adding ${active.id} to matched parts`);
+      setMatchedParts((prev) => {
+        const newMatchedParts = [...prev, String(active.id)];
+        console.log(`🎮 JuegoUno: Total matched parts now: ${newMatchedParts.length}/${bodyParts.length}`);
+        return newMatchedParts;
+      });
       setFeedback('ok');
       new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
     } else {

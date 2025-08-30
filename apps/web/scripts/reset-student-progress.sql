@@ -1,0 +1,1 @@
+DELETE FROM student_progress WHERE student_id = (SELECT id FROM students WHERE user_id = 42);

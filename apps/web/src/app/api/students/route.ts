@@ -15,14 +15,34 @@ export async function GET() {
 
     // Check permissions based on role
     const userRole = await getUserRole(session.user.id);
-    if (!userRole || !await checkPermission(session.user.id, 'canManageStudents')) {
-      return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
+    if (!userRole) {
+      return NextResponse.json({ error: 'Invalid user role.' }, { status: 403 });
     }
 
     let studentsQuery = '';
     let queryParams: unknown[] = [];
 
-    if (userRole === 'owner') {
+    if (userRole === 'student') {
+      // Students can only see their own student record
+      studentsQuery = `
+        SELECT 
+          s.*,
+          u.email as login_email,
+          teacher.name as teacher_name,
+          COUNT(sp.id) as total_progress_entries,
+          COUNT(CASE WHEN sp.status = 'completed' THEN 1 END) as completed_scenes
+        FROM students s
+        LEFT JOIN users u ON s.user_id = u.id
+        LEFT JOIN users teacher ON s.teacher_id = teacher.id
+        LEFT JOIN student_progress sp ON s.id = sp.student_id
+        WHERE s.user_id = $1 AND s.is_active = true
+        GROUP BY s.id, u.email, teacher.name
+        ORDER BY s.created_at DESC
+      `;
+      queryParams = [session.user.id];
+    } else if (!await checkPermission(session.user.id, 'canManageStudents')) {
+      return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
+    } else if (userRole === 'owner') {
       // Owner can see all students
       studentsQuery = `
         SELECT 
@@ -100,7 +120,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check permissions
+    // Check permissions - only teachers, admins, and owners can create students
     const userRole = await getUserRole(session.user.id);
     if (!userRole || !await checkPermission(session.user.id, 'canManageStudents')) {
       return NextResponse.json({ error: 'Access denied.' }, { status: 403 });

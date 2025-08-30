@@ -14,6 +14,7 @@ export async function canUserAccessActivity(
 ): Promise<{ canAccess: boolean; redirectTo?: string }> {
   try {
     console.log(`🔒 Checking access for user ${userId} to ${activitySlug}${sceneSlug ? `/${sceneSlug}` : ''}`);
+    console.log('🔍 Starting student lookup...');
     
     // First, get the student record
     const studentResult = await query(
@@ -21,19 +22,29 @@ export async function canUserAccessActivity(
       [userId]
     );
 
+    console.log('📋 Student query result:', studentResult.rows);
+
     if (studentResult.rows.length === 0) {
       console.log('📋 No student record found - redirecting to home');
       return { canAccess: false, redirectTo: '/home' };
     }
 
     const studentId = studentResult.rows[0].id;
-    console.log('📋 Student ID:', studentId);
+    console.log('📋 Student ID found:', studentId);
 
     // Get the target activity and scene IDs
+    console.log('🔍 Looking up activity:', activitySlug);
+    
+    // Test basic query first
+    const testQuery = await query('SELECT COUNT(*) as count FROM activities');
+    console.log('🧪 Test - Total activities count:', testQuery.rows[0]?.count);
+    
     const activityQuery = await query(
       'SELECT id, order_number FROM activities WHERE slug = $1 AND is_active = true',
       [activitySlug]
     );
+
+    console.log('📋 Activity query result:', activityQuery.rows);
 
     if (activityQuery.rows.length === 0) {
       console.log('❌ Activity not found:', activitySlug);
@@ -41,6 +52,7 @@ export async function canUserAccessActivity(
     }
 
     const targetActivity = activityQuery.rows[0];
+    console.log('📋 Target activity:', targetActivity);
     let targetScene = null;
 
     if (sceneSlug) {
@@ -64,9 +76,9 @@ export async function canUserAccessActivity(
     );
 
     if (progressResult.rows.length === 0) {
-      console.log('📊 No progress found - checking if this is first activity');
+      console.log('📊 No progress found - allowing access to first activity and first scene');
       
-      // Allow access only to the first activity/scene
+      // Get the first activity
       const firstActivityQuery = await query(
         'SELECT id, slug FROM activities WHERE is_active = true ORDER BY order_number ASC LIMIT 1'
       );
@@ -77,8 +89,15 @@ export async function canUserAccessActivity(
 
       const firstActivity = firstActivityQuery.rows[0];
       
+      // For new students, allow access to:
+      // 1. First activity intro page (no scene)
+      // 2. First scene of first activity
       if (firstActivity.id === targetActivity.id) {
-        if (sceneSlug) {
+        if (!sceneSlug) {
+          // Accessing activity intro page - always allow for first activity
+          console.log('✅ Access granted - first activity intro page');
+          return { canAccess: true };
+        } else {
           // Check if this is the first scene
           const firstSceneQuery = await query(
             'SELECT slug FROM scenes WHERE activity_id = $1 AND is_active = true ORDER BY order_number ASC LIMIT 1',
@@ -93,9 +112,6 @@ export async function canUserAccessActivity(
             console.log('❌ Access denied - redirecting to first scene:', redirectTo);
             return { canAccess: false, redirectTo };
           }
-        } else {
-          console.log('✅ Access granted - first activity');
-          return { canAccess: true };
         }
       } else {
         const redirectTo = `/${firstActivity.slug}`;
@@ -149,17 +165,22 @@ export async function canUserAccessActivity(
       return { canAccess: false, redirectTo: '/home' };
     }
 
-    console.log(`📊 Max allowed: ${maxAllowedActivity.slug}/${maxAllowedScene.slug}`);
+    console.log(`📊 Max allowed: ${maxAllowedActivity.slug}/${maxAllowedScene ? `/${maxAllowedScene.slug}` : ''}`);
     console.log(`🎯 Requesting: ${activitySlug}${sceneSlug ? `/${sceneSlug}` : ''}`);
 
     // Check if the requested activity/scene is within allowed range
+    // Allow access to:
+    // 1. Any completed or current activity/scene
+    // 2. Activity intro pages (no scene) for activities up to current level
     if (targetActivity.order_number < maxAllowedActivity.order ||
         (targetActivity.order_number === maxAllowedActivity.order && 
-         targetScene && targetScene.order_number <= maxAllowedScene.order)) {
+         (!sceneSlug || (targetScene && targetScene.order_number <= maxAllowedScene.order)))) {
       console.log('✅ Access granted - within allowed range');
       return { canAccess: true };
     } else {
-      const redirectTo = `/${maxAllowedActivity.slug}/${maxAllowedScene.slug}`;
+      const redirectTo = maxAllowedScene ? 
+        `/${maxAllowedActivity.slug}/${maxAllowedScene.slug}` :
+        `/${maxAllowedActivity.slug}`;
       console.log('❌ Access denied - redirecting to current allowed:', redirectTo);
       return { canAccess: false, redirectTo };
     }

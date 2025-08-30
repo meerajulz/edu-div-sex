@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import { useProgressSaver } from '../../../hooks/useProgressSaver';
 
 interface JuegoTresProps {
   isVisible: boolean;
@@ -20,6 +21,7 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
   userId 
 }) => {
   // Game state management
+  const { saveProgress } = useProgressSaver();
   
   const {
     gameStarted,
@@ -97,9 +99,17 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
       setTimeout(() => {
         setShowCongrats(true);
         
-        setTimeout(() => {
+        setTimeout(async () => {
           // End session as successful
           endSession(true, newAttempts);
+          
+          // Save progress before completing
+          await saveProgress('actividad-1', 'scene6', 'completed', 100, {
+            game: 'JuegoTres',
+            attempts: newAttempts,
+            selected_option: selectedOption || '',
+            completed_at: new Date().toISOString()
+          });
           
           setShowCongrats(false);
           onClose();

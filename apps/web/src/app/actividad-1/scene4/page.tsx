@@ -2,14 +2,21 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoDos from './JuegoDos/JuegoDos';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Scene4Page() {
+//  const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -89,12 +96,26 @@ export default function Scene4Page() {
     setGameCompleted(true);
   };
 
-  const handleGoToScene5 = () => {
+  const handleGoToScene5 = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎯 Scene4: Game completed, saving progress and moving to scene5');
+    
+    const progressSaved = await saveProgress('actividad-1', 'scene4', 'completed', 100, {
+      video_watched: videoEnded,
+      game_completed: gameCompleted,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
+      if (progressSaved) {
+        console.log('✅ Scene4: Progress saved successfully');
+      } else {
+        console.error('❌ Scene4: Failed to save progress, but continuing');
+      }
       router.push('/actividad-1/scene5');
     }, 800);
   };

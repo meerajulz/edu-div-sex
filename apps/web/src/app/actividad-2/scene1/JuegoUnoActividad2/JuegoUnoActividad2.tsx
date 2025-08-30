@@ -7,6 +7,7 @@ import SituationDisplay from './SituationDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import { useProgressSaver } from '../../../hooks/useProgressSaver';
 
 interface JuegoUnoActividad2Props {
   isVisible: boolean;
@@ -22,6 +23,8 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
   userId 
 }) => {
   // Game state management
+  const { saveProgress } = useProgressSaver();
+  
   const {
     currentSituation,
     gamePhase,
@@ -159,8 +162,17 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         setShowCongrats(true);
         
         // Automatically end game after congrats duration
-        setTimeout(() => {
+        setTimeout(async () => {
           endSession(true, score);
+          
+          // Save progress before completing
+          await saveProgress('actividad-2', 'scene1', 'completed', 100, {
+            game: 'JuegoUnoActividad2',
+            final_score: score,
+            total_situations: score,
+            completed_at: new Date().toISOString()
+          });
+          
           setShowCongrats(false);
           onClose();
           if (onGameComplete) {
@@ -290,7 +302,15 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         {/* Congratulations Overlay - Added for game completion */}
         <CongratsOverlay 
           isVisible={showCongrats}
-          onComplete={() => {
+          onComplete={async () => {
+            // Save progress before completing
+            await saveProgress('actividad-2', 'scene1', 'completed', 100, {
+              game: 'JuegoUnoActividad2',
+              final_score: score,
+              total_situations: score,
+              completed_at: new Date().toISOString()
+            });
+            
             setShowCongrats(false);
             endSession(true, score);
             onClose();

@@ -12,8 +12,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 	},
 	providers: [
 		Credentials({
-			// You can specify which fields should be submitted, by adding keys to the `credentials` object.
-			// Support both email and username login
 			credentials: {
 				login: { label: "Email or Username", type: "text" },
 				password: { label: "Password", type: "password" },
@@ -68,36 +66,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 	callbacks: {
-		async redirect({ url, baseUrl }) {
-			// Handle logout redirects to login page
-			if (url === `${baseUrl}/auth/login`) {
-				return url;
-			}
-			
-			// Allow explicit relative URLs
-			if (url.startsWith("/")) return `${baseUrl}${url}`;
-			if (url.startsWith(baseUrl)) return url;
-			
-			// Note: Student-specific redirects based on activity progress are handled
-			// in the sign-in component (sign-in.tsx) which has access to the user data
-			// after successful authentication
-			
-			// Default redirect to dashboard for login
-			return `${baseUrl}/dashboard`;
-		},
 		async jwt({ token, user }) {
-			// Pass user data to token when user signs in
+			console.log('🔑 [TERMINAL] JWT CALLBACK TRIGGERED - User present:', !!user, 'Token sub:', token.sub);
 			if (user) {
+				console.log('✅ [TERMINAL] JWT: Creating token for user:', user.email, 'Role:', (user as { role?: string }).role);
 				token.role = (user as { role?: string }).role;
 				token.username = (user as { username?: string }).username;
 				token.first_name = (user as { first_name?: string }).first_name;
 				token.last_name = (user as { last_name?: string }).last_name;
 				token.sex = (user as { sex?: string }).sex;
+			} else {
+				console.log('🔄 [TERMINAL] JWT: Refreshing existing token for sub:', token.sub, 'Role:', token.role);
 			}
 			return token;
 		},
 		async session({ session, token }) {
-			// Add user info from token to session
+			console.log('🎯 [TERMINAL] SESSION CALLBACK TRIGGERED - Token sub:', token.sub, 'Role:', token.role);
 			if (token && session.user) {
 				session.user.id = token.sub as string;
 				(session.user as { role?: string }).role = token.role as string;
@@ -105,6 +89,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				(session.user as { first_name?: string }).first_name = token.first_name as string;
 				(session.user as { last_name?: string }).last_name = token.last_name as string;
 				(session.user as { sex?: string }).sex = token.sex as string;
+				console.log('✅ [TERMINAL] SESSION: Session created for:', session.user.email, 'Role:', (session.user as { role?: string }).role);
 			}
 			return session;
 		},
@@ -115,31 +100,19 @@ async function getUserFromDb(login: string, password: string) {
 	try {
 		console.log('🔍 Login attempt for:', login);
 		
-		// Query database for user by email OR username (excluding deleted users)
-		// Handle cases where username might be NULL for existing users
-		// Use conditional query based on whether username column exists
-		let result;
-		try {
+		// Simple query first - try email
+		let result = await query(
+			'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name, sex FROM users WHERE email = $1',
+			[login]
+		);
+		
+		// If no user found by email, try username
+		if (result.rows.length === 0) {
+			console.log('🔍 No user found by email, trying username...');
 			result = await query(
-				'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name, sex FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
+				'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name, sex FROM users WHERE username = $1',
 				[login]
 			);
-		} catch (err) {
-			// Fallback for databases without newer columns
-			console.log('Falling back to basic query:', err instanceof Error ? err.message : 'Unknown error');
-			try {
-				result = await query(
-					'SELECT id, email, username, password_hash, name, role, is_active, first_name, last_name FROM users WHERE (email = $1 OR (username IS NOT NULL AND username = $1)) AND deleted_at IS NULL',
-					[login]
-				);
-			} catch {
-				// Final fallback for minimal schema
-				console.log('Final fallback to email-only query');
-				result = await query(
-					'SELECT id, email, password_hash, name, role FROM users WHERE email = $1',
-					[login]
-				);
-			}
 		}
 		
 		console.log('📊 Query result:', result.rows.length, 'users found');

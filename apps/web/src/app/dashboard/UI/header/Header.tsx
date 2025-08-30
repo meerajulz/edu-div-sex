@@ -14,11 +14,17 @@ const Header: React.FC<HeaderProps> = ({ userName, userEmail, userRole, isLoadin
 
   const handleSignOut = async () => {
     try {
-      await signOut({ callbackUrl: '/auth/login' });
+      await signOut({ redirect: false });
+      // Force page reload to clear session state
+      window.location.reload();
     } catch (error) {
       console.error('Logout error:', error);
-      // Fallback: redirect manually if signOut fails
-      window.location.href = '/auth/login';
+      // Clear session storage and reload
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.reload();
+      }
     }
   };
 

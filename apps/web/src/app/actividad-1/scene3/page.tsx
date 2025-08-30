@@ -5,10 +5,18 @@ import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Scene3Page() {
+  //const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  // Protect this scene - students need to complete scene2 first
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -66,8 +74,23 @@ export default function Scene3Page() {
     }, 800);
   };
 
-  const handleVideoEnd = () => {
-    router.push('/actividad-1/scene4');
+  const handleVideoEnd = async () => {
+    console.log('🎬 Scene3: Video ended, saving progress and moving to scene4');
+    
+    const progressSaved = await saveProgress('actividad-1', 'scene3', 'completed', 100, {
+      video_watched: true,
+      completed_at: new Date().toISOString()
+    });
+    
+    if (progressSaved) {
+      console.log('✅ Scene3: Progress saved successfully');
+      setTimeout(() => {
+        router.push('/actividad-1/scene4');
+      }, 200);
+    } else {
+      console.error('❌ Scene3: Failed to save progress, but continuing to next scene');
+      router.push('/actividad-1/scene4');
+    }
   };
 
   return (

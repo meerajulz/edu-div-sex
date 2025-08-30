@@ -6,10 +6,17 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoDosActividad4 from './JuegoDosActividad4/JuegoDosActividad4';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Actividad4Scene2Page() {
+  //const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -88,15 +95,29 @@ export default function Actividad4Scene2Page() {
     setGameCompleted(true);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎉 Actividad4-Scene2: Final scene completed, saving progress for completed activity');
+    
+    const progressSaved = await saveProgress('actividad-4', 'scene2', 'completed', 100, {
+      video_watched: videoEnded,
+      game_completed: gameCompleted,
+      activity_completed: true,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
-      // Navigate to next scene or activity
-       router.push('/actividad-1');
-      console.log('Continue to next activity');
+      if (progressSaved) {
+        console.log('✅ Actividad4-Scene2: Activity 4 completed successfully!');
+      } else {
+        console.error('❌ Actividad4-Scene2: Failed to save progress, but continuing');
+      }
+      // Navigate back to main activity menu
+      router.push('/actividad-1');
     }, 800);
   };
 

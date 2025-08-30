@@ -6,7 +6,10 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoTresActividad3 from './JuegoTresActividad3/JuegoTresActividad3'; // FIXED: Correct import name
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 // Mock gender detection function - Replace with real backend data later
 const getMockUserGender = (): 'male' | 'female' => {
@@ -16,7 +19,11 @@ const getMockUserGender = (): 'male' | 'female' => {
 };
 
 export default function Actividad3Scene2Page() {
+  //const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -110,13 +117,30 @@ export default function Actividad3Scene2Page() {
     setShowJuegoCuatro(false); // Close the game modal
   };
 
-  const handleGoToNextActivity = () => {
+  const handleGoToNextActivity = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎉 Actividad3-Scene2: Final scene completed, saving progress for completed activity');
+    
+    // Save progress for scene2 and mark entire actividad-3 as completed
+    const progressSaved = await saveProgress('actividad-3', 'scene2', 'completed', 100, {
+      video_watched: videoEnded,
+      game_completed: gameCompleted,
+      user_gender: userGender,
+      activity_completed: true,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
-      // Navigate to next activity or main menu
+      if (progressSaved) {
+        console.log('✅ Actividad3-Scene2: Activity 3 completed successfully!');
+      } else {
+        console.error('❌ Actividad3-Scene2: Failed to save progress, but continuing');
+      }
+      // Navigate back to main activity menu
       router.push('/actividad-1');
     }, 800);
   };

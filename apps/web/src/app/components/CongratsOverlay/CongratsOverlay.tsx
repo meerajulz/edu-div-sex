@@ -49,12 +49,22 @@ export default function CongratsOverlay({
   // Auto-close after delay
   useEffect(() => {
     if (isVisible && onComplete && autoCloseDelay > 0) {
+      console.log(`🎊 CongratsOverlay: Starting auto-close timer for ${autoCloseDelay}ms`);
       const timer = setTimeout(() => {
+        console.log(`🎊 CongratsOverlay: Auto-close timer expired, calling onComplete callback`);
         onComplete();
       }, autoCloseDelay);
-      return () => clearTimeout(timer);
+      return () => {
+        console.log(`🎊 CongratsOverlay: Clearing auto-close timer`);
+        clearTimeout(timer);
+      };
     }
   }, [isVisible, onComplete, autoCloseDelay]);
+
+  // Debug visibility changes
+  useEffect(() => {
+    console.log(`🎊 CongratsOverlay: isVisible changed to ${isVisible}`);
+  }, [isVisible]);
 
   if (!isVisible) return null;
 

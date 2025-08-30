@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
@@ -13,6 +14,7 @@ import JuegoUno from './JuegoUno/JuegoUno';
 import Image from 'next/image';
 
 export default function Scene1Page() {
+  const { data: session, status } = useSession();
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -25,6 +27,9 @@ export default function Scene1Page() {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
+
+  // Debug mode for development
+  const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -58,6 +63,27 @@ export default function Scene1Page() {
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  // Session debugging
+  useEffect(() => {
+    console.log('🔒 Scene1: Session status changed:', status);
+    console.log('🔒 Scene1: Session data:', session);
+  }, [session, status]);
+
+  // Hot key for toggling debug mode
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'd' && e.ctrlKey) {
+          setShowDebug(prev => !prev);
+          console.log(`Scene1 Debug mode ${!showDebug ? 'enabled' : 'disabled'}`);
+        }
+      };
+      
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [showDebug]);
 
   // const handleBackClick = () => {
   //   router.push('/actividad-1');
@@ -226,6 +252,21 @@ export default function Scene1Page() {
       )}
 
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/10 to-transparent z-5" />
+
+      {/* Debug panel */}
+      {showDebug && (
+        <div className="fixed bottom-0 right-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[1000]">
+          <div className="font-bold mb-1">Scene1 Debug</div>
+          <div>👤 User: {session?.user?.username || session?.user?.email || 'none'}</div>
+          <div>🏷️ Role: {session?.user?.role || 'none'}</div>
+          <div>⚧️ Sex: {session?.user?.sex || 'none'}</div>
+          <div>📊 Status: {status}</div>
+          <div>🎬 Video Ended: {videoEnded ? 'yes' : 'no'}</div>
+          <div>🎮 Show Game: {showJuegoUno ? 'yes' : 'no'}</div>
+          <div>💧 Hydrated: {isHydrated ? 'yes' : 'no'}</div>
+          <div className="text-yellow-300">Press Ctrl+D to toggle</div>
+        </div>
+      )}
     </motion.div>
   );
 }

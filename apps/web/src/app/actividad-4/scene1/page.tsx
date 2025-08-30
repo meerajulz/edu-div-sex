@@ -6,10 +6,17 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoUnoActividad4 from './JuegoUnoActividad4/JuegoUnoActividad4';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Actividad4Page() {
+  //const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -103,15 +110,27 @@ export default function Actividad4Page() {
     setGameCompleted(true);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎯 Actividad4-Scene1: Game completed, saving progress and moving to scene2');
+    
+    const progressSaved = await saveProgress('actividad-4', 'scene1', 'completed', 100, {
+      videos_watched: allVideosEnded,
+      game_completed: gameCompleted,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
-      // Navigate to next scene or activity
-       router.push('/actividad-4/scene2');
-      console.log('Continue to next activity');
+      if (progressSaved) {
+        console.log('✅ Actividad4-Scene1: Progress saved successfully');
+      } else {
+        console.error('❌ Actividad4-Scene1: Failed to save progress, but continuing');
+      }
+      router.push('/actividad-4/scene2');
     }, 800);
   };
 

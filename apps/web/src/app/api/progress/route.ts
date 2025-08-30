@@ -77,11 +77,11 @@ export async function POST(request: NextRequest) {
         completed_at
       )
       VALUES (
-        $1, $2, $3, $4, $5, $6, 
+        $1, $2, $3, $4::VARCHAR, $5, $6, 
         COALESCE((SELECT started_at FROM student_progress WHERE student_id = $1 AND activity_id = $2 AND scene_id = $3), $7),
         $7,
         COALESCE((SELECT attempts FROM student_progress WHERE student_id = $1 AND activity_id = $2 AND scene_id = $3), 0) + 1,
-        CASE WHEN $4 = 'completed' THEN $7 ELSE NULL END
+        CASE WHEN $4::VARCHAR = 'completed' THEN $7 ELSE NULL END
       )
       ON CONFLICT (student_id, activity_id, scene_id) 
       DO UPDATE SET

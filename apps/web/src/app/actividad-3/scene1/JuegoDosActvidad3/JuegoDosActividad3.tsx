@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import { getMockUserGender } from './config';
 import SituationDisplay from './SituationDisplay';
@@ -20,9 +21,18 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
   onClose,
   onGameComplete
 }) => {
-  const userGender = getMockUserGender();
-  console.log('🔍 Current user gender:', userGender); // Debug log
+  // Get the actual user session
+  const { data: session } = useSession();
+  const sessionUserGender = session?.user?.sex;
   
+  // Log the gender from session
+  console.log('🎯 User gender from session:', sessionUserGender);
+  console.log('🎯 Full session user data:', session?.user);
+  
+  // For now, still use mock but show both
+  const userGender = getMockUserGender();
+  console.log('🔍 Mock user gender (currently used):', userGender);
+
   // Game hooks
   const {
     currentSituation,

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import AnimatedSky from '../components/AnimatedSky/page';
 import OrbitalCarousel from '../components/OrbitalCarousel/index';
 import FloatingMenu from '../components/FloatingMenu/FloatingMenu';
@@ -14,7 +15,7 @@ import { useSession } from 'next-auth/react';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isExiting, setIsExiting] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
@@ -31,6 +32,21 @@ const Dashboard: React.FC = () => {
     setDebugInfo(prev => [...prev, `${new Date().toISOString().split('T')[1].split('.')[0]}: ${message}`]);
     console.log(message);
   };
+
+  // Handle session status changes and role-based redirects
+  useEffect(() => {
+    logDebug(`[HOME] Session status: ${status}`);
+    console.log('🏠 [TERMINAL] Home page - Session status:', status, 'Session exists:', !!session, 'User:', session?.user?.email, 'Role:', session?.user?.role);
+    
+    if (status === 'authenticated' && session?.user) {
+      logDebug(`User logged in: ${session.user.email || session.user.username} (Role: ${session.user.role})`);
+      console.log('✅ [TERMINAL] Home page - Session found for user:', session.user.email, 'Role:', session.user.role);
+      
+      console.log('🎓 [TERMINAL] Home page - User authenticated, staying on home page');
+    } else if (status === 'unauthenticated') {
+      console.log('❌ [TERMINAL] Home page - No session found, user not authenticated');
+    }
+  }, [status, session, router]);
 
   const handleSelectActivity = (url: string) => {
     logDebug(`Activity selected: ${url}`);
@@ -85,6 +101,16 @@ const Dashboard: React.FC = () => {
     }
   }, [showDebug]);
 
+  // Show loading state while session is loading
+  if (status === 'loading') {
+    return (
+      <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-gradient-to-b from-blue-400 to-purple-300">
+        <div className="text-white text-xl mb-4">Loading session...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       {showWelcome ? (
@@ -137,6 +163,22 @@ const Dashboard: React.FC = () => {
               className="w-auto h-auto"
             />
           </div>
+          {/* Dashboard link for non-student users */}
+          {session?.user?.role && session.user.role !== 'student' && (
+            <div className="absolute top-40 left-4  z-50">
+              <Link 
+                href="/dashboard"
+                className="bg-white/90 backdrop-blur-sm text-blue-600 font-semibold px-6 py-3 rounded-full border border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Panel de Control
+              </Link>
+            </div>
+          )}
+
+
 
           <div className='absolute top-0 left-0 right-0 z-50'>
             <div className='flex justify-center'>
@@ -212,7 +254,8 @@ const Dashboard: React.FC = () => {
               <div>audioProgress: {audioPreloadProgress}%</div>
               <div>videoPlayed: {videoHasPlayed ? 'true' : 'false'}</div>
               <div className="border-t border-white/30 mt-1 pt-1">
-                <div>👤 User: {session?.user?.username || session?.user?.email}</div>
+                <div>🔐 Session: {status}</div>
+                <div>👤 User: {session?.user?.username || session?.user?.email || 'loading...'}</div>
                 <div>🏷️ Role: {session?.user?.role || 'none'}</div>
                 <div>⚧️ Sex: {session?.user?.sex || 'none'}</div>
               </div>

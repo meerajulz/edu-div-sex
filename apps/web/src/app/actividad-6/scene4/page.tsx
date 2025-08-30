@@ -8,10 +8,17 @@ import JuegoCincoActividad6 from './JuegoCincoActividad6/JuegoCincoActividad6';
 import JuegoSeisActividad6 from './JuegoSeisActividad6/JuegoSeisActividad6';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Actividad6Scene4Page() {
+  //const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const finalVideoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -152,12 +159,31 @@ export default function Actividad6Scene4Page() {
   };
 
   // Continue to home
-  const handleContinueToHome = () => {
+  const handleContinueToHome = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎉 Actividad6-Scene4: Level 1 completed, saving progress for completed activity');
+    
+    const progressSaved = await saveProgress('actividad-6', 'scene4', 'completed', 100, {
+      initial_video_watched: initialVideoEnded,
+      final_video_watched: finalVideoEnded,
+      juego_cuatro_completed: juegoCuatroCompleted,
+      juego_cinco_completed: juegoCincoCompleted,
+      juego_seis_completed: juegoSeisCompleted,
+      activity_completed: true,
+      level_completed: true,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
+      if (progressSaved) {
+        console.log('✅ Actividad6-Scene4: Level 1 completed successfully!');
+      } else {
+        console.error('❌ Actividad6-Scene4: Failed to save progress, but continuing');
+      }
       router.push('/home');
     }, 800);
   };

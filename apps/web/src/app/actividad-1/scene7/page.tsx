@@ -2,13 +2,20 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Scene7Page() {
+//  const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -49,11 +56,26 @@ export default function Scene7Page() {
     setShowVideo(true);
   };
 
-  const handleVideoEnd = () => {
+  const handleVideoEnd = async () => {
     const audio = new Audio('/audio/button/Bright.mp3');
     audio.volume = 0.7;
     audio.play().catch(console.warn);
     setVideoEnded(true);
+    
+    console.log('🎉 Scene7: Final scene video ended, saving progress for completed activity');
+    
+    // Save progress for scene7 and mark entire activity as completed
+    const progressSaved = await saveProgress('actividad-1', 'scene7', 'completed', 100, {
+      video_watched: true,
+      activity_completed: true,
+      completed_at: new Date().toISOString()
+    });
+    
+    if (progressSaved) {
+      console.log('✅ Scene7: Activity 1 completed successfully!');
+    } else {
+      console.error('❌ Scene7: Failed to save progress');
+    }
   };
 
   const playSound = () => {
@@ -77,7 +99,9 @@ export default function Scene7Page() {
     }, 800);
   };
 
-  const handleBackClick = () => {
+  const handleBackClick = async () => {
+    console.log('🏠 Scene7: Returning to actividad-1 main page');
+    // Go back to actividad-1 main page
     router.push('/actividad-1');
   };
 

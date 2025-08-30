@@ -6,10 +6,17 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoCuatroActividad5 from './JuegoCuatroActividad5/JuegoCuatroActividad5';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Actividad5Scene2Page() {
+ // const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -93,14 +100,28 @@ export default function Actividad5Scene2Page() {
   };
 
   // Continue to next page
-  const handleContinueToNextPage = () => {
+  const handleContinueToNextPage = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎉 Actividad5-Scene2: Final scene completed, saving progress for completed activity');
+    
+    const progressSaved = await saveProgress('actividad-5', 'scene2', 'completed', 100, {
+      video_watched: videoEnded,
+      game_completed: juegoCuatroCompleted,
+      activity_completed: true,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
-      // Navigate to next activity or page
-      router.push('/actividad-1/'); // or wherever you want to go next
+      if (progressSaved) {
+        console.log('✅ Actividad5-Scene2: Activity 5 completed successfully!');
+      } else {
+        console.error('❌ Actividad5-Scene2: Failed to save progress, but continuing');
+      }
+      router.push('/actividad-1');
     }, 800);
   };
 

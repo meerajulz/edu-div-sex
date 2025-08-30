@@ -7,10 +7,17 @@ import JuegoUnoActividad3 from './JuegoUnoActividad3/juegoUnoActividad3';
 import JuegoDosActividad3 from './JuegoDosActvidad3/JuegoDosActividad3';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Actividad3Scene1Page() {
+  //const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -118,12 +125,28 @@ export default function Actividad3Scene1Page() {
   };
 
   // Handle go to next scene
-  const handleGoToScene2 = () => {
+  const handleGoToScene2 = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+    
+    console.log('🎯 Actividad3-Scene1: Games completed, saving progress and moving to scene2');
+    
+    const progressSaved = await saveProgress('actividad-3', 'scene1', 'completed', 100, {
+      video_watched: videoEnded,
+      video2_watched: video2Ended,
+      juego1_completed: juego1Completed,
+      juego2_completed: gameCompleted,
+      completed_at: new Date().toISOString()
+    });
+    
     setTimeout(() => {
       setIsAnimating(false);
+      if (progressSaved) {
+        console.log('✅ Actividad3-Scene1: Progress saved successfully');
+      } else {
+        console.error('❌ Actividad3-Scene1: Failed to save progress, but continuing');
+      }
       router.push('/actividad-3/scene2');
     }, 800);
   };

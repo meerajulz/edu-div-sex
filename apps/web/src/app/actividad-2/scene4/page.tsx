@@ -2,16 +2,23 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState, useRef, useEffect } from 'react';
 import JuegoCuatroActividad2 from './JuegoCuatroActividad2/JuegoCuatroActividad2';
 import JuegoCincoActividad2 from './JuegoCincoActividad2/JuegoCincoActividad2';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 
 export default function Actividad2Scene4Page() {
+ // const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const alexAudioRef = useRef<HTMLAudioElement | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -163,11 +170,31 @@ export default function Actividad2Scene4Page() {
     // Don't mark as completed, just close
   };
 
-  const handleNextLevel = () => {
+  const handleNextLevel = async () => {
     playSound();
-    // Add your navigation logic here to go to the next level
-    console.log('Going to next level...');
-    router.push('/actividad-1');
+    
+    console.log('🎉 Actividad2-Scene4: Final scene completed, saving progress for completed activity');
+    
+    // Save progress for scene4 and mark entire actividad-2 as completed
+    const progressSaved = await saveProgress('actividad-2', 'scene4', 'completed', 100, {
+      video_watched: videoEnded,
+      game4_completed: game4Completed,
+      game5_completed: game5Completed,
+      alex_congrats_seen: showAlexCongrats,
+      activity_completed: true,
+      completed_at: new Date().toISOString()
+    });
+    
+    if (progressSaved) {
+      console.log('✅ Actividad2-Scene4: Activity 2 completed successfully!');
+      // Go back to actividad-2 main page (or actividad-1 as shown in original code)
+      setTimeout(() => {
+        router.push('/actividad-1');
+      }, 200);
+    } else {
+      console.error('❌ Actividad2-Scene4: Failed to save progress, but continuing');
+      router.push('/actividad-1');
+    }
   };
 
   // Show Alex congratulations scene if both games are completed

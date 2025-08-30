@@ -14,6 +14,7 @@ import { bodyParts } from './config';
 import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { useProgressSaver } from '../../../hooks/useProgressSaver';
 
 interface JuegoDosProps {
   isVisible: boolean;
@@ -23,6 +24,7 @@ interface JuegoDosProps {
 
 const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete }) => {
 
+  const { saveProgress } = useProgressSaver();
   const [matchedParts, setMatchedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'ok' | 'wrong' | null>(null);
 
@@ -41,7 +43,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
   }, [matchedParts]);
 
   // Handle congratulations completion
-  const handleCongratsComplete = () => {
+  const handleCongratsComplete = async () => {
     setShowCongrats(false);
     
     // Play completion sound
@@ -52,6 +54,14 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
+    
+    // Save progress before completing
+    await saveProgress('actividad-1', 'scene4', 'completed', 100, {
+      game: 'JuegoDos',
+      matched_parts: matchedParts.length,
+      total_parts: bodyParts.length,
+      completed_at: new Date().toISOString()
+    });
     
     // Game complete - close and trigger completion callback
     setTimeout(() => {

@@ -18,12 +18,19 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`🔒 API: Checking access for user ${session.user.id} to ${activitySlug}${sceneSlug ? `/${sceneSlug}` : ''}`);
+    console.log(`🔒 API: User session:`, { 
+      id: session.user.id, 
+      email: session.user.email,
+      role: session.user.role 
+    });
 
     const accessResult = await canUserAccessActivity(
       session.user.id,
       activitySlug,
       sceneSlug
     );
+
+    console.log(`🔒 API: Access result:`, accessResult);
 
     return NextResponse.json(accessResult);
 

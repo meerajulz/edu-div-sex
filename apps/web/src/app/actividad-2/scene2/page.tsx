@@ -6,10 +6,17 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoDosActividad2 from './JuegoDosActividad2/JuegoDosActividad2';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+//import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
 
 export default function Actividad2Scene2Page() {
+ // const { data: session } = useSession();
   const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+  
+  useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -69,10 +76,26 @@ export default function Actividad2Scene2Page() {
     }, 800);
   };
 
-  const handleVideoEnd = () => {
+  const handleVideoEnd = async () => {
     setShowVideo(false);
-    setShowGameModal(true);
-    setGameCompleted(true); 
+    setGameCompleted(true);
+    
+    console.log('🎬 Actividad2-Scene2: Video ended, saving progress and moving to scene3');
+    
+    const progressSaved = await saveProgress('actividad-2', 'scene2', 'completed', 100, {
+      video_watched: true,
+      completed_at: new Date().toISOString()
+    });
+    
+    if (progressSaved) {
+      console.log('✅ Actividad2-Scene2: Progress saved successfully');
+      setTimeout(() => {
+        router.push('/actividad-2/scene3');
+      }, 200);
+    } else {
+      console.error('❌ Actividad2-Scene2: Failed to save progress, but continuing');
+      router.push('/actividad-2/scene3');
+    }
   };
 
   const handleGameComplete = () => {
