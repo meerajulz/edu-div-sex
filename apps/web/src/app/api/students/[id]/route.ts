@@ -25,7 +25,11 @@ export async function GET(
     const result = await query(`
       SELECT 
         s.*,
-        u.email as login_email,
+        u.email,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.sex,
         u.role as user_role,
         teacher.name as teacher_name,
         COUNT(sp.id) as total_scenes_accessed,
@@ -37,7 +41,7 @@ export async function GET(
       LEFT JOIN users teacher ON s.teacher_id = teacher.id
       LEFT JOIN student_progress sp ON s.id = sp.student_id
       WHERE s.id = $1 AND s.is_active = true
-      GROUP BY s.id, u.email, u.role, teacher.name
+      GROUP BY s.id, u.email, u.username, u.first_name, u.last_name, u.sex, u.role, teacher.name
     `, [studentId]);
 
     if (result.rows.length === 0) {

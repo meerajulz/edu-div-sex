@@ -84,13 +84,18 @@ export async function GET() {
         SELECT 
           s.*,
           u.email as login_email,
+          u.username,
+          u.email,
+          u.first_name,
+          u.last_name,
+          u.sex,
           COUNT(sp.id) as total_progress_entries,
           COUNT(CASE WHEN sp.status = 'completed' THEN 1 END) as completed_scenes
         FROM students s
         LEFT JOIN users u ON s.user_id = u.id
         LEFT JOIN student_progress sp ON s.id = sp.student_id
         WHERE s.teacher_id = $1 AND s.is_active = true
-        GROUP BY s.id, u.email
+        GROUP BY s.id, u.email, u.username, u.first_name, u.last_name, u.sex
         ORDER BY s.created_at DESC
       `;
       queryParams = [session.user.id];

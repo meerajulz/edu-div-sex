@@ -5,15 +5,21 @@ import { useRouter } from 'next/navigation';
 import DashboardWrapper from '../../DashboardWrapper';
 
 interface Student {
-  id: string;
-  email: string;
+  id: number;
   name: string;
-  username?: string;
-  role: 'student';
+  age?: number;
+  reading_level: number;
+  comprehension_level: number;
+  attention_span: number;
+  motor_skills: number;
+  teacher_id: number;
+  user_id?: number;
   is_active: boolean;
   created_at: string;
-  last_password_change?: string;
-  created_by_name?: string;
+  login_email?: string;
+  teacher_name?: string;
+  total_progress_entries: number;
+  completed_scenes: number;
 }
 
 export default function OwnerStudentsPage() {
@@ -30,14 +36,14 @@ export default function OwnerStudentsPage() {
   const fetchStudents = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/users?role=student');
+      const response = await fetch('/api/students');
       
       if (!response.ok) {
         throw new Error('Error al cargar los estudiantes');
       }
       
       const data = await response.json();
-      setStudents(data.users || []);
+      setStudents(data.students || []);
     } catch (err) {
       console.error('Error fetching students:', err);
       setError(err instanceof Error ? err.message : 'Error al cargar los estudiantes');
@@ -66,8 +72,8 @@ export default function OwnerStudentsPage() {
   const filteredStudents = students.filter(student => {
     const matchesSearch = 
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (student.username && student.username.toLowerCase().includes(searchTerm.toLowerCase()));
+      (student.login_email && student.login_email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (student.teacher_name && student.teacher_name.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -191,10 +197,10 @@ export default function OwnerStudentsPage() {
                   <tr>
                     <th className="text-left p-3 font-medium text-yellow-900">Estudiante</th>
                     <th className="text-left p-3 font-medium text-yellow-900">Email</th>
-                    <th className="text-left p-3 font-medium text-yellow-900">Usuario</th>
+                    <th className="text-left p-3 font-medium text-yellow-900">Profesor</th>
                     <th className="text-left p-3 font-medium text-yellow-900">Estado</th>
                     <th className="text-left p-3 font-medium text-yellow-900">Fecha de Registro</th>
-                    <th className="text-left p-3 font-medium text-yellow-900">Creado por</th>
+                    <th className="text-left p-3 font-medium text-yellow-900">Progreso</th>
                     <th className="text-left p-3 font-medium text-yellow-900">Acciones</th>
                   </tr>
                 </thead>
@@ -210,16 +216,12 @@ export default function OwnerStudentsPage() {
                         </div>
                       </td>
                       <td className="p-3 text-gray-600">
-                        {student.email}
+                        {student.login_email || 'Sin email'}
                       </td>
                       <td className="p-3">
-                        {student.username ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                            {student.username}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-xs">Sin usuario</span>
-                        )}
+                        <span className="text-gray-600 text-sm">
+                          {student.teacher_name || 'Sin asignar'}
+                        </span>
                       </td>
                       <td className="p-3">
                         {getStatusBadge(student.is_active)}
@@ -228,18 +230,26 @@ export default function OwnerStudentsPage() {
                         {formatDate(student.created_at)}
                       </td>
                       <td className="p-3 text-gray-600">
-                        {student.created_by_name || 'Sistema'}
+                        {student.completed_scenes}/{student.total_progress_entries} escenas
                       </td>
                       <td className="p-3">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => router.push(`/dashboard/owner/users/${student.id}`)}
-                            className="text-yellow-600 hover:text-yellow-800 text-xs"
+                            onClick={() => router.push(`/dashboard/students/${student.id}`)}
+                            className="text-blue-600 hover:text-blue-800 text-xs"
+                            title="Ver detalles del estudiante"
                           >
-                            Ver
+                            Ver Detalles
                           </button>
                           <button
-                            onClick={() => router.push(`/dashboard/owner/users/${student.id}/edit`)}
+                            onClick={() => router.push(`/dashboard/owner/users/${student.id}`)}
+                            className="text-yellow-600 hover:text-yellow-800 text-xs"
+                            title="Ver información de usuario"
+                          >
+                            Usuario
+                          </button>
+                          <button
+                            onClick={() => router.push(`/dashboard/students/${student.id}/edit`)}
                             className="text-gray-600 hover:text-gray-800 text-xs"
                           >
                             Editar

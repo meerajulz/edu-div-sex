@@ -78,7 +78,7 @@ const ActivityLabels: React.FC<ActivityLabelsProps> = ({
       xPosition: -60,
       yPosition: 280,
       zPosition: 150,
-      scale: nextActivityToPlay === 1 ? 1.5 : 0.9, // Larger scale for next activity
+      scale: nextActivityToPlay === 1 ? 1.1 : 0.9, // Larger scale for next activity
       rotateX: 18,
       rotateY: -15,
       delay: 0.2,
@@ -227,9 +227,6 @@ const handleClick = (activity: ActivityLabel) => {
   // Show loading while progress is being fetched
   if (!isVisible || !isReady || progressLoading) return null;
 
-  // const lastActive = activities
-  //   .filter(activity => activity.isActive)
-  //   .sort((a, b) => b.id - a.id)[0];
 
   const containerPositionClass = `absolute ${containerPosition.top ? `top-${containerPosition.top}` : ''} ${containerPosition.left ? `left-${containerPosition.left}` : ''} ${containerPosition.transform ? `transform ${containerPosition.transform}` : ''}`;
 
@@ -314,7 +311,7 @@ const handleClick = (activity: ActivityLabel) => {
                     filter: `brightness(${activity.brightness || 1})`,
                     // Add a subtle glow effect for the next activity
                     ...(isNextActivity && activity.isActive ? {
-                      boxShadow: '0 0 30px rgba(255, 215, 0, 0.6)'
+                      //boxShadow: '0 0 30px rgba(255, 215, 0, 0.6)'
                     } : {})
                   }}
                 >
@@ -329,7 +326,7 @@ const handleClick = (activity: ActivityLabel) => {
                     
                     {/* Lock overlay for inactive activities */}
                     {!activity.isActive && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
+                      <div className="absolute inset-0 flex items-center justify-center ">
                         <div className="text-white text-2xl">🔒</div>
                       </div>
                     )}

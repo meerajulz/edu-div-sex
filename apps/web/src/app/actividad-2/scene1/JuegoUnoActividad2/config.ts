@@ -26,7 +26,7 @@ export const GAME_CONFIG = {
     {
       id: 'situation_1',
       title: 'Situación 1',
-      description: 'El prota cuenta al oído a Rosa que le gusta Pepe y después ve que Rosa se lo cuenta a todos los amigos.',
+      description: 'Alex cuenta al oído a Rosa que le gusta Pepe y después ve que Rosa se lo cuenta a todos los amigos.',
       
       // Visual content
       image: '/image/actividad_2/juego_1/B_gustar.png',
@@ -53,7 +53,7 @@ export const GAME_CONFIG = {
     {
       id: 'situation_2',
       title: 'Situación 2',
-      description: 'El prota cuenta al oído a Rosa que le gusta mucho el chocolate y después ve que Rosa se lo cuenta a todos los amigos.',
+      description: 'Alex cuenta al oído a Rosa que le gusta mucho el chocolate y después ve que Rosa se lo cuenta a todos los amigos.',
       
       // Visual content
       image: '/image/actividad_2/juego_1/B_chocolate.png',
@@ -80,7 +80,7 @@ export const GAME_CONFIG = {
     {
       id: 'situation_3',
       title: 'Situación 3',
-      description: 'El prota cuenta al oído a Rosa que le gusta ver fotos sexis y tocarse y después ve que Rosa se lo cuenta a todos los amigos.',
+      description: 'Alex cuenta al oído a Rosa que le gusta ver fotos sexis y tocarse y después ve que Rosa se lo cuenta a todos los amigos.',
       
       // Visual content
       image: '/image/actividad_2/juego_1/B_tocarse.png',
@@ -107,7 +107,7 @@ export const GAME_CONFIG = {
     {
       id: 'situation_4',
       title: 'Situación 4',
-      description: 'El prota cuenta al oído a Rosa que le gustaría aprender a esquiar y después ve que Rosa se lo cuenta a todos los amigos.',
+      description: 'Alex cuenta al oído a Rosa que le gustaría aprender a esquiar y después ve que Rosa se lo cuenta a todos los amigos.',
       
       // Visual content
       image: '/image/actividad_2/juego_1/B_esquiar.png',
