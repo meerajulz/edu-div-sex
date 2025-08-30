@@ -142,13 +142,6 @@ export default function Actividad6Scene1Page() {
       // Game completed - show completion message
       return (
         <div className="flex flex-col items-center space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-          >
-            ¡Juego Completado! 🎉
-          </motion.div>
           <JugarButton 
             onClick={handleContinueToScene2} 
             disabled={isAnimating}
