@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
+import { useActivityTracking } from '../../hooks/useActivityTracking';
 
 // Helper function to get user gender from session
 const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'female' => {
@@ -28,7 +29,10 @@ const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'f
 };
 
 export default function Actividad3Scene2Page() {
-  const { data: session } = useSession();
+  
+  // Track current activity URL for continue feature
+  useActivityTracking();
+const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   

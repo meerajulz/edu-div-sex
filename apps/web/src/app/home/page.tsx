@@ -12,6 +12,7 @@ import AudioPreloader from '../components/AudioPreloader/AudioPreloader';
 import { initAudio } from '../utils/audioHandler';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
+import { getLastActivityUrl } from '../hooks/useActivityTracking';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
@@ -24,6 +25,10 @@ const Dashboard: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [audioPreloadProgress, setAudioPreloadProgress] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [lastActivityUrl, setLastActivityUrl] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showContinueOption, setShowContinueOption] = useState(false);
 
   // For development only
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
@@ -43,6 +48,15 @@ const Dashboard: React.FC = () => {
       console.log('✅ [TERMINAL] Home page - Session found for user:', session.user.email, 'Role:', session.user.role);
       
       console.log('🎓 [TERMINAL] Home page - User authenticated, staying on home page');
+      
+      // Check if user has a saved activity to continue
+      getLastActivityUrl().then(url => {
+        if (url) {
+          setLastActivityUrl(url);
+          setShowContinueOption(true);
+          logDebug(`Found last activity: ${url}`);
+        }
+      });
     } else if (status === 'unauthenticated') {
       console.log('❌ [TERMINAL] Home page - No session found, redirecting to login');
       logDebug('User not authenticated, redirecting to login page');
@@ -257,6 +271,30 @@ const Dashboard: React.FC = () => {
           <div className='absolute top-0 right-0 z-50 flex'>
             <FloatingMenu />
           </div>
+
+          {/* Continue where you left off button */}
+          {/* {showContinueOption && lastActivityUrl && (
+            <motion.div
+              className="absolute bottom-[30%] left-10 right-0 z-[100] flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <button
+                onClick={() => {
+                  logDebug(`Continuing from last activity: ${lastActivityUrl}`);
+                  router.push(lastActivityUrl);
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Continuar donde lo dejaste
+              </button>
+            </motion.div>
+          )} */}
 
           {showDebug && (
             <div className="fixed bottom-0 left-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[1000]">

@@ -8,9 +8,13 @@ import { useRouter } from 'next/navigation';
 //import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
+import { useActivityTracking } from '../../hooks/useActivityTracking';
 
 export default function Scene2Page() {
-  //const { data: session, status } = useSession();
+  
+  // Track current activity URL for continue feature
+  useActivityTracking();
+//const { data: session, status } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   const videoRef = useRef<HTMLVideoElement>(null);

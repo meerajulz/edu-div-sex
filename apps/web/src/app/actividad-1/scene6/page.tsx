@@ -10,9 +10,13 @@ import JuegoTres from './JuegoTres/JuegoTres';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
+import { useActivityTracking } from '../../hooks/useActivityTracking';
 
 export default function Scene6Page() {
-  //const { data: session } = useSession();
+  
+  // Track current activity URL for continue feature
+  useActivityTracking();
+//const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   

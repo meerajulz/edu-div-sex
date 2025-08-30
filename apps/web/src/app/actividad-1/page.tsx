@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
+import { getLastActivityUrl } from '../hooks/useActivityTracking';
 
 const ActivityLabels = dynamic(() => import('../components/ModuleAnimations/ActivityLabels'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -41,6 +42,10 @@ export default function Aventura1Page() {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
+
+  // Continue where you left off functionality
+  const [lastActivityUrl, setLastActivityUrl] = useState<string | null>(null);
+  const [showContinueOption, setShowContinueOption] = useState(false);
 
   // Debug mode for development
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
@@ -129,6 +134,21 @@ useEffect(() => {
   console.log('🔒 Actividad-1: Session data:', session);
 }, [session, status]);
 
+// Check for saved activity to continue
+useEffect(() => {
+  if (status === 'authenticated' && session?.user) {
+    getLastActivityUrl().then(url => {
+      if (url) {
+        setLastActivityUrl(url);
+        setShowContinueOption(true);
+        console.log('📍 Found last activity to continue:', url);
+      }
+    }).catch(error => {
+      console.warn('⚠️ Failed to get last activity:', error);
+    });
+  }
+}, [status, session]);
+
   const handleVideoEnd = () => {
     cleanupAudio();
     setVideoEnded(true);
@@ -140,7 +160,7 @@ useEffect(() => {
     }, 0);
   };
 
-  const handleActivitySelect = (id: number, url: string) => {
+  const handleActivitySelect = (_id: number, url: string) => {
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -249,6 +269,33 @@ useEffect(() => {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+
+      {/* Continue where you left off button - Top of page */}
+      {showContinueOption && lastActivityUrl && (
+        <motion.div
+          className="absolute top-[30%] left-0 right-0 z-[100] flex justify-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <button
+            onClick={() => {
+              console.log('🚀 Continuing from last activity:', lastActivityUrl);
+              cleanupAudio();
+              setIsExiting(true);
+              setPendingNavigation(lastActivityUrl);
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-3"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Continuar donde lo dejaste
+     
+          </button>
+        </motion.div>
+      )}
 
       <motion.div
         className="absolute inset-0"

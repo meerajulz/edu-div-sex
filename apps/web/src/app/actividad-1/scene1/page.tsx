@@ -10,11 +10,15 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import ButtonGlobe from '../../components/ButtonGlobe/ButtonGlobe';
 import Cris from '../../components/Cris/Cris';
 import JuegoUno from './JuegoUno/JuegoUno';
+import { useActivityTracking } from '../../hooks/useActivityTracking';
 
 import Image from 'next/image';
 
 export default function Scene1Page() {
   const { data: session, status } = useSession();
+  
+  // Track current activity URL for continue feature
+  useActivityTracking();
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
