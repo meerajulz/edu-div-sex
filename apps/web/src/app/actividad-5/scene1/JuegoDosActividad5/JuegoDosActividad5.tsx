@@ -529,16 +529,16 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                       </motion.div>
                     </div>
                     
-                    {/* Feedback overlay */}
+                    {/* Feedback overlay - CENTERED RELATIVE TO MODAL */}
                     <AnimatePresence>
                       {showFeedback && feedbackInfo && (
                         <motion.div
-                          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100]"
+                          className="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none"
                           initial={{ opacity: 0, scale: 0.5 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.5 }}
                         >
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center pointer-events-auto">
                             <div className="w-20 h-20 mb-4">
                               <Image
                                 src={feedbackInfo.isCorrect 

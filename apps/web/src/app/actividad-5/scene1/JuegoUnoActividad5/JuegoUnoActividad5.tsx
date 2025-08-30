@@ -406,16 +406,16 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                 {gameState === 'playing' && currentScenario && (
                   <div className="flex flex-col items-center h-full w-full relative">
                     
-                    {/* Feedback overlay - MOVED TO TOP LEVEL */}
+                    {/* Feedback overlay - CENTERED RELATIVE TO MODAL */}
                     <AnimatePresence>
                       {showFeedback && feedbackInfo && (
                         <motion.div
-                          className="absolute top-16 left-1/2 transform -translate-x-1/2 z-[100]"
+                          className="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none"
                           initial={{ opacity: 0, scale: 0.5 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.5 }}
                         >
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center pointer-events-auto">
                             <div className="w-20 h-20 mb-4">
                               <Image
                                 src={feedbackInfo.isCorrect 

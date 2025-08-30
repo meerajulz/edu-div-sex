@@ -24,6 +24,7 @@ export default function Actividad2Scene2Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [showGameButton, setShowGameButton] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -82,29 +83,44 @@ export default function Actividad2Scene2Page() {
 
   const handleVideoEnd = async () => {
     setShowVideo(false);
+    setShowGameButton(true);
+    
+    console.log('🎬 Actividad2-Scene2: Video ended, showing game button');
+    
+    // Save progress for video completion only
+    await saveProgress('actividad-2', 'scene2', 'in_progress', 50, {
+      video_watched: true,
+      video_completed_at: new Date().toISOString()
+    });
+  };
+
+  const handleGameButtonClick = () => {
+    setShowGameButton(false);
+    setShowGameModal(true);
+    console.log('🎮 Actividad2-Scene2: Starting game');
+  };
+
+  const handleGameComplete = async () => {
+    setShowGameModal(false);
     setGameCompleted(true);
     
-    console.log('🎬 Actividad2-Scene2: Video ended, saving progress and moving to scene3');
+    console.log('🎮 Actividad2-Scene2: Game completed, saving final progress and moving to scene3');
     
     const progressSaved = await saveProgress('actividad-2', 'scene2', 'completed', 100, {
       video_watched: true,
+      game_completed: true,
       completed_at: new Date().toISOString()
     });
     
     if (progressSaved) {
-      console.log('✅ Actividad2-Scene2: Progress saved successfully');
+      console.log('✅ Actividad2-Scene2: Final progress saved successfully');
       setTimeout(() => {
         router.push('/actividad-2/scene3');
       }, 200);
     } else {
-      console.error('❌ Actividad2-Scene2: Failed to save progress, but continuing');
+      console.error('❌ Actividad2-Scene2: Failed to save final progress, but continuing');
       router.push('/actividad-2/scene3');
     }
-  };
-
-  const handleGameComplete = () => {
-    setShowGameModal(false);
-    router.push('/actividad-2/scene3');
   };
 
   const handleCloseGame = () => {
@@ -155,13 +171,29 @@ export default function Actividad2Scene2Page() {
             <LogoComponent configKey="actividad-2-scene1" />
           </div>
 
-      {!showVideo && !showGameModal && (
+      {!showVideo && !showGameButton && !showGameModal && !gameCompleted && (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton text='Continuar...' onClick={handleJugarClick} disabled={isAnimating} />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Game Button - shown after video ends */}
+      {showGameButton && (
+        <div className="relative z-20 flex items-center justify-center min-h-screen">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
+            <JugarButton 
+              text='Mi cuerpo mi espacio' 
+              onClick={handleGameButtonClick} 
+            />
           </motion.div>
         </div>
       )}
@@ -195,7 +227,7 @@ export default function Actividad2Scene2Page() {
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton
-              text="Continuar..."
+              text="Mi cuerpo mi espacio"
               onClick={() => router.push('/actividad-2/scene3')}
             />
           </motion.div>

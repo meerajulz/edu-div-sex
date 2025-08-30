@@ -126,7 +126,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
         <div className="relative w-[90%] h-[90%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
           {/* Close Button */}

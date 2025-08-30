@@ -195,6 +195,13 @@ export default function JuegoDosActividad6({
 
   const handleCongratsComplete = () => {
     setShowCongrats(false);
+    // Reset game state to prevent audio replay
+    setCurrentScenarioIndex(0);
+    setShowIntro(true);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setIsCorrect(false);
+    setIsPlayingAudio(false);
     onGameComplete();
   };
 

@@ -220,7 +220,11 @@ export default function Scene6Page() {
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
                   {!gameCompleted ? (
-                    <JugarButton onClick={handleOpenJuegoTres} disabled={isAnimating} />
+                    <JugarButton 
+                      text="Juego ¿Qué es una erección?"
+                      onClick={handleOpenJuegoTres} 
+                      disabled={isAnimating} 
+                    />
                   ) : (
                     <div className="flex flex-col items-center space-y-4">
                       <JugarButton 

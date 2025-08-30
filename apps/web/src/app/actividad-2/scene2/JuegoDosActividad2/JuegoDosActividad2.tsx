@@ -120,8 +120,11 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           }, GAME_CONFIG.timing.imageAnimation);
         }, 500);
       } else {
-        // Game completed - show congratulations overlay
-        setShowCongrats(true);
+        // Game completed - wait for feedback audio to finish before showing congratulations overlay
+        // Feedback audio starts after 1500ms delay + feedback duration (4000ms) = 5500ms total
+        setTimeout(() => {
+          setShowCongrats(true);
+        }, GAME_CONFIG.timing.feedbackDuration + 1500);
       }
     } else {
       setTimeout(() => {
