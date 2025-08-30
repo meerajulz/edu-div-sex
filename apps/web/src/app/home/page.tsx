@@ -44,7 +44,9 @@ const Dashboard: React.FC = () => {
       
       console.log('🎓 [TERMINAL] Home page - User authenticated, staying on home page');
     } else if (status === 'unauthenticated') {
-      console.log('❌ [TERMINAL] Home page - No session found, user not authenticated');
+      console.log('❌ [TERMINAL] Home page - No session found, redirecting to login');
+      logDebug('User not authenticated, redirecting to login page');
+      router.push('/auth/login');
     }
   }, [status, session, router]);
 
@@ -106,6 +108,16 @@ const Dashboard: React.FC = () => {
     return (
       <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-gradient-to-b from-blue-400 to-purple-300">
         <div className="text-white text-xl mb-4">Loading session...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  // Redirect unauthenticated users - don't show home content
+  if (status === 'unauthenticated') {
+    return (
+      <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-gradient-to-b from-blue-400 to-purple-300">
+        <div className="text-white text-xl mb-4">Redirecting to login...</div>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
     );
