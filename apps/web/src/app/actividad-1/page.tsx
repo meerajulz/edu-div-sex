@@ -270,8 +270,8 @@ useEffect(() => {
         <FloatingMenu />
       </div>
 
-      {/* Continue where you left off button - Top of page */}
-      {showContinueOption && lastActivityUrl && (
+      {/* Continue where you left off button - Top of page - Only show after video ends */}
+      {showContinueOption && lastActivityUrl && videoEnded && (
         <motion.div
           className="absolute top-[30%] left-0 right-0 z-[100] flex justify-center"
           initial={{ opacity: 0, y: -20 }}
