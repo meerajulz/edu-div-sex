@@ -63,9 +63,9 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   const POSITIONS: Positions = {
     door: {
       left: 30.1,
-      top: 43,
-      width: 7.5,
-      height: 25,
+      top: 33,
+      width: 10.5,
+      height: 35,
     },
     window: {
       left: 69,
@@ -178,14 +178,6 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     exit: { y: '-110%', opacity: 0, transition: { duration: 1.2, ease: 'easeInOut' } },
   };
 
-  const doorPromptStyle = {
-    position: 'absolute' as const,
-    left: `${POSITIONS.door.left + 2}%`,
-    top: `${(POSITIONS.door.top ?? 0) - 5}%`,
-    width: '150px',
-    transform: 'translateX(-25%)',
-    zIndex: 25,
-  };
 
   return (
     <div className="fixed inset-0 overflow-hidden">
@@ -212,28 +204,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
             <div
               className="absolute inset-0 z-10 bg-cover bg-center bg-no-repeat ARROW"
               style={{ backgroundImage: `url(${backgroundImagePath})` }}
-            >
-              {!videoFinished && (
-                <div
-                  style={doorPromptStyle}
-                  className=" text-center"
-                >
-                  <div className="flex justify-center">
-                    <svg
-                      onClick={() => console.log('Arrow clicked!')}
-                      className="cursor-pointer  text-pink-500 hover:brightness-125 active:animate-ping transition duration-200 animate-bounce drop-shadow-md"
-                      width="40"
-                      height="40"
-                      viewBox="0 0 64 64"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M32 4 C30 4 28 6 28 8 L28 40 L16 28 C14 26 10 26 8 28 C6 30 6 34 8 36 L30 58 C31 59 33 59 34 58 L56 36 C58 34 58 30 56 28 C54 26 50 26 48 28 L36 40 L36 8 C36 6 34 4 32 4 Z" />
-                    </svg>
-                  </div>
-                </div>
-              )}
-            </div>
+            />
           )}
 
           <video
@@ -312,11 +283,11 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
             </div>
           )}
 
-          {/* Door Hotspot */}
+          {/* Door Area with Arrow */}
           {!isExiting && (
             <div
               key="door"
-              className={`absolute ${debug ? 'border-2 border-dashed' : ''} cursor-pointer z-40`}
+              className={`absolute ${debug ? 'border-2 border-dashed' : ''} cursor-pointer z-40 flex items-start justify-center`}
               style={{
                 left: `${POSITIONS.door.left}%`,
                 top: POSITIONS.door.top ? `${POSITIONS.door.top}%` : undefined,
@@ -327,6 +298,20 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
               }}
               onClick={playVideo}
             >
+              {!videoFinished && !isPlaying && (
+                <div className="mt-[10px] arrow ">
+                  <svg
+                    className="text-pink-500 hover:brightness-125 active:animate-ping transition duration-200 animate-bounce drop-shadow-md"
+                    width="40"
+                    height="40"
+                    viewBox="0 0 64 64"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M32 4 C30 4 28 6 28 8 L28 40 L16 28 C14 26 10 26 8 28 C6 30 6 34 8 36 L30 58 C31 59 33 59 34 58 L56 36 C58 34 58 30 56 28 C54 26 50 26 48 28 L36 40 L36 8 C36 6 34 4 32 4 Z" />
+                  </svg>
+                </div>
+              )}
               {debug && (
                 <div className="absolute -top-5 left-0 text-xs bg-black/50 text-white px-1 rounded">
                   door
