@@ -287,7 +287,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
           {!isExiting && (
             <div
               key="door"
-              className={`absolute ${debug ? 'border-2 border-dashed' : ''} cursor-pointer z-40 flex items-start justify-center`}
+              className={`absolute ${debug ? 'border-2 border-dashed' : ''} cursor-pointer z-[1000] flex items-start justify-center door`}
               style={{
                 left: `${POSITIONS.door.left}%`,
                 top: POSITIONS.door.top ? `${POSITIONS.door.top}%` : undefined,

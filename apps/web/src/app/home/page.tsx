@@ -206,11 +206,13 @@ const Dashboard: React.FC = () => {
 
 
 
-          <div className='absolute top-0 left-0 right-0 z-50'>
+          <div className='absolute top-0 left-0 right-0 z-30 pointer-events-none'>
             <div className='flex justify-center'>
-              <OrbitalCarousel 
-                onSelectActivity={handleSelectActivity} 
-              />
+              <div className='pointer-events-auto'>
+                <OrbitalCarousel 
+                  onSelectActivity={handleSelectActivity} 
+                />
+              </div>
             </div>
             
             {/* Arrow indicator - show only after video has played */}
@@ -272,6 +274,28 @@ const Dashboard: React.FC = () => {
             <FloatingMenu />
           </div>
 
+          {/* Door overlay - ensure it's on top of everything */}
+          {!isExiting && !videoHasPlayed && (
+            <div 
+              className="absolute cursor-pointer z-[10001]"
+              style={{
+                left: '30.1%',
+                top: '33%', 
+                width: '10.5%',
+                height: '35%'
+              }}
+              onClick={() => {
+                // Find video element and play it
+                const video = document.querySelector('video');
+                if (video) {
+                  video.play().catch(() => {
+                    console.log('Video play failed');
+                  });
+                }
+              }}
+            />
+          )}
+
           {/* Continue where you left off button */}
           {/* {showContinueOption && lastActivityUrl && (
             <motion.div
@@ -297,7 +321,7 @@ const Dashboard: React.FC = () => {
           )} */}
 
           {showDebug && (
-            <div className="fixed bottom-0 left-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[1000]">
+            <div className="fixed bottom-0 left-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[10]">
               <div>isExiting: {isExiting ? 'true' : 'false'}</div>
               <div>pendingNav: {pendingNavigation || 'none'}</div>
               <div>audioInit: {audioInitialized ? 'true' : 'false'}</div>

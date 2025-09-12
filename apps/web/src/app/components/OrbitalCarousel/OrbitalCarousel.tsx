@@ -158,12 +158,12 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
   };
 
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-screen-lg">      
+    <div className="relative left-1/2 -translate-x-1/2 w-full max-w-screen-lg">      
       <div className="relative z-10 px-4 py-4 sm:py-0 md:py-0" style={{ 
         transform: `translateY(${containerSize.yOffset}px)` 
       }}>
         <div 
-          className="relative mx-auto"
+          className="relative mx-auto main-carousel-container"
           style={{ 
             width: containerSize.width, 
             height: containerSize.height
@@ -174,8 +174,8 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
           <div 
             className="absolute w-full h-full" 
             style={{ 
-              top: containerSize.width < 640 ? '20%' : '10%',
-              left: containerSize.width < 640 ? '50%' : '45%',
+              top: containerSize.width < 840 ? '20%' : '10%',
+              left: containerSize.width < 840 ? '50%' : '45%',
               transform: 'translate(-50%, -50%)',
               scale: containerSize.spacing
             }}
