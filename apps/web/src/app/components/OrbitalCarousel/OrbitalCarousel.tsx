@@ -149,28 +149,53 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
 
   const handleCircleClick = async (index: number, isUnlocked: boolean) => {
     if (!isUnlocked) {
+      // Play locked sound or show notification
+      console.log('🔒 Activity is locked! Complete previous activities first.');
       return;
     }
     
-    if (index !== activeIndex) {
+    // If clicking on the already active item, go to the activity
+    if (index === activeIndex) {
       await playSound(clickAudio);
-      await playSound(moveAudio);
+      const item = items[index];
+      if (onSelectActivity) {
+        onSelectActivity(item.url);
+        console.log("Activity selected from active circle:", item.url);
+      } else {
+        console.log("No animation callback provided, navigating directly");
+        router.push(item.url);
+      }
+      return;
     }
+    
+    // Otherwise, just rotate to that position
+    await playSound(clickAudio);
+    await playSound(moveAudio);
     setActiveIndex(index);
+    console.log(`Rotated carousel to position ${index}`);
   };
 
-  const handleLabelClick = async (url: string, isUnlocked: boolean) => {
+  const handleLabelClick = async (index: number, url: string, isUnlocked: boolean) => {
     if (!isUnlocked) {
       // Play locked sound or show notification
       console.log('🔒 Activity is locked! Complete previous activities first.');
       return;
     }
     
+    // Only allow navigation if this item is in the active (front) position
+    if (index !== activeIndex) {
+      console.log('Item must be in front position to navigate. Rotating to front...');
+      await playSound(moveAudio);
+      setActiveIndex(index);
+      return;
+    }
+    
+    // Item is in front position, navigate to activity
     await playSound(clickAudio);
     
     if (onSelectActivity) {
       onSelectActivity(url);
-      console.log("Activity selected, triggering animation:", url);
+      console.log("Activity selected from front position:", url);
     } else {
       console.log("No animation callback provided, navigating directly");
       router.push(url);
@@ -236,7 +261,9 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
                     position={position}
                     containerSize={containerSize}
                     handleCircleClick={handleCircleClick}
-                    handleLabelClick={handleLabelClick}
+                    handleLabelClick={(url: string, isUnlocked: boolean) => 
+                      handleLabelClick(index, url, isUnlocked)
+                    }
                   />
                 );
               })}
