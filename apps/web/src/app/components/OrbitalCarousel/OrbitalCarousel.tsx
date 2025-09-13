@@ -33,6 +33,8 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const [moveAudio, setMoveAudio] = useState<HTMLAudioElement | null>(null);
   const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
+  const [items, setItems] = useState<ItemData[]>([]);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const [containerSize, setContainerSize] = useState<ContainerSize>({
     width: 600,
     height: 300,
@@ -41,7 +43,32 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
     spacing: 1.0
   });
 
-  const items: ItemData[] = getDefaultItems();
+  // Load items with unlock status
+  useEffect(() => {
+    const loadItems = async () => {
+      try {
+        setIsLoadingProgress(true);
+        const itemsWithProgress = await getDefaultItems();
+        setItems(itemsWithProgress);
+      } catch (error) {
+        console.error('❌ Failed to load orbital items:', error);
+        // Fallback to basic items if API fails
+        setItems([
+          {
+            id: 1,
+            label: "Aventura 1",
+            url: "/actividad-1/scene1/",
+            svgPath: "/svg/menu/orbital/activity1-descubriendo-mi-cuerpo.svg",
+            isUnlocked: true
+          }
+        ]);
+      } finally {
+        setIsLoadingProgress(false);
+      }
+    };
+    
+    loadItems();
+  }, []);
 
   useEffect(() => {
     const updateSize = () => {
@@ -134,6 +161,8 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
 
   const handleLabelClick = async (url: string, isUnlocked: boolean) => {
     if (!isUnlocked) {
+      // Play locked sound or show notification
+      console.log('🔒 Activity is locked! Complete previous activities first.');
       return;
     }
     
@@ -156,6 +185,20 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
       containerSize
     );
   };
+
+  // Show loading while fetching progress
+  if (isLoadingProgress) {
+    return (
+      <div className="relative left-1/2 -translate-x-1/2 w-full max-w-screen-lg">      
+        <div className="relative z-10 px-4 py-4 sm:py-0 md:py-0 flex justify-center items-center" style={{ 
+          transform: `translateY(${containerSize.yOffset}px)`,
+          height: containerSize.height 
+        }}>
+          <div className="text-white text-lg">Cargando actividades...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative left-1/2 -translate-x-1/2 w-full max-w-screen-lg">      
