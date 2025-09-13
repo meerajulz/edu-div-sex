@@ -38,6 +38,20 @@ const Dashboard: React.FC = () => {
     console.log(message);
   };
 
+  // Clear any stale localStorage flags on home page load
+  useEffect(() => {
+    // Clear localStorage flag after a delay to ensure OrbitalCarousel has processed it
+    const clearTimer = setTimeout(() => {
+      const flag = localStorage.getItem('completedActivityId');
+      if (flag) {
+        console.log('🧹 Clearing stale completedActivityId flag on home page:', flag);
+        localStorage.removeItem('completedActivityId');
+      }
+    }, 2000); // 2 second delay
+
+    return () => clearTimeout(clearTimer);
+  }, []);
+
   // Handle session status changes and role-based redirects
   useEffect(() => {
     logDebug(`[HOME] Session status: ${status}`);

@@ -37,7 +37,13 @@ export function useActivityProtection() {
 
       // Only check access for students
       const userRole = (session?.user as { role?: string })?.role;
-      if (!session?.user?.id || userRole !== 'student') {
+      if (!session?.user?.id) {
+        console.log('🔒 No user ID found in session');
+        return; // Allow access if no user ID
+      }
+      
+      if (userRole !== 'student') {
+        console.log('🔒 User is not a student, allowing access. Role:', userRole);
         return; // Allow access for non-students
       }
 
@@ -85,16 +91,17 @@ export function useActivityProtection() {
         }
       } catch (error) {
         console.error('🔒 Error checking activity access:', error);
-        console.log('🔒 Error occurred - redirecting to home');
-        router.push('/home');
+        console.log('🔒 Error occurred - ALLOWING ACCESS (fail-safe mode)');
+        // Don't redirect on API errors - allow access by default
+        // This prevents blocking users when the API is down
       }
     }
 
     // Only run the check if session status is not loading
     // This prevents premature redirects
     if (status !== 'loading') {
-      // Small delay to ensure page is fully loaded
-      const timeoutId = setTimeout(checkAccess, 100);
+      // Longer delay to ensure page and session are fully loaded
+      const timeoutId = setTimeout(checkAccess, 1000);
       return () => clearTimeout(timeoutId);
     }
 

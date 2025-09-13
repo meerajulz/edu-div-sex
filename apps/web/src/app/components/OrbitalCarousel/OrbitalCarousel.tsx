@@ -54,13 +54,18 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
         // Check if user just completed an activity and should auto-rotate
         const completedActivityId = localStorage.getItem('completedActivityId');
         if (completedActivityId) {
+          console.log(`🔍 Found completedActivityId flag: ${completedActivityId}`);
+          // Clear the flag IMMEDIATELY to prevent interference with navigation
+          localStorage.removeItem('completedActivityId');
+          
           const completedId = parseInt(completedActivityId);
           const nextActivityIndex = completedId; // Next activity is completedId + 1, but array is 0-indexed
           if (nextActivityIndex < itemsWithProgress.length && itemsWithProgress[nextActivityIndex]?.isUnlocked) {
             console.log(`🎉 Auto-rotating to newly unlocked activity: ${completedId + 1}`);
             setActiveIndex(nextActivityIndex);
-            localStorage.removeItem('completedActivityId'); // Clear the flag
             return;
+          } else {
+            console.log(`❌ Cannot auto-rotate: nextActivityIndex=${nextActivityIndex}, array length=${itemsWithProgress.length}, isUnlocked=${itemsWithProgress[nextActivityIndex]?.isUnlocked}`);
           }
         }
         
