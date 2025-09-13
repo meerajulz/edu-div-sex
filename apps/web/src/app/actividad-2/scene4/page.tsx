@@ -191,12 +191,16 @@ export default function Actividad2Scene4Page() {
     
     if (progressSaved) {
       console.log('✅ Actividad2-Scene4: Activity 2 completed successfully!');
+      // Set flag that activity was just completed for auto-rotation
+      localStorage.setItem('completedActivityId', '2');
       // Go back to home main page
       setTimeout(() => {
         router.push('/home');
       }, 200);
     } else {
       console.error('❌ Actividad2-Scene4: Failed to save progress, but continuing');
+      // Set flag even if save failed
+      localStorage.setItem('completedActivityId', '2');
       router.push('/home');
     }
   };

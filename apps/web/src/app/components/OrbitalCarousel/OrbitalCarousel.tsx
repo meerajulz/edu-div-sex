@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { calculatePosition, playSound, getDefaultItems } from './utils';
+import { calculatePosition, playSound, getDefaultItems, getNextUnlockedActivity } from './utils';
 import CarouselItem from './CarouselItem';
 
 interface ContainerSize {
@@ -43,13 +43,38 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
     spacing: 1.0
   });
 
-  // Load items with unlock status
+  // Load items with unlock status and auto-rotate to next activity
   useEffect(() => {
     const loadItems = async () => {
       try {
         setIsLoadingProgress(true);
         const itemsWithProgress = await getDefaultItems();
         setItems(itemsWithProgress);
+        
+        // Check if user just completed an activity and should auto-rotate
+        const completedActivityId = localStorage.getItem('completedActivityId');
+        if (completedActivityId) {
+          const completedId = parseInt(completedActivityId);
+          const nextActivityIndex = completedId; // Next activity is completedId + 1, but array is 0-indexed
+          if (nextActivityIndex < itemsWithProgress.length && itemsWithProgress[nextActivityIndex]?.isUnlocked) {
+            console.log(`🎉 Auto-rotating to newly unlocked activity: ${completedId + 1}`);
+            setActiveIndex(nextActivityIndex);
+            localStorage.removeItem('completedActivityId'); // Clear the flag
+            return;
+          }
+        }
+        
+        // Otherwise, check if we should auto-rotate to the next unlocked activity
+        const nextActivityId = await getNextUnlockedActivity();
+        if (nextActivityId !== null && nextActivityId > 1) {
+          // Find the array index for this activity (activityId - 1)
+          const nextIndex = nextActivityId - 1;
+          if (nextIndex < itemsWithProgress.length) {
+            console.log(`🎯 Auto-rotating to next unlocked activity: ${nextActivityId}`);
+            setActiveIndex(nextIndex);
+          }
+        }
+        
       } catch (error) {
         console.error('❌ Failed to load orbital items:', error);
         // Fallback to basic items if API fails

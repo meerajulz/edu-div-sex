@@ -120,6 +120,8 @@ export default function Actividad4Scene2Page() {
       } else {
         console.error('❌ Actividad4-Scene2: Failed to save progress, but continuing');
       }
+      // Set flag that activity was just completed for auto-rotation
+      localStorage.setItem('completedActivityId', '4');
       // Navigate back to main activity menu
       router.push('/home');
     }, 800);

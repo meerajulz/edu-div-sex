@@ -107,6 +107,23 @@ export const checkActivityUnlocked = async (activityId: number): Promise<boolean
 };
 
 /**
+ * Get the next unlocked activity ID
+ */
+export const getNextUnlockedActivity = async (): Promise<number | null> => {
+  try {
+    const progress = await getOrbitalActivityProgress();
+    
+    // Find the first unlocked activity that hasn't been completed
+    const nextActivity = progress.find(p => p.isUnlocked && !p.isCompleted);
+    return nextActivity ? nextActivity.activityId : null;
+    
+  } catch (error) {
+    console.error('❌ Failed to get next unlocked activity:', error);
+    return 1; // Default to activity 1
+  }
+};
+
+/**
  * Get all activities progress for OrbitalCarousel
  */
 export const getOrbitalActivityProgress = async (): Promise<OrbitalActivityProgress[]> => {

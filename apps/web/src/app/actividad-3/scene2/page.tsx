@@ -157,6 +157,8 @@ const { data: session } = useSession();
       } else {
         console.error('❌ Actividad3-Scene2: Failed to save progress, but continuing');
       }
+      // Set flag that activity was just completed for auto-rotation
+      localStorage.setItem('completedActivityId', '3');
       // Navigate back to main activity menu
       router.push('/home');
     }, 800);

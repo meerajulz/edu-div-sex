@@ -104,8 +104,10 @@ export default function Scene7Page() {
   };
 
   const handleBackClick = async () => {
-    console.log('🏠 Scene7: Returning to actividad-1 main page');
-    // Go back to home main page
+    console.log('🏠 Scene7: Returning to home page after completing activity');
+    // Set flag that activity was just completed for auto-rotation
+    localStorage.setItem('completedActivityId', '1');
+    // Go back to home main page  
     router.push('/home');
   };
 
