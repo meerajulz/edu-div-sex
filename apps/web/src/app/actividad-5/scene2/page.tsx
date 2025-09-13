@@ -125,7 +125,7 @@ export default function Actividad5Scene2Page() {
       } else {
         console.error('❌ Actividad5-Scene2: Failed to save progress, but continuing');
       }
-      router.push('/actividad-1');
+      router.push('/home');
     }, 800);
   };
 

@@ -105,8 +105,8 @@ export default function Scene7Page() {
 
   const handleBackClick = async () => {
     console.log('🏠 Scene7: Returning to actividad-1 main page');
-    // Go back to actividad-1 main page
-    router.push('/actividad-1');
+    // Go back to home main page
+    router.push('/home');
   };
 
   const containerStyle = {

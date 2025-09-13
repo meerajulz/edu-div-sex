@@ -191,13 +191,13 @@ export default function Actividad2Scene4Page() {
     
     if (progressSaved) {
       console.log('✅ Actividad2-Scene4: Activity 2 completed successfully!');
-      // Go back to actividad-2 main page (or actividad-1 as shown in original code)
+      // Go back to home main page
       setTimeout(() => {
-        router.push('/actividad-1');
+        router.push('/home');
       }, 200);
     } else {
       console.error('❌ Actividad2-Scene4: Failed to save progress, but continuing');
-      router.push('/actividad-1');
+      router.push('/home');
     }
   };
 

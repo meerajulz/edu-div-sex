@@ -158,7 +158,7 @@ const { data: session } = useSession();
         console.error('❌ Actividad3-Scene2: Failed to save progress, but continuing');
       }
       // Navigate back to main activity menu
-      router.push('/actividad-1');
+      router.push('/home');
     }, 800);
   };
 

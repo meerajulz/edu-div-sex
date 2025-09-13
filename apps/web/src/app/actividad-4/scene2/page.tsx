@@ -121,7 +121,7 @@ export default function Actividad4Scene2Page() {
         console.error('❌ Actividad4-Scene2: Failed to save progress, but continuing');
       }
       // Navigate back to main activity menu
-      router.push('/actividad-1');
+      router.push('/home');
     }, 800);
   };
 
