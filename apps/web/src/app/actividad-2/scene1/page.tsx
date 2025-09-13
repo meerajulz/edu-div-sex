@@ -27,6 +27,7 @@ export default function Actividad2Scene1Page() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [showJuegoUno, setShowJuegoUno] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -97,14 +98,17 @@ export default function Actividad2Scene1Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 1000);
   };
 
-  const handleGoToScene2 = async () => {
+  const handleGoToActivityMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
     
-    console.log('🎯 Actividad2-Scene1: Game completed, saving progress and moving to scene2');
+    console.log('🎯 Scene1: Game completed, saving progress and returning to activity menu');
     
     const progressSaved = await saveProgress('actividad-2', 'scene1', 'completed', 100, {
       video_watched: videoEnded,
@@ -115,11 +119,11 @@ export default function Actividad2Scene1Page() {
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
-        console.log('✅ Actividad2-Scene1: Progress saved successfully');
+        console.log('✅ Scene1: Progress saved successfully');
       } else {
-        console.error('❌ Actividad2-Scene1: Failed to save progress, but continuing');
+        console.error('❌ Scene1: Failed to save progress, but continuing');
       }
-      router.push('/actividad-2/scene2');
+      router.push('/actividad-2');
     }, 800);
   };
 
@@ -195,22 +199,15 @@ export default function Actividad2Scene1Page() {
                 >
                   {!gameCompleted ? (
                     <JugarButton text='Jugar ¿Es privado?' onClick={handleOpenJuegoUno} disabled={isAnimating} />
-                  ) : (
+                  ) : !showCongratulations ? (
                     <div className="flex flex-col items-center space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-                      >
-                        ¡Juego Completado! 🎉
-                      </motion.div>
                       <JugarButton 
-                        onClick={handleGoToScene2} 
+                        onClick={handleGoToActivityMenu} 
                         disabled={isAnimating}
                         text="Continuar..."
                       />
                     </div>
-                  )}
+                  ) : null}
                 </motion.div>
               )}
             </div>
@@ -224,6 +221,40 @@ export default function Actividad2Scene1Page() {
         onClose={handleCloseJuegoUno}
         onGameComplete={handleGameComplete}
       />
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToActivityMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

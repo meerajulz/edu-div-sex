@@ -195,14 +195,14 @@ export const getDefaultItems = async () => {
     {
       id: 1,
       label: "Aventura 1",
-      url: "/actividad-1/scene1/", // Updated to match ActivityLabels
+      url: "/actividad-1", // Updated to go to activity menu
       svgPath: "/svg/menu/orbital/activity1-descubriendo-mi-cuerpo.svg",
       isUnlocked: progress.find(p => p.activityId === 1)?.isUnlocked || true
     },
     {
       id: 2,
       label: "Aventura 2", 
-      url: "/actividad-2/scene1", // Updated to match ActivityLabels
+      url: "/actividad-2", // Updated to match ActivityLabels
       svgPath: "/svg/menu/orbital/activity2-intimidad.svg",
       isUnlocked: progress.find(p => p.activityId === 2)?.isUnlocked || false
     },

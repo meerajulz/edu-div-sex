@@ -13,21 +13,23 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
+import { useSession } from 'next-auth/react';
+import { getLastActivityUrl } from '../hooks/useActivityTracking';
 
-const ActivityLabels = dynamic(() => import('../components/ModuleAnimations/ActivityLabels'), { ssr: false });
+const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
 const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAlex'), { ssr: false });
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
+import { ACTIVITY_2_CONFIG } from '../components/ActivityMenu/activityConfig';
 
-
-
-export default function Aventura2Page() {
+export default function Actividad2Page() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showArdilla, setShowArdilla] = useState(false);
   const [showAlex, setShowAlex] = useState(false);
-  const [showActivityLabels, setShowActivityLabels] = useState(false);
+  const [showActivityMenu, setShowActivityMenu] = useState(false);
   const [showSun, setShowSun] = useState(false);
   const [needsInteraction, setNeedsInteraction] = useState(false);
   const [userInteractionReceived, setUserInteractionReceived] = useState(false);
@@ -39,8 +41,16 @@ export default function Aventura2Page() {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
+
+  // Continue where you left off functionality
+  const [lastActivityUrl, setLastActivityUrl] = useState<string | null>(null);
+  const [showContinueOption, setShowContinueOption] = useState(false);
+
+  // Debug mode for development
+  const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
   
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  
   useEffect(() => {
     const updateDimensions = () => {
       const vw = window.innerWidth;
@@ -63,8 +73,6 @@ export default function Aventura2Page() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  //BUTTON
-  
   const [isAnimating, setIsAnimating] = useState(false);
 
   const playSound = () => {
@@ -76,8 +84,6 @@ export default function Aventura2Page() {
       console.warn('Could not play sound:', error);
     }
   };
-
-  //
 
   const containerStyle = {
     width: `${containerDimensions.width}px`,
@@ -103,18 +109,57 @@ useEffect(() => {
   checkAudio();
 }, []);
 
+// Hot key for toggling debug mode in development
+useEffect(() => {
+  if (process.env.NODE_ENV === 'development') {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'd' && e.ctrlKey) {
+        setShowDebug(prev => !prev);
+        console.log(`Debug mode ${!showDebug ? 'enabled' : 'disabled'}`);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }
+}, [showDebug]);
+
+// Log session status changes
+useEffect(() => {
+  console.log('🔒 Actividad-2: Session status changed:', status);
+  console.log('🔒 Actividad-2: Session data:', session);
+}, [session, status]);
+
+// Check for saved activity to continue
+useEffect(() => {
+  if (status === 'authenticated' && session?.user) {
+    getLastActivityUrl().then(url => {
+      if (url && url.startsWith('/actividad-2/')) {
+        setLastActivityUrl(url);
+        setShowContinueOption(true);
+        console.log('📍 Found last activity to continue:', url);
+      }
+    }).catch(error => {
+      console.warn('⚠️ Failed to get last activity:', error);
+    });
+  }
+}, [status, session]);
+
   const handleVideoEnd = () => {
     cleanupAudio();
     setVideoEnded(true);
     setTimeout(() => setShowArdilla(true), 100);
     setTimeout(() => setShowAlex(true), 1800);
     setTimeout(() => {
-      setShowActivityLabels(true);
+      setShowActivityMenu(true);
       setShowSun(true);
     }, 0);
   };
 
-  const handleActivitySelect = (id: number, url: string) => {
+  const handleSectionSelect = (section: { scenes: string[] }) => {
+    console.log('🎯 Section selected:', section);
+    console.log('🎯 First scene:', section.scenes[0]);
+    
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -122,7 +167,13 @@ useEffect(() => {
 
     cleanupAudio();
     setIsExiting(true);
-    setPendingNavigation(url);
+    
+    // Navigate to first scene of the section
+    const firstScene = section.scenes[0];
+    if (firstScene) {
+      console.log('🎯 Setting pending navigation to:', firstScene);
+      setPendingNavigation(firstScene);
+    }
 
     if (bgMusicRef.current) {
       try {
@@ -132,18 +183,17 @@ useEffect(() => {
         console.warn('Failed to stop background music:', e);
       }
     }
-
   };
 
   const handleExitComplete = () => {
+    console.log('🎯 Exit animation complete, navigating to:', pendingNavigation);
     if (pendingNavigation) {
       router.push(pendingNavigation);
     }
   };
 
   const handleJugarClick = () => {
-
-    console.log('Start Scene 2 game');
+    console.log('Start Activity 2');
     if (isAnimating) return;
 
     setIsAnimating(true);
@@ -151,7 +201,6 @@ useEffect(() => {
 
     setTimeout(() => {
       setIsAnimating(false);
-     // handleJugarClick();
     }, 800);
 
     markUserInteraction();
@@ -165,7 +214,6 @@ useEffect(() => {
     music.play().catch(console.warn);
     bgMusicRef.current = music;
 
-    //initAudio().then(setAudioInitialized).catch(console.warn);
     setCanPlayVideo(true);
   };
 
@@ -182,7 +230,7 @@ useEffect(() => {
       {/* Only show animated background and button BEFORE video */}
       {!videoEnded && (!canPlayVideo || needsInteraction) && (
         <>
-          <div className="absolute inset-0 z-50 bg-gradient-to-b from-indigo-400 via-yellow-200 to-purple-300" />
+          <div className="absolute inset-0 z-50 bg-gradient-to-b from-purple-400 via-pink-300 to-orange-300" />
 
           {/* Floating bubbles */}
           <div className="absolute inset-0 z-50">
@@ -213,7 +261,7 @@ useEffect(() => {
 
           <div className="absolute inset-0 z-50 flex items-center justify-center">
             <motion.div animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}} transition={{ duration: 0.8, ease: 'easeInOut' }}>
-            <JugarButton text='Actividad Dos' onClick={handleJugarClick} />
+            <JugarButton text='Intimidad' onClick={handleJugarClick} />
             </motion.div>
           </div>
         </>
@@ -223,6 +271,32 @@ useEffect(() => {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
+
+      {/* Continue where you left off button - Top of page - Only show after video ends */}
+      {showContinueOption && lastActivityUrl && videoEnded && (
+        <motion.div
+          className="absolute top-[30%] left-0 right-0 z-[100] flex justify-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <button
+            onClick={() => {
+              console.log('🚀 Continuing from last activity:', lastActivityUrl);
+              cleanupAudio();
+              setIsExiting(true);
+              setPendingNavigation(lastActivityUrl);
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-3"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Continuar donde lo dejaste
+          </button>
+        </motion.div>
+      )}
 
       <motion.div
         className="absolute inset-0"
@@ -240,6 +314,11 @@ useEffect(() => {
               playsInline
               muted={needsInteraction && !userInteractionReceived}
               onEnded={handleVideoEnd}
+              onError={(e) => {
+                console.error('Video failed to load:', e);
+                console.log('Skipping video and showing activity menu directly');
+                handleVideoEnd();
+              }}
             />
           ) : (
             <Image
@@ -276,9 +355,13 @@ useEffect(() => {
               </motion.div>
             )}
 
-            {showActivityLabels && (
+            {showActivityMenu && (
               <div className="w-full px-6 pb-6 z-30 flex justify-center">
-                <ActivityLabels isVisible={true} onLabelClick={handleActivitySelect} />
+                <ActivityMenu 
+                  isVisible={true} 
+                  config={ACTIVITY_2_CONFIG}
+                  onSectionClick={handleSectionSelect} 
+                />
               </div>
             )}
 
@@ -290,6 +373,21 @@ useEffect(() => {
           </>
         )}
       </motion.div>
+
+      {/* Debug panel */}
+      {showDebug && (
+        <div className="fixed bottom-0 left-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[1000]">
+          <div className="font-bold mb-1">Actividad-2 Debug</div>
+          <div>👤 User: {session?.user?.username || session?.user?.email || 'none'}</div>
+          <div>🏷️ Role: {(session?.user as { role?: string })?.role || 'none'}</div>
+          <div>⚧️ Sex: {(session?.user as { sex?: string })?.sex || 'none'}</div>
+          <div>📊 Status: {status}</div>
+          <div>🎬 Video Ended: {videoEnded ? 'yes' : 'no'}</div>
+          <div>🔊 Can Play Video: {canPlayVideo ? 'yes' : 'no'}</div>
+          <div>👆 Needs Interaction: {needsInteraction ? 'yes' : 'no'}</div>
+          <div className="text-yellow-300">Press Ctrl+D to toggle</div>
+        </div>
+      )}
     </div>
   );
 }

@@ -18,8 +18,11 @@ export function useActivityProtection() {
       // Only check for activity paths
       const activityMatch = pathname.match(/^\/actividad-(\d+)(?:\/(.+))?$/);
       if (!activityMatch) {
+        console.log('🔒 Not an activity page, skipping protection:', pathname);
         return; // Not an activity page
       }
+      
+      console.log('🔒 Activity protection checking path:', pathname, 'Match:', activityMatch);
 
       // Wait for session to load - this is critical to prevent false redirects
       if (status === 'loading') {
@@ -49,6 +52,12 @@ export function useActivityProtection() {
 
       const activitySlug = `actividad-${activityMatch[1]}`;
       const sceneSlug = activityMatch[2];
+      
+      // Temporarily allow access to all Activity 1 pages without API check
+      if (activityMatch[1] === '1') {
+        console.log('🔒 Allowing access to Activity 1 pages without API check:', pathname);
+        return;
+      }
 
       try {
         console.log(`🔒 Checking access to ${activitySlug}${sceneSlug ? `/${sceneSlug}` : ''}`);

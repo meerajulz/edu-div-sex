@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
@@ -16,6 +17,7 @@ import Image from 'next/image';
 
 export default function Scene1Page() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   
   // Track current activity URL for continue feature
   useActivityTracking();
@@ -27,6 +29,7 @@ export default function Scene1Page() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showCris, setShowCris] = useState(true);
   const [showJuegoUno, setShowJuegoUno] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -130,7 +133,24 @@ export default function Scene1Page() {
     console.log('Globe button clicked - ready for next page navigation');
     setShowJuegoUno(true);
     // setShowCris(false);
-   
+  };
+
+  const handleGameComplete = () => {
+    setShowJuegoUno(false);
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
+  };
+
+  const handleGoToActivityMenu = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+    
+    setTimeout(() => {
+      setIsAnimating(false);
+      router.push('/actividad-1');
+    }, 800);
   };
 
   const pageVariants = {
@@ -247,8 +267,8 @@ export default function Scene1Page() {
                 <Cris isVisible={showCris} />
               </div>
               <JuegoUno 
-                onClose={() => {
-                setShowJuegoUno(false)}}
+                onClose={() => setShowJuegoUno(false)}
+                onComplete={handleGameComplete}
                 isVisible={showJuegoUno} />
             </>
           )}
@@ -256,6 +276,40 @@ export default function Scene1Page() {
       )}
 
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/10 to-transparent z-5" />
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToActivityMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
 
       {/* Debug panel */}
       {showDebug && (

@@ -16,10 +16,11 @@ import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import { getLastActivityUrl } from '../hooks/useActivityTracking';
 
-const ActivityLabels = dynamic(() => import('../components/ModuleAnimations/ActivityLabels'), { ssr: false });
+const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
 const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAlex'), { ssr: false });
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
+import { ACTIVITY_1_CONFIG } from '../components/ActivityMenu/activityConfig';
 
 
 
@@ -30,7 +31,7 @@ export default function Aventura1Page() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [showArdilla, setShowArdilla] = useState(false);
   const [showAlex, setShowAlex] = useState(false);
-  const [showActivityLabels, setShowActivityLabels] = useState(false);
+  const [showActivityMenu, setShowActivityMenu] = useState(false);
   const [showSun, setShowSun] = useState(false);
   const [needsInteraction, setNeedsInteraction] = useState(false);
   const [userInteractionReceived, setUserInteractionReceived] = useState(false);
@@ -155,12 +156,15 @@ useEffect(() => {
     setTimeout(() => setShowArdilla(true), 100);
     setTimeout(() => setShowAlex(true), 1800);
     setTimeout(() => {
-      setShowActivityLabels(true);
+      setShowActivityMenu(true);
       setShowSun(true);
     }, 0);
   };
 
-  const handleActivitySelect = (_id: number, url: string) => {
+  const handleSectionSelect = (section: { scenes: string[] }) => {
+    console.log('🎯 Section selected:', section);
+    console.log('🎯 First scene:', section.scenes[0]);
+    
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -168,7 +172,13 @@ useEffect(() => {
 
     cleanupAudio();
     setIsExiting(true);
-    setPendingNavigation(url);
+    
+    // Navigate to first scene of the section
+    const firstScene = section.scenes[0];
+    if (firstScene) {
+      console.log('🎯 Setting pending navigation to:', firstScene);
+      setPendingNavigation(firstScene);
+    }
 
     if (bgMusicRef.current) {
       try {
@@ -178,10 +188,10 @@ useEffect(() => {
         console.warn('Failed to stop background music:', e);
       }
     }
-
   };
 
   const handleExitComplete = () => {
+    console.log('🎯 Exit animation complete, navigating to:', pendingNavigation);
     if (pendingNavigation) {
       router.push(pendingNavigation);
     }
@@ -259,7 +269,7 @@ useEffect(() => {
 
           <div className="absolute inset-0 z-50 flex items-center justify-center">
             <motion.div animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}} transition={{ duration: 0.8, ease: 'easeInOut' }}>
-            <JugarButton text='Aventuras' onClick={handleJugarClick} />
+            <JugarButton text='Descubriendo el cuerpo humano' onClick={handleJugarClick} />
             </motion.div>
           </div>
         </>
@@ -349,9 +359,13 @@ useEffect(() => {
               </motion.div>
             )}
 
-            {showActivityLabels && (
+            {showActivityMenu && (
               <div className="w-full px-6 pb-6 z-30 flex justify-center">
-                <ActivityLabels isVisible={true} onLabelClick={handleActivitySelect} />
+                <ActivityMenu 
+                  isVisible={true} 
+                  config={ACTIVITY_1_CONFIG}
+                  onSectionClick={handleSectionSelect} 
+                />
               </div>
             )}
 

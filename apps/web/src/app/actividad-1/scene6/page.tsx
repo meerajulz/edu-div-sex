@@ -27,6 +27,7 @@ export default function Scene6Page() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [showJuegoTres, setShowJuegoTres] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -99,14 +100,17 @@ export default function Scene6Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 1000);
   };
 
-  const handleGoToScene7 = async () => {
+  const handleGoToActivityMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
     
-    console.log('🎯 Scene6: Game completed, saving progress and moving to scene7');
+    console.log('🎯 Scene6: Game completed, saving progress and returning to activity menu');
     
     const progressSaved = await saveProgress('actividad-1', 'scene6', 'completed', 100, {
       video_watched: videoEnded,
@@ -121,7 +125,7 @@ export default function Scene6Page() {
       } else {
         console.error('❌ Scene6: Failed to save progress, but continuing');
       }
-      router.push('/actividad-1/scene7');
+      router.push('/actividad-1');
     }, 800);
   };
 
@@ -198,7 +202,7 @@ export default function Scene6Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Continuar...' onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -225,15 +229,15 @@ export default function Scene6Page() {
                       onClick={handleOpenJuegoTres} 
                       disabled={isAnimating} 
                     />
-                  ) : (
+                  ) : !showCongratulations ? (
                     <div className="flex flex-col items-center space-y-4">
                       <JugarButton 
-                        onClick={handleGoToScene7} 
+                        onClick={handleGoToActivityMenu} 
                         disabled={isAnimating}
                         text="Continuar..."
                       />
                     </div>
-                  )}
+                  ) : null}
                 </motion.div>
               )}
             </div>
@@ -247,6 +251,40 @@ export default function Scene6Page() {
         onClose={handleCloseJuegoTres}
         onGameComplete={handleGameComplete}
       />
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToActivityMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

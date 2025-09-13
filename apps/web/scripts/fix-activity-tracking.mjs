@@ -20,6 +20,7 @@ const pagesToFix = [
   'actividad-2/scene2/page.tsx',
   'actividad-2/scene3/page.tsx',
   'actividad-2/scene4/page.tsx',
+  'actividad-2/scene5/page.tsx',
   'actividad-3/scene1/page.tsx',
   'actividad-3/scene2/page.tsx',
   'actividad-4/scene1/page.tsx',

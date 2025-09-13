@@ -20,9 +20,10 @@ import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay
 interface JuegoUnoProps {
   isVisible: boolean;
   onClose: () => void;
+  onComplete?: () => void;
 }
 
-const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
+const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) => {
 
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
@@ -78,12 +79,16 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose }) => {
         gender_completed: 'both',
         completed_at: new Date().toISOString()
       });
-      onClose();
       
-      // Small delay to ensure progress is saved before navigation
-      setTimeout(() => {
-        router.push('/actividad-1/scene2');
-      }, 200);
+      if (onComplete) {
+        onComplete();
+      } else {
+        // Fallback to direct navigation if no onComplete callback
+        onClose();
+        setTimeout(() => {
+          router.push('/actividad-1');
+        }, 200);
+      }
     }
   };
 

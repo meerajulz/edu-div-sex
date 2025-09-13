@@ -1,39 +1,33 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-//import { useSession } from 'next-auth/react';
-import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
+import { motion } from 'framer-motion';
+import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import { useState, useRef, useEffect } from 'react';
 import JuegoCuatroActividad2 from './JuegoCuatroActividad2/JuegoCuatroActividad2';
-import JuegoCincoActividad2 from './JuegoCincoActividad2/JuegoCincoActividad2';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 
-
-export default function Actividad2Scene4Page() {
- 
+export default function Scene4Page() {
+  
   // Track current activity URL for continue feature
   useActivityTracking();
-// const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   
   useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const alexAudioRef = useRef<HTMLAudioElement | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const [showModalGame4, setShowModalGame4] = useState(false);
-  const [showModalGame5, setShowModalGame5] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
-  const [game4Completed, setGame4Completed] = useState(false);
-  const [game5Completed, setGame5Completed] = useState(false);
-  const [showAlexCongrats, setShowAlexCongrats] = useState(false);
-  const [alexTalkEnded, setAlexTalkEnded] = useState(false);
+  const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -60,48 +54,16 @@ export default function Actividad2Scene4Page() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Check if both games are completed to show Alex congratulations
   useEffect(() => {
-    if (game4Completed && game5Completed && !showAlexCongrats) {
-      setShowAlexCongrats(true);
-      // Play Alex's audio
-      const audio = new Audio('/audio/actividad-2/juego5/Alex-final.mp3');
-      alexAudioRef.current = audio;
-      
-      audio.onended = () => {
-        setAlexTalkEnded(true);
-        alexAudioRef.current = null;
-      };
-      
-      audio.onerror = () => {
-        console.warn('Alex audio failed to load');
-        setAlexTalkEnded(true);
-        alexAudioRef.current = null;
-      };
-
-      audio.play().catch(() => {
-        console.warn('Alex audio failed to play');
-        setAlexTalkEnded(true);
-        alexAudioRef.current = null;
-      });
-    }
-  }, [game4Completed, game5Completed, showAlexCongrats]);
-
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      if (alexAudioRef.current) {
-        alexAudioRef.current.pause();
-        alexAudioRef.current = null;
-      }
-    };
+    setIsHydrated(true);
   }, []);
 
-  const containerStyle = {
-    width: `${containerDimensions.width}px`,
-    height: `${containerDimensions.height}px`,
-    left: `${(browserDimensions.width - containerDimensions.width) / 2}px`,
-    top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
+  const handleJugarClick = () => {
+    setShowVideo(true);
+  };
+
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
   };
 
   const playSound = () => {
@@ -114,225 +76,68 @@ export default function Actividad2Scene4Page() {
     }
   };
 
-  const handleJugarClick = () => {
+  const handleButtonClick = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-
     setTimeout(() => {
       setIsAnimating(false);
-      if (!videoEnded) {
-        setShowVideo(true);
-      } else if (!game4Completed) {
-        // Show game 4 modal if game 4 hasn't been completed yet
-        setShowModalGame4(true);
-      } else if (!game5Completed) {
-        // Show game 5 modal if game 5 hasn't been completed yet
-        setShowModalGame5(true);
-      }
+      handleJugarClick();
     }, 800);
   };
 
-  // Get appropriate button text based on current state
-  const getButtonText = () => {
-    if (!videoEnded) {
-      return 'Continuar...';
-    } else if (!game4Completed) {
-      return 'Juego ¿Qué hacer si alguien no respeta tu intimidad?';
-    } else if (!game5Completed) {
-      return 'Juego Tu cofre de la Intimidad';
-    }
-    return 'Continuar...';
+  const handleOpenJuegoCuatro = () => {
+    playSound();
+    setShowJuegoCuatro(true);
   };
 
-  const handleVideoEnd = () => {
-    setVideoEnded(true);
-    setShowVideo(false);
+  const handleCloseJuegoCuatro = () => {
+    setShowJuegoCuatro(false);
   };
 
-  // Handle Game 4 completion (called ONLY when game is actually completed)
-  const handleGame4Complete = () => {
-    setShowModalGame4(false);
-    setGame4Completed(true);
+  const handleGameComplete = () => {
+    setGameCompleted(true);
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 1000);
   };
 
-  // Handle Game 4 close without completion
-  const handleCloseModalGame4 = () => {
-    setShowModalGame4(false);
-    // Don't mark as completed, just close
-  };
-
-  // Handle Game 5 completion (called ONLY when game is actually completed)
-  const handleGame5Complete = () => {
-    setShowModalGame5(false);
-    setGame5Completed(true);
-  };
-
-  // Handle Game 5 close without completion
-  const handleCloseModalGame5 = () => {
-    setShowModalGame5(false);
-    // Don't mark as completed, just close
-  };
-
-  const handleNextLevel = async () => {
+  const handleGoToActivityMenu = async () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
     playSound();
     
-    console.log('🎉 Actividad2-Scene4: Final scene completed, saving progress for completed activity');
+    console.log('🎯 Scene4: Game completed, saving progress and returning to activity menu');
     
-    // Save progress for scene4 and mark entire actividad-2 as completed
     const progressSaved = await saveProgress('actividad-2', 'scene4', 'completed', 100, {
       video_watched: videoEnded,
-      game4_completed: game4Completed,
-      game5_completed: game5Completed,
-      alex_congrats_seen: showAlexCongrats,
-      activity_completed: true,
+      game_completed: gameCompleted,
       completed_at: new Date().toISOString()
     });
     
-    if (progressSaved) {
-      console.log('✅ Actividad2-Scene4: Activity 2 completed successfully!');
-      // Set flag that activity was just completed for auto-rotation
-      localStorage.setItem('completedActivityId', '2');
-      // Go back to home main page
-      setTimeout(() => {
-        router.push('/home');
-      }, 200);
-    } else {
-      console.error('❌ Actividad2-Scene4: Failed to save progress, but continuing');
-      // Set flag even if save failed
-      localStorage.setItem('completedActivityId', '2');
-      router.push('/home');
-    }
+    setTimeout(() => {
+      setIsAnimating(false);
+      if (progressSaved) {
+        console.log('✅ Scene4: Progress saved successfully');
+      } else {
+        console.error('❌ Scene4: Failed to save progress, but continuing');
+      }
+      router.push('/actividad-2');
+    }, 800);
   };
 
-  // Show Alex congratulations scene if both games are completed
-  if (showAlexCongrats) {
+  const containerStyle = {
+    width: `${containerDimensions.width}px`,
+    height: `${containerDimensions.height}px`,
+    left: `${(browserDimensions.width - containerDimensions.width) / 2}px`,
+    top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
+  };
+
+  if (!isHydrated) {
     return (
-      <motion.div
-        className="relative min-h-screen overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        style={{
-          backgroundImage: `url('/image/actividad_2/bg.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-  
-        <div className="absolute top-0 right-0 z-50 flex">
-          <FloatingMenu />
-        </div>
-
-      <div className="">
-          <LogoComponent configKey="actividad-2-scene1" />
+      <div className="min-h-screen bg-gradient-to-b from-blue-400 to-purple-300 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
       </div>
-        {/* Alex GIF and Congratulations */}
-        <div className="relative z-20 flex flex-col items-center justify-center min-h-screen p-4">
-          <AnimatePresence mode="wait">
-            {!alexTalkEnded ? (
-              // Alex talking
-              <motion.div
-                key="alex-talking"
-                className="flex flex-col items-center justify-end min-h-screen pb-0"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ 
-                  opacity: 0,
-                  scale: 2.5,        // Scale UP (comes toward viewer)
-                  z: 100,            // Bring to front layer
-                  transition: { 
-                    duration: 1.2,   // Longer duration for smoother effect
-                    ease: 'easeInOut',
-                    opacity: { 
-                      duration: 0.8, 
-                      delay: 0.4     // Fade out after scaling starts
-                    }
-                  }
-                }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              >
-                <div 
-                  className="w-full flex justify-center items-end"
-                  style={{ height: '70vh', minHeight: '400px' }}
-                >
-                  <img
-                    src="/image/alex-talk.gif"
-                    alt="Alex hablando"
-                    className="object-contain object-bottom"
-                    style={{ 
-                      height: '80%',
-                      width: 'auto',
-                      transform: 'scale(2)',
-                      transformOrigin: 'bottom center'
-                    }}
-                  />
-                </div>
-              </motion.div>
-            ) : (
-              // Congratulations message and next level button
-           <motion.div
-            key="congratulations"
-            className="flex flex-col items-center text-center"
-            initial={{ opacity: 0, scale: 0.5, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-          >
-            {/* Congratulations text */}
-            <motion.div
-              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
-              initial={{ rotate: -5 }}
-              animate={{ rotate: [0, 2, -2, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                ¡Felicidades!
-              </h1>
-              <p className="text-xl sm:text-2xl text-white/90 font-semibold">
-                ¡Acabaste la Aventura Intimidad!
-              </p>
-            </motion.div>
-
-            {/* Sparkle effects */}
-            {[...Array(15)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-4 h-4 bg-yellow-300 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  scale: [0, 1.5, 0],
-                  opacity: [0, 1, 0],
-                  rotate: [0, 180, 360],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                  ease: 'easeInOut',
-                }}
-              />
-            ))}
-
-            {/* Next Level Button - FIXED */}
-            <motion.div
-              className="inline-block"
-              animate={{ rotate: [0, -5, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ transformOrigin: 'center center' }}
-            >
-              <div className="whitespace-nowrap">
-                <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleNextLevel} disabled={isAnimating} />
-              </div>
-            </motion.div>
-          </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
     );
   }
 
@@ -343,11 +148,10 @@ export default function Actividad2Scene4Page() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      {/* Background gradient - always visible when video is not playing */}
-      <div className={`absolute inset-0 bg-gradient-to-b from-blue-400 via-blue-300 to-purple-300 z-0 ${showVideo ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`} />
-
-      {!showModalGame4 && !showModalGame5 && (
-        <div className={`absolute inset-0 z-10 ${showVideo ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-blue-400 via-blue-300 to-purple-300" />
+      
+      {!showJuegoCuatro && (
+        <div className="absolute inset-0 z-10">
           {[...Array(20)].map((_, i) => (
             <motion.div
               key={i}
@@ -379,51 +183,99 @@ export default function Actividad2Scene4Page() {
       </div>
       
       <div className="">
-          <LogoComponent configKey="actividad-2-scene1" />
+        <LogoComponent configKey="actividad-2-scene1" />
       </div>
 
-      {/* JugarButton - shows initially and after video ends, but not if both games are completed */}
-      {(!showVideo || videoEnded) && !showModalGame4 && !showModalGame5 && !(game4Completed && game5Completed) && (
+      {/* Background for JuegoCuatro */}
+      {showJuegoCuatro && (
+        <div
+          className="fixed inset-0 z-30 bg-cover bg-center"
+          style={{ backgroundImage: "url('/image/actividad_2/bg.png')" }}
+        />
+      )}
+
+      {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text={getButtonText()} onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      )}
-
-      {/* Video */}
-      {showVideo && (
+      ) : (
         <div className="absolute" style={containerStyle}>
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-20"
-            src="/video/ACTIVIDAD-2-ESCENA-4.mp4"
-            autoPlay
-            playsInline
-            onEnded={handleVideoEnd}
-          />
+          {!videoEnded ? (
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover z-10"
+              src="/video/ACTIVIDAD-2-ESCENA-4.mp4"
+              autoPlay
+              playsInline
+              onEnded={handleVideoEnd}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              <motion.div
+                animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+              >
+                {!gameCompleted ? (
+                  <JugarButton text='Jugar ¿Qué hacer si alguien no respeta tu intimidad?' onClick={handleOpenJuegoCuatro} disabled={isAnimating} />
+                ) : !showCongratulations ? (
+                  <div className="flex flex-col items-center space-y-4">
+                    <JugarButton 
+                      onClick={handleGoToActivityMenu} 
+                      disabled={isAnimating}
+                      text="Continuar..."
+                    />
+                  </div>
+                ) : null}
+              </motion.div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Game 4 Modal */}
-      {showModalGame4 && (
-        <JuegoCuatroActividad2 
-          isOpen={showModalGame4}
-          onClose={handleCloseModalGame4}
-          onGameComplete={handleGame4Complete}
-        />
-      )}
+      {/* JuegoCuatro Game Modal */}
+      <JuegoCuatroActividad2 
+        isOpen={showJuegoCuatro}
+        onClose={handleCloseJuegoCuatro}
+        onGameComplete={handleGameComplete}
+      />
 
-      {/* Game 5 Modal */}
-      {showModalGame5 && (
-        <JuegoCincoActividad2 
-          isOpen={showModalGame5}
-          onClose={handleCloseModalGame5}
-          onGameComplete={handleGame5Complete}
-        />
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToActivityMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
       )}
     </motion.div>
   );

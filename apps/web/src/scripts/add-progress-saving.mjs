@@ -14,7 +14,7 @@ const GAMES = [
   { path: 'actividad-2/scene2/JuegoDosActividad2/JuegoDosActividad2.tsx', activity: 'actividad-2', scene: 'scene2', game: 'JuegoDosActividad2' },
   { path: 'actividad-2/scene3/JuegoTresActividad2/JuegoTresActividad2.tsx', activity: 'actividad-2', scene: 'scene3', game: 'JuegoTresActividad2' },
   { path: 'actividad-2/scene4/JuegoCuatroActividad2/JuegoCuatroActividad2.tsx', activity: 'actividad-2', scene: 'scene4', game: 'JuegoCuatroActividad2' },
-  { path: 'actividad-2/scene4/JuegoCincoActividad2/JuegoCincoActividad2.tsx', activity: 'actividad-2', scene: 'scene4', game: 'JuegoCincoActividad2' },
+  { path: 'actividad-2/scene5/JuegoCincoActividad2/JuegoCincoActividad2.tsx', activity: 'actividad-2', scene: 'scene5', game: 'JuegoCincoActividad2' },
   
   // Actividad 3
   { path: 'actividad-3/scene1/JuegoUnoActividad3/juegoUnoActividad3.tsx', activity: 'actividad-3', scene: 'scene1', game: 'JuegoUnoActividad3' },

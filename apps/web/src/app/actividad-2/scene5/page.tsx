@@ -1,72 +1,39 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-//import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import JuegoDos from './JuegoDos/JuegoDos';
+import JuegoCincoActividad2 from '../scene5/JuegoCincoActividad2/JuegoCincoActividad2';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import dynamic from 'next/dynamic';
+
+const AlexFinalCongratulations = dynamic(() => import('../components/AlexFinalCongratulations/AlexFinalCongratulations'), { ssr: false });
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 
-export default function Scene4Page() {
-
+export default function Scene5Page() {
+  
   // Track current activity URL for continue feature
   useActivityTracking();
-//  const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   
   useActivityProtection();
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [showVideo, setShowVideo] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
-  const [showJuegoDos, setShowJuegoDos] = useState(false);
+  const [showJuegoCinco, setShowJuegoCinco] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [showAlexCongratulations, setShowAlexCongratulations] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
-  const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
-  const aspectRatio = 16 / 9;
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      setBrowserDimensions({ width: vw, height: vh });
-
-      let width = vw;
-      let height = width / aspectRatio;
-
-      if (height < vh) {
-        height = vh;
-        width = height * aspectRatio;
-      }
-
-      setContainerDimensions({ width, height });
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
-  const handleJugarClick = () => {
-    setShowVideo(true);
-  };
-
-  const handleVideoEnd = () => {
-    setVideoEnded(true);
-  };
 
   const playSound = () => {
     try {
@@ -84,60 +51,66 @@ export default function Scene4Page() {
     playSound();
     setTimeout(() => {
       setIsAnimating(false);
-      handleJugarClick();
+      handleOpenJuegoCinco();
     }, 800);
   };
 
-  const handleOpenJuegoDos = () => {
+  const handleOpenJuegoCinco = () => {
     playSound();
-    setShowJuegoDos(true);
+    setShowJuegoCinco(true);
   };
 
-  const handleCloseJuegoDos = () => {
-    setShowJuegoDos(false);
+  const handleCloseJuegoCinco = () => {
+    setShowJuegoCinco(false);
   };
 
   const handleGameComplete = () => {
     setGameCompleted(true);
+    setShowJuegoCinco(false);
     setTimeout(() => {
-      setShowCongratulations(true);
+      setShowAlexCongratulations(true);
     }, 1000);
   };
 
-  const handleGoToActivityMenu = async () => {
+  const handleAlexAnimationComplete = () => {
+    setShowAlexCongratulations(false);
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
+  };
+
+  const handleGoToHome = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
     
-    console.log('🎯 Scene4: Game completed, saving progress and returning to activity menu');
+    console.log('🎉 Scene5: Final scene completed, saving progress and completing Activity 2');
     
-    const progressSaved = await saveProgress('actividad-1', 'scene4', 'completed', 100, {
-      video_watched: videoEnded,
+    const progressSaved = await saveProgress('actividad-2', 'scene5', 'completed', 100, {
       game_completed: gameCompleted,
+      activity_completed: true,
       completed_at: new Date().toISOString()
     });
     
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
-        console.log('✅ Scene4: Progress saved successfully');
+        console.log('✅ Scene5: Activity 2 completed successfully!');
+        // Set flag that activity was just completed for auto-rotation
+        localStorage.setItem('completedActivityId', '2');
       } else {
-        console.error('❌ Scene4: Failed to save progress, but continuing');
+        console.error('❌ Scene5: Failed to save progress, but continuing');
+        // Set flag even if save failed
+        localStorage.setItem('completedActivityId', '2');
       }
-      router.push('/actividad-1');
+      router.push('/home');
     }, 800);
   };
 
-  const containerStyle = {
-    width: `${containerDimensions.width}px`,
-    height: `${containerDimensions.height}px`,
-    left: `${(browserDimensions.width - containerDimensions.width) / 2}px`,
-    top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
-  };
 
   if (!isHydrated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-400 to-purple-300 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-purple-400 to-pink-300 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -150,7 +123,7 @@ export default function Scene4Page() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-green-400 via-blue-200 to-pink-300" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-purple-400 via-pink-300 to-orange-200" />
       <div className="absolute inset-0 z-10">
         {[...Array(20)].map((_, i) => (
           <motion.div
@@ -170,7 +143,7 @@ export default function Scene4Page() {
             transition={{
               duration: Math.random() * 3 + 2,
               repeat: Infinity,
-              ease: 'easeInOut',
+              ease: "easeInOut",
               delay: Math.random() * 2,
             }}
           />
@@ -180,66 +153,41 @@ export default function Scene4Page() {
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
-      <div className="LOGO">
-        <LogoComponent configKey="actividad-1-scene1" />
+      <div className="">
+        <LogoComponent configKey="actividad-2-scene1" />
       </div>
 
-      {/* Background for JuegoDos */}
-      {showJuegoDos && (
+      {/* Background for JuegoCinco */}
+      {showJuegoCinco && (
         <div
           className="fixed inset-0 z-30 bg-cover bg-center"
-          style={{ backgroundImage: "url('/image/bg-scene4.png')" }}
+          style={{ backgroundImage: "url('/image/actividad_2/bg.png')" }}
         />
       )}
 
-      {!showVideo ? (
+      {/* Main Game Button - No video, direct to game */}
+      {!showJuegoCinco && !showAlexCongratulations && !showCongratulations ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Continuar...' onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text='Jugar Tu Cofre de la Intimidad' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      ) : (
-        <div className="absolute" style={containerStyle}>
-          {!videoEnded ? (
-            <video
-              ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-10"
-              src="/video/ACTIVIDAD-1-ESCENA-4.mp4"
-              autoPlay
-              playsInline
-              onEnded={handleVideoEnd}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center z-20">
-              <motion.div
-                animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
-              >
-                {!gameCompleted ? (
-                  <JugarButton text='Jugar ¿Qué ha cambiado?' onClick={handleOpenJuegoDos} disabled={isAnimating} />
-                ) : !showCongratulations ? (
-                  <div className="flex flex-col items-center space-y-4">
-                    <JugarButton 
-                      onClick={handleGoToActivityMenu} 
-                      disabled={isAnimating}
-                      text="Continuar..."
-                    />
-                  </div>
-                ) : null}
-              </motion.div>
-            </div>
-          )}
-        </div>
-      )}
+      ) : null}
 
-      {/* JuegoDos Game Modal */}
-      <JuegoDos 
-        isVisible={showJuegoDos} 
-        onClose={handleCloseJuegoDos}
+      {/* JuegoCinco Game Modal */}
+      <JuegoCincoActividad2 
+        isOpen={showJuegoCinco}
+        onClose={handleCloseJuegoCinco}
         onGameComplete={handleGameComplete}
+      />
+
+      {/* Alex Final Congratulations after Game Complete */}
+      <AlexFinalCongratulations 
+        isVisible={showAlexCongratulations}
+        onAnimationComplete={handleAlexAnimationComplete}
       />
 
       {/* Congratulations Overlay */}
@@ -258,19 +206,19 @@ export default function Scene4Page() {
           >
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-bold text-white mb-4">
-              ¡Felicidades!
+              ¡Excelente!
             </h2>
             <p className="text-white text-lg mb-6">
-              Has completado esta sección de la actividad
+              Has completado la Actividad Intimidad
             </p>
             <motion.button
-              onClick={handleGoToActivityMenu}
+              onClick={handleGoToHome}
               disabled={isAnimating}
               className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Continuar al menú
+              IR A LA PROXIMA AVENTURA!
             </motion.button>
           </motion.div>
         </motion.div>
