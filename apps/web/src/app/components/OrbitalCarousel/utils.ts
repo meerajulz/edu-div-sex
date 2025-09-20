@@ -209,7 +209,7 @@ export const getDefaultItems = async () => {
     {
       id: 3,
       label: "Aventura 3",
-      url: "/actividad-3/scene1", // Updated to match ActivityLabels
+      url: "/actividad-3", // Updated to go to activity menu page
       svgPath: "/svg/menu/orbital/activity3-placer-sexual.svg",
       isUnlocked: progress.find(p => p.activityId === 3)?.isUnlocked || false
     },

@@ -3,33 +3,59 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import JuegoUnoActividad3 from './JuegoUnoActividad3/juegoUnoActividad3';
+import JuegoDosActividad3 from '../scene1/JuegoDosActvidad3/JuegoDosActividad3';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-//import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 
-export default function Actividad3Scene1Page() {
-  
+// Helper function to get user gender from session
+const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'female' => {
+  const sessionSex = session?.user?.sex?.toLowerCase();
+
+  // Handle various possible values from the session
+  if (sessionSex === 'male' || sessionSex === 'm' || sessionSex === 'masculino') {
+    return 'male';
+  } else if (sessionSex === 'female' || sessionSex === 'f' || sessionSex === 'femenino') {
+    return 'female';
+  }
+
+  // Default fallback
+  console.warn('⚠️ No valid gender found in session, defaulting to female');
+  return 'female';
+};
+
+export default function Actividad3Scene1_1Page() {
+
   // Track current activity URL for continue feature
   useActivityTracking();
-//const { data: session } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
-  
+
+  // Get user gender from session
+  const userGender = getUserGender(session);
+
+  // Debug logging
+  console.log('🎯 User gender from session:', session?.user?.sex);
+  console.log('🎯 Parsed user gender:', userGender);
+  console.log('🎯 Full session user data:', session?.user);
+
   useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const finalVideoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
-  const [showJuegoUno, setShowJuegoUno] = useState(false);
+  const [showGame, setShowGame] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [juego1Completed, setJuego1Completed] = useState(false);
+  const [showFinalVideo, setShowFinalVideo] = useState(false);
+  const [finalVideoEnded, setFinalVideoEnded] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
-  
+
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -88,46 +114,53 @@ export default function Actividad3Scene1Page() {
     setVideoEnded(true);
   };
 
-  const handleOpenJuegoUno = () => {
+  const handleOpenGame = () => {
     playSound();
-    setShowJuegoUno(true);
+    setShowGame(true);
   };
 
-  const handleCloseJuegoUno = () => {
-    setShowJuegoUno(false);
+  const handleCloseGame = () => {
+    setShowGame(false);
   };
 
   const handleGameComplete = () => {
-    setJuego1Completed(true);
     setGameCompleted(true);
-    // Close game modal
-    setShowJuegoUno(false);
-    // Show congratulations after a short delay
+    setShowGame(false);
+    // Start final video after game completion
+    setTimeout(() => {
+      setShowFinalVideo(true);
+    }, 500);
+  };
+
+  const handleFinalVideoEnd = () => {
+    setFinalVideoEnded(true);
+    // Show congratulations after final video ends
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
   };
 
-  // Handle game completion and go back to menu
+  // Handle completion and go back to menu
   const handleGoToMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
 
-    console.log('🎯 Actividad3-Scene1: Game completed, saving progress and returning to menu');
+    console.log('🎯 Actividad3-Scene1-1: All content completed, saving progress and returning to menu');
 
-    const progressSaved = await saveProgress('actividad-3', 'scene1', 'completed', 100, {
+    const progressSaved = await saveProgress('actividad-3', 'scene1-1', 'completed', 100, {
       video_watched: videoEnded,
-      juego1_completed: juego1Completed,
+      game_completed: gameCompleted,
+      final_video_watched: finalVideoEnded,
       completed_at: new Date().toISOString()
     });
 
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
-        console.log('✅ Actividad3-Scene1: Progress saved successfully');
+        console.log('✅ Actividad3-Scene1-1: Progress saved successfully');
       } else {
-        console.error('❌ Actividad3-Scene1: Failed to save progress, but continuing');
+        console.error('❌ Actividad3-Scene1-1: Failed to save progress, but continuing');
       }
       router.push('/actividad-3');
     }, 800);
@@ -202,17 +235,45 @@ export default function Actividad3Scene1Page() {
         <FloatingMenu />
       </div>
       <div className="">
-        <LogoComponent configKey="actividad-3-scene1" />
+        <LogoComponent configKey="actividad-3-scene1-1" />
       </div>
 
-      {!showVideo ? (
+      {!showVideo && !showFinalVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='¿Qué pasa cuando me excito?' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='El orgasmo masculino: la eyaculación' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
+        </div>
+      ) : showFinalVideo ? (
+        <div className="absolute" style={containerStyle}>
+          {!finalVideoEnded ? (
+            <video
+              ref={finalVideoRef}
+              className="absolute inset-0 w-full h-full object-cover z-20"
+              src="/video/ACTIVIDAD-3-ESCENA-1_2.mp4"
+              autoPlay
+              playsInline
+              onEnded={handleFinalVideoEnd}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              {!showCongratulations && (
+                <motion.div
+                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                >
+                  <JugarButton
+                    text="Volver al menú"
+                    onClick={handleGoToMenu}
+                    disabled={isAnimating}
+                  />
+                </motion.div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
@@ -220,7 +281,7 @@ export default function Actividad3Scene1Page() {
             <video
               ref={videoRef}
               className="absolute inset-0 w-full h-full object-cover z-20"
-              src="/video/ACTIVIDAD-3-ESCENA-1.mp4"
+              src="/video/ACTIVIDAD-3-ESCENA-1_1.mp4"
               autoPlay
               playsInline
               onEnded={handleVideoEnd}
@@ -233,27 +294,25 @@ export default function Actividad3Scene1Page() {
               >
                 {!gameCompleted ? (
                   <JugarButton
-                    text='JUEGO: ¿Qué pasa cuando me excito?'
-                    onClick={handleOpenJuegoUno}
+                    text={userGender === 'male' ? 'JUEGO: El orgasmo masculino' : 'JUEGO: El orgasmo femenino'}
+                    onClick={handleOpenGame}
                     disabled={isAnimating}
                   />
-                ) : !showCongratulations ? (
-                  <JugarButton
-                    text="Volver al menú"
-                    onClick={handleGoToMenu}
-                    disabled={isAnimating}
-                  />
-                ) : null}
+                ) : showFinalVideo ? null : (
+                  <div className="text-white text-center">
+                    <p>Preparando siguiente video...</p>
+                  </div>
+                )}
               </motion.div>
             </div>
           )}
         </div>
       )}
 
-      {/* JuegoUnoActividad3 Game Modal */}
-      <JuegoUnoActividad3
-        isVisible={showJuegoUno}
-        onClose={handleCloseJuegoUno}
+      {/* JuegoDosActividad3 Game Modal */}
+      <JuegoDosActividad3
+        isVisible={showGame}
+        onClose={handleCloseGame}
         onGameComplete={handleGameComplete}
       />
 

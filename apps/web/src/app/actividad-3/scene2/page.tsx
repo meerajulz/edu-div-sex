@@ -102,17 +102,10 @@ const { data: session } = useSession();
 
     setTimeout(() => {
       setIsAnimating(false);
-      
-      // Gender-based logic
-      if (userGender === 'male') {
-        // Male users: Show video first
-        console.log('👨 Male user: Showing video first');
-        setShowVideo(true);
-      } else {
-        // Female users: Go directly to game modal
-        console.log('👩 Female user: Going directly to game modal');
-        setShowJuegoCuatro(true);
-      }
+
+      // Show video first for all users
+      console.log('🎬 Showing video first for all users');
+      setShowVideo(true);
     }, 800);
   };
 
@@ -132,6 +125,7 @@ const { data: session } = useSession();
   const handleGameComplete = () => {
     setGameCompleted(true);
     setShowJuegoCuatro(false); // Close the game modal
+    // Go directly to final congratulations screen
   };
 
   const handleGoToNextActivity = async () => {
@@ -159,7 +153,7 @@ const { data: session } = useSession();
       }
       // Set flag that activity was just completed for auto-rotation
       localStorage.setItem('completedActivityId', '3');
-      // Navigate back to main activity menu
+      // Navigate to home page after completing final activity
       router.push('/home');
     }, 800);
   };
@@ -260,8 +254,8 @@ const { data: session } = useSession();
         </div>
       )}
 
-      {/* Video Section (Only for Males) - FIXED: Hide when game is completed */}
-      {showVideo && userGender === 'male' && !gameCompleted && (
+      {/* Video Section (For All Users) - FIXED: Hide when game is completed */}
+      {showVideo && !gameCompleted && (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
             <video
@@ -323,11 +317,12 @@ const { data: session } = useSession();
       )}
 
       {/* FIXED: Correct component name - JuegoTresActividad3 */}
-      <JuegoTresActividad3 
-        isVisible={showJuegoCuatro} 
+      <JuegoTresActividad3
+        isVisible={showJuegoCuatro}
         onClose={handleCloseJuegoCuatro}
         onGameComplete={handleGameComplete}
       />
+
     </motion.div>
   );
 }
