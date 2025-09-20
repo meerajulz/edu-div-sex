@@ -216,14 +216,14 @@ export const getDefaultItems = async () => {
     {
       id: 4,
       label: "Aventura 4",
-      url: "/actividad-4/scene1", // Updated to match ActivityLabels
+      url: "/actividad-4", // Updated to go to activity menu
       svgPath: "/svg/menu/orbital/activity4cuido-mi-sexualidad.svg",
       isUnlocked: progress.find(p => p.activityId === 4)?.isUnlocked || false
     },
     {
       id: 5,
-      label: "Actividad 5",
-      url: "/actividad-5/scene1", // Updated to match ActivityLabels
+      label: "Aventura 5",
+      url: "/actividad-5", // Updated to go to activity menu
       svgPath: "/svg/menu/orbital/activity5-entender-respectar.svg",
       isUnlocked: progress.find(p => p.activityId === 5)?.isUnlocked || false
     },

@@ -138,7 +138,7 @@ export default function Actividad5Scene2Page() {
         <JugarButton 
           onClick={handleOpenJuegoCuatro} 
           disabled={isAnimating}
-          text="Jugar ¿Qué hace Noa?"
+          text="JUEGO: ¿Cómo ligamos?"
         />
       );
     } else {
@@ -181,27 +181,29 @@ export default function Actividad5Scene2Page() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      {/* Background gradient - Green to Blue */}
-      <div className="absolute inset-0 bg-gradient-to-b from-green-200 via-teal-100 to-blue-300 z-0" />
+      {/* Background gradient - Pink theme for relationships */}
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-rose-400 to-red-400 z-0" />
 
+      {/* Floating particles animation */}
       <div className="absolute inset-0 z-10">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(25)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-white/20"
             style={{
-              width: Math.random() * 60 + 20,
-              height: Math.random() * 60 + 20,
+              width: Math.random() * 80 + 30,
+              height: Math.random() * 80 + 30,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -20, 0],
-              x: [0, Math.random() * 20 - 10, 0],
-              scale: [1, 1.1, 1],
+              y: [0, -30, 0],
+              x: [0, Math.random() * 30 - 15, 0],
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
             }}
             transition={{
-              duration: Math.random() * 3 + 2,
+              duration: Math.random() * 4 + 3,
               repeat: Infinity,
               ease: 'easeInOut',
               delay: Math.random() * 2,
@@ -210,11 +212,12 @@ export default function Actividad5Scene2Page() {
         ))}
       </div>
 
+
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>
               <div className="">
-                <LogoComponent configKey="actividad-5-scene1" />
+                <LogoComponent configKey="actividad-5-scene2" />
               </div>
                         
 
@@ -224,7 +227,7 @@ export default function Actividad5Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text="Continuar..." onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text="¿Cómo ligamos?" onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (

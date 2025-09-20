@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoUnoActividad5 from './JuegoUnoActividad5/JuegoUnoActividad5';
-import JuegoDosActividad5 from './JuegoDosActividad5/JuegoDosActividad5';
-import JuegoTresActividad5 from './JuedoTresActicidad5/JuegoTresActividad5';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 //import { useSession } from 'next-auth/react';
@@ -28,13 +26,10 @@ export default function Actividad5Scene1Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   
-  // Game states
   const [showJuegoUno, setShowJuegoUno] = useState(false);
-  const [juegoUnoCompleted, setJuegoUnoCompleted] = useState(false);
-  const [showJuegoDos, setShowJuegoDos] = useState(false);
-  const [juegoDosCompleted, setJuegoDosCompleted] = useState(false);
-  const [showJuegoTres, setShowJuegoTres] = useState(false);
-  const [juegoTresCompleted, setJuegoTresCompleted] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [juego1Completed, setJuego1Completed] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -94,7 +89,6 @@ export default function Actividad5Scene1Page() {
     setVideoEnded(true);
   };
 
-  // Juego Uno handlers
   const handleOpenJuegoUno = () => {
     playSound();
     setShowJuegoUno(true);
@@ -104,62 +98,30 @@ export default function Actividad5Scene1Page() {
     setShowJuegoUno(false);
   };
 
-  const handleJuegoUnoComplete = () => {
-    console.log('🎮 Juego Uno completed!');
-    setJuegoUnoCompleted(true);
-    setShowJuegoUno(false);
+  const handleGameComplete = () => {
+    setJuego1Completed(true);
+    setGameCompleted(true);
+    setShowJuegoUno(false); // Close the game modal
+    // Show congratulations after a short delay
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
   };
 
-  // Juego Dos handlers
-  const handleOpenJuegoDos = () => {
-    playSound();
-    setShowJuegoDos(true);
-  };
-
-  const handleCloseJuegoDos = () => {
-    setShowJuegoDos(false);
-  };
-
-  const handleJuegoDosComplete = () => {
-    console.log('🎮 Juego Dos completed!');
-    setJuegoDosCompleted(true);
-    setShowJuegoDos(false);
-  };
-
-  // Juego Tres handlers
-  const handleOpenJuegoTres = () => {
-    playSound();
-    setShowJuegoTres(true);
-  };
-
-  const handleCloseJuegoTres = () => {
-    setShowJuegoTres(false);
-  };
-
-  const handleJuegoTresComplete = () => {
-    console.log('🎮 Juego Tres completed! Setting state...');
-    setJuegoTresCompleted(true);
-    setShowJuegoTres(false);
-    console.log('🚪 Juego Tres completed and modal closed');
-  };
-
-  // Continue to next scene
-  const handleContinueToScene2 = async () => {
+  // Handle game completion and go back to menu
+  const handleGoToMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    
-    console.log('🎯 Actividad5-Scene1: All games completed, saving progress and moving to scene2');
-    
+
+    console.log('🎯 Actividad5-Scene1: Game completed, saving progress and returning to menu');
+
     const progressSaved = await saveProgress('actividad-5', 'scene1', 'completed', 100, {
       video_watched: videoEnded,
-      juego_uno_completed: juegoUnoCompleted,
-      juego_dos_completed: juegoDosCompleted,
-      juego_tres_completed: juegoTresCompleted,
-      all_games_completed: allGamesCompleted,
+      juego1_completed: juego1Completed,
       completed_at: new Date().toISOString()
     });
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
@@ -167,68 +129,8 @@ export default function Actividad5Scene1Page() {
       } else {
         console.error('❌ Actividad5-Scene1: Failed to save progress, but continuing');
       }
-      router.push('/actividad-5/scene2');
+      router.push('/actividad-5');
     }, 800);
-  };
-
-  // Check if all games are completed
-  const allGamesCompleted = juegoUnoCompleted && juegoDosCompleted && juegoTresCompleted;
-  
-  // Debug log to see the completion state
-  useEffect(() => {
-    console.log('🎯 Game completion status:', {
-      juegoUnoCompleted,
-      juegoDosCompleted, 
-      juegoTresCompleted,
-      allGamesCompleted
-    });
-  }, [juegoUnoCompleted, juegoDosCompleted, juegoTresCompleted, allGamesCompleted]);
-
-  // Determine current button state
-  const getCurrentButton = () => {
-    if (!juegoUnoCompleted) {
-      return (
-        <JugarButton 
-          onClick={handleOpenJuegoUno} 
-          disabled={isAnimating}
-          text="Jugar ¿Qué dice mi cara?"
-        />
-      );
-    } else if (!juegoDosCompleted) {
-      return (
-        <JugarButton 
-          onClick={handleOpenJuegoDos} 
-          disabled={isAnimating}
-          text="Jugar ¿Qué dice mi tono de voz?"
-        />
-      );
-    } else if (!juegoTresCompleted) {
-      return (
-        <JugarButton 
-          onClick={handleOpenJuegoTres} 
-          disabled={isAnimating}
-          text="Jugar ¿Qué cara pondrá?"
-        />
-      );
-    } else {
-      // All games completed - show completion message
-      return (
-        <div className="flex flex-col items-center space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-          >
-            ¡Juegos Completados! 🎉
-          </motion.div>
-          <JugarButton 
-            onClick={handleContinueToScene2} 
-            disabled={isAnimating}
-            text="Continuar..."
-          />
-        </div>
-      );
-    }
   };
 
   return (
@@ -280,7 +182,7 @@ export default function Actividad5Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='¿Qué dice mi cara?' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -300,31 +202,59 @@ export default function Actividad5Scene1Page() {
                 animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                 transition={{ duration: 0.8, ease: 'easeInOut' }}
               >
-                {getCurrentButton()}
+                {!gameCompleted ? (
+                  <JugarButton
+                    text='JUEGO: ¿Qué dice mi cara?'
+                    onClick={handleOpenJuegoUno}
+                    disabled={isAnimating}
+                  />
+                ) : null}
               </motion.div>
             </div>
           )}
         </div>
       )}
 
-      {/* Game Modals */}
-      <JuegoUnoActividad5 
-        isVisible={showJuegoUno} 
+      {/* JuegoUnoActividad5 Game Modal */}
+      <JuegoUnoActividad5
+        isVisible={showJuegoUno}
         onClose={handleCloseJuegoUno}
-        onGameComplete={handleJuegoUnoComplete}
+        onGameComplete={handleGameComplete}
       />
 
-      <JuegoDosActividad5 
-        isVisible={showJuegoDos} 
-        onClose={handleCloseJuegoDos}
-        onGameComplete={handleJuegoDosComplete}
-      />
-
-      <JuegoTresActividad5 
-        isVisible={showJuegoTres} 
-        onClose={handleCloseJuegoTres}
-        onGameComplete={handleJuegoTresComplete}
-      />
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

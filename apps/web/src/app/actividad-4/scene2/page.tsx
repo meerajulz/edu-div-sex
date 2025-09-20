@@ -176,7 +176,7 @@ export default function Actividad4Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Continuar...' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Higiene menstrual' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -216,11 +216,12 @@ export default function Actividad4Scene2Page() {
                             </p>
                         </motion.div>
                       <motion.div
-                      //scale: [1, 1.1, 1], 
-                        animate={{ rotate: [0, -5, 5, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                        className="inline-block"
+                        style={{ transformOrigin: 'center center' }}
                       >
-                        <JugarButton text="IR A LA PROXIMA AVENTURA! " onClick={handleContinue} disabled={isAnimating} />
+                        <div className="whitespace-nowrap">
+                          <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleContinue} disabled={isAnimating} />
+                        </div>
                       </motion.div>
                     </div>
                   )}
