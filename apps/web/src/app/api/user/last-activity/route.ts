@@ -2,59 +2,112 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 
-// GET /api/user/last-activity - Get user's last visited activity URL
+// GET /api/user/last-activity - Get user's last visited activity URL with smart logic
 export async function GET() {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // First try to get the last visited URL from users table
-    const userResult = await query(`
-      SELECT last_activity_url 
-      FROM users 
-      WHERE id = $1
+    // Get student info
+    const studentResult = await query(`
+      SELECT id FROM students WHERE user_id = $1
     `, [session.user.id]);
 
-    if (userResult.rows[0]?.last_activity_url) {
-      return NextResponse.json({ 
-        lastUrl: userResult.rows[0].last_activity_url 
-      });
+    if (studentResult.rows.length === 0) {
+      return NextResponse.json({ lastUrl: null, showButton: false });
     }
 
-    // If no last URL, check student progress for the last accessed scene
-    const progressResult = await query(`
-      SELECT 
+    const studentId = studentResult.rows[0].id;
+
+    // Check overall progress to determine if we should show the button
+    const progressAnalysis = await query(`
+      SELECT
         a.slug as activity_slug,
         s.slug as scene_slug,
+        a.order_number as activity_order,
+        s.order_number as scene_order,
+        sp.status,
         sp.last_accessed_at
-      FROM student_progress sp
-      JOIN students st ON st.id = sp.student_id
-      JOIN scenes s ON s.id = sp.scene_id
-      JOIN activities a ON a.id = s.activity_id
-      WHERE st.user_id = $1
-      ORDER BY sp.last_accessed_at DESC
-      LIMIT 1
-    `, [session.user.id]);
+      FROM activities a
+      JOIN scenes s ON s.activity_id = a.id
+      LEFT JOIN student_progress sp ON sp.activity_id = a.id
+        AND sp.scene_id = s.id
+        AND sp.student_id = $1
+      WHERE a.is_active = true AND s.is_active = true
+      ORDER BY a.order_number, s.order_number
+    `, [studentId]);
 
-    if (progressResult.rows.length > 0) {
-      const { activity_slug, scene_slug } = progressResult.rows[0];
-      const lastUrl = `/${activity_slug}/${scene_slug}`;
-      
-      // Save this URL for quick access next time
-      await query(`
-        UPDATE users 
-        SET last_activity_url = $1 
-        WHERE id = $2
-      `, [lastUrl, session.user.id]);
-      
-      return NextResponse.json({ lastUrl });
+    let hasAnyProgress = false;
+    let allCompleted = true;
+    let lastActiveUrl = null;
+    let lastAccessTime = null;
+
+    // Analyze progress
+    for (const row of progressAnalysis.rows) {
+      if (row.status) {
+        hasAnyProgress = true;
+
+        if (row.status !== 'completed') {
+          allCompleted = false;
+        }
+
+        // Find the most recently accessed incomplete scene
+        if (row.status === 'in_progress' && row.last_accessed_at) {
+          if (!lastAccessTime || new Date(row.last_accessed_at) > new Date(lastAccessTime)) {
+            lastActiveUrl = `/${row.activity_slug}/${row.scene_slug}`;
+            lastAccessTime = row.last_accessed_at;
+          }
+        }
+      } else {
+        // Found first scene without progress - this is where they should continue
+        if (hasAnyProgress && !lastActiveUrl) {
+          lastActiveUrl = `/${row.activity_slug}/${row.scene_slug}`;
+        }
+        allCompleted = false;
+      }
     }
 
-    // No progress found, return null
-    return NextResponse.json({ lastUrl: null });
+    // Decide whether to show button and what URL to use
+    let showButton = false;
+    let continueUrl = null;
+
+    if (hasAnyProgress && !allCompleted) {
+      // User has progress but hasn't completed everything
+      showButton = true;
+
+      // Use saved URL from users table if recent, otherwise use calculated URL
+      const userResult = await query(`
+        SELECT last_activity_url, updated_at
+        FROM users
+        WHERE id = $1
+      `, [session.user.id]);
+
+      const savedUrl = userResult.rows[0]?.last_activity_url;
+      const savedTime = userResult.rows[0]?.updated_at;
+
+      // Use saved URL if it's recent (within last 24 hours) and valid
+      if (savedUrl && savedTime) {
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        if (new Date(savedTime) > dayAgo) {
+          continueUrl = savedUrl;
+        }
+      }
+
+      // Fallback to calculated URL
+      if (!continueUrl) {
+        continueUrl = lastActiveUrl;
+      }
+    }
+
+    return NextResponse.json({
+      lastUrl: continueUrl,
+      showButton,
+      hasProgress: hasAnyProgress,
+      allCompleted
+    });
 
   } catch (error) {
     console.error('Error fetching last activity:', error);
@@ -66,7 +119,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -80,8 +133,8 @@ export async function POST(request: NextRequest) {
 
     // Update the user's last activity URL
     await query(`
-      UPDATE users 
-      SET 
+      UPDATE users
+      SET
         last_activity_url = $1,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
@@ -91,6 +144,32 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error saving last activity:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// DELETE /api/user/last-activity - Hide continue button (clear saved URL)
+export async function DELETE() {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Clear the user's last activity URL to hide the continue button
+    await query(`
+      UPDATE users
+      SET
+        last_activity_url = NULL,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `, [session.user.id]);
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Error hiding continue button:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

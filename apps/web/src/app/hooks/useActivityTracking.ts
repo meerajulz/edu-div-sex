@@ -51,20 +51,46 @@ export function useActivityTracking() {
 }
 
 /**
- * Function to get the user's last activity URL
+ * Function to get the user's last activity URL with enhanced logic
  */
-export async function getLastActivityUrl(): Promise<string | null> {
+export async function getLastActivityUrl(): Promise<{
+  lastUrl: string | null;
+  showButton: boolean;
+  hasProgress: boolean;
+  allCompleted: boolean;
+} | null> {
   try {
     const response = await fetch('/api/user/last-activity');
-    
+
     if (!response.ok) {
       return null;
     }
-    
+
     const data = await response.json();
-    return data.lastUrl || null;
+    return {
+      lastUrl: data.lastUrl || null,
+      showButton: data.showButton || false,
+      hasProgress: data.hasProgress || false,
+      allCompleted: data.allCompleted || false
+    };
   } catch (error) {
     console.error('Error fetching last activity URL:', error);
     return null;
+  }
+}
+
+/**
+ * Function to hide the continue button (called when user clicks it)
+ */
+export async function hideContinueButton(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/user/last-activity', {
+      method: 'DELETE',
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Error hiding continue button:', error);
+    return false;
   }
 }

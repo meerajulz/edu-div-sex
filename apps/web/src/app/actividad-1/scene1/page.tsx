@@ -262,7 +262,7 @@ export default function Scene1Page() {
               <div className="absolute  inset-0">
                 <ButtonGlobe
                   onButtonClick={handleGlobeButtonClick}
-                  isVisible={true}
+                  isVisible={!showCongratulations}
                 />
                 <Cris isVisible={showCris} />
               </div>

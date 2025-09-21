@@ -121,8 +121,8 @@ export async function canUserAccessActivity(
     }
 
     // Student has progress - check what they can access based on completion status
-    const maxAllowedQuery = await query(`
-      SELECT 
+    const progressQuery = await query(`
+      SELECT
         a.id as activity_id,
         a.slug as activity_slug,
         a.order_number as activity_order,
@@ -132,58 +132,75 @@ export async function canUserAccessActivity(
         sp.status
       FROM activities a
       JOIN scenes s ON s.activity_id = a.id
-      LEFT JOIN student_progress sp ON sp.activity_id = a.id 
-        AND sp.scene_id = s.id 
+      LEFT JOIN student_progress sp ON sp.activity_id = a.id
+        AND sp.scene_id = s.id
         AND sp.student_id = $1
       WHERE a.is_active = true AND s.is_active = true
       ORDER BY a.order_number, s.order_number
     `, [studentId]);
 
-    // Find the furthest scene the student can access
-    let maxAllowedActivity = null;
-    let maxAllowedScene = null;
+    // Find the furthest unlocked activity/scene and check if requested content is accessible
+    let maxUnlockedActivity = null;
+    let maxUnlockedScene = null;
+    let hasAnyProgress = false;
 
-    for (const row of maxAllowedQuery.rows) {
-      if (!row.status || row.status === 'not_started') {
-        // This is the next scene they should access
-        maxAllowedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
-        maxAllowedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
-        break;
-      } else if (row.status === 'completed') {
-        // They can access beyond this scene
+    // First pass: find the maximum unlocked content
+    for (const row of progressQuery.rows) {
+      if (row.status === 'completed') {
+        // Mark this activity/scene as accessible for replay
+        maxUnlockedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
+        maxUnlockedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
+        hasAnyProgress = true;
         continue;
       } else if (row.status === 'in_progress') {
         // They can access this scene
-        maxAllowedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
-        maxAllowedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
+        maxUnlockedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
+        maxUnlockedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
+        hasAnyProgress = true;
+        break;
+      } else if (!row.status || row.status === 'not_started') {
+        // This is the next scene they should access (if they haven't progressed beyond)
+        if (!hasAnyProgress) {
+          maxUnlockedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
+          maxUnlockedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
+        }
         break;
       }
     }
 
-    if (!maxAllowedActivity || !maxAllowedScene) {
-      console.log('📊 All activities completed or no valid next activity found');
+    if (!maxUnlockedActivity || !maxUnlockedScene) {
+      console.log('📊 No unlocked activities found');
       return { canAccess: false, redirectTo: '/home' };
     }
 
-    console.log(`📊 Max allowed: ${maxAllowedActivity.slug}/${maxAllowedScene ? `/${maxAllowedScene.slug}` : ''}`);
+    console.log(`📊 Max unlocked: ${maxUnlockedActivity.slug}/${maxUnlockedScene.slug}`);
     console.log(`🎯 Requesting: ${activitySlug}${sceneSlug ? `/${sceneSlug}` : ''}`);
 
-    // Check if the requested activity/scene is within allowed range
-    // Allow access to:
-    // 1. Any completed or current activity/scene
-    // 2. Activity intro pages (no scene) for activities up to current level
-    if (targetActivity.order_number < maxAllowedActivity.order ||
-        (targetActivity.order_number === maxAllowedActivity.order && 
-         (!sceneSlug || (targetScene && targetScene.order_number <= maxAllowedScene.order)))) {
-      console.log('✅ Access granted - within allowed range');
+    // NEW LOGIC: Allow access to any completed activity for replay, current activity, or activity intro pages
+    // Check if the requested activity/scene is accessible:
+    // 1. Any activity that's been unlocked (order <= max unlocked)
+    // 2. Any scene within an unlocked activity
+    // 3. Activity intro pages (no scene) for unlocked activities
+
+    if (targetActivity.order_number < maxUnlockedActivity.order ||
+        (targetActivity.order_number === maxUnlockedActivity.order &&
+         (!sceneSlug || (targetScene && targetScene.order_number <= maxUnlockedScene.order)))) {
+      console.log('✅ Access granted - within unlocked range (includes completed activities for replay)');
       return { canAccess: true };
-    } else {
-      const redirectTo = maxAllowedScene ? 
-        `/${maxAllowedActivity.slug}/${maxAllowedScene.slug}` :
-        `/${maxAllowedActivity.slug}`;
-      console.log('❌ Access denied - redirecting to current allowed:', redirectTo);
-      return { canAccess: false, redirectTo };
     }
+
+    // Special case: Allow access to activity intro pages for any unlocked activity
+    if (!sceneSlug && targetActivity.order_number <= maxUnlockedActivity.order) {
+      console.log('✅ Access granted - activity intro page for unlocked activity');
+      return { canAccess: true };
+    }
+
+    // Deny access and redirect to the furthest allowed content
+    const redirectTo = maxUnlockedScene ?
+      `/${maxUnlockedActivity.slug}/${maxUnlockedScene.slug}` :
+      `/${maxUnlockedActivity.slug}`;
+    console.log('❌ Access denied - redirecting to current allowed:', redirectTo);
+    return { canAccess: false, redirectTo };
 
   } catch (error) {
     console.error('Error checking activity access:', error);
@@ -233,16 +250,16 @@ export async function getNextAllowedActivity(userId: string): Promise<string | n
       return '/home';
     }
 
-    // Find next accessible activity/scene
+    // Find next accessible activity/scene or return home if all completed
     const nextQuery = await query(`
-      SELECT 
+      SELECT
         a.slug as activity_slug,
         s.slug as scene_slug,
         sp.status
       FROM activities a
       JOIN scenes s ON s.activity_id = a.id
-      LEFT JOIN student_progress sp ON sp.activity_id = a.id 
-        AND sp.scene_id = s.id 
+      LEFT JOIN student_progress sp ON sp.activity_id = a.id
+        AND sp.scene_id = s.id
         AND sp.student_id = $1
       WHERE a.is_active = true AND s.is_active = true
       ORDER BY a.order_number, s.order_number
@@ -254,7 +271,7 @@ export async function getNextAllowedActivity(userId: string): Promise<string | n
       }
     }
 
-    // All completed
+    // All completed - return home (user can access any activity from orbital menu)
     return '/home';
   } catch (error) {
     console.error('Error getting next allowed activity:', error);

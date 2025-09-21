@@ -14,12 +14,13 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
-import { getLastActivityUrl } from '../hooks/useActivityTracking';
+import ContinueButton from '../components/ContinueButton/ContinueButton';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
 const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAlex'), { ssr: false });
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
+import { SimpleAlexRef } from '../components/ModuleAnimations/SimpleAlex';
 import { ACTIVITY_1_CONFIG } from '../components/ActivityMenu/activityConfig';
 
 
@@ -39,14 +40,13 @@ export default function Aventura1Page() {
 
   const [isExiting, setIsExiting] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [showContinueButton, setShowContinueButton] = useState(false);
+  const simpleAlexRef = useRef<SimpleAlexRef>(null);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
 
-  // Continue where you left off functionality
-  const [lastActivityUrl, setLastActivityUrl] = useState<string | null>(null);
-  const [showContinueOption, setShowContinueOption] = useState(false);
 
   // Debug mode for development
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
@@ -135,20 +135,6 @@ useEffect(() => {
   console.log('🔒 Actividad-1: Session data:', session);
 }, [session, status]);
 
-// Check for saved activity to continue
-useEffect(() => {
-  if (status === 'authenticated' && session?.user) {
-    getLastActivityUrl().then(url => {
-      if (url) {
-        setLastActivityUrl(url);
-        setShowContinueOption(true);
-        console.log('📍 Found last activity to continue:', url);
-      }
-    }).catch(error => {
-      console.warn('⚠️ Failed to get last activity:', error);
-    });
-  }
-}, [status, session]);
 
   const handleVideoEnd = () => {
     cleanupAudio();
@@ -158,13 +144,22 @@ useEffect(() => {
     setTimeout(() => {
       setShowActivityMenu(true);
       setShowSun(true);
+      setShowContinueButton(true);
     }, 0);
   };
 
   const handleSectionSelect = (section: { scenes: string[] }) => {
     console.log('🎯 Section selected:', section);
     console.log('🎯 First scene:', section.scenes[0]);
-    
+
+    // Stop SimpleAlex speech when ActivityMenu label is clicked
+    if (simpleAlexRef.current) {
+      simpleAlexRef.current.stopSpeech();
+    }
+
+    // Hide continue button when user starts playing
+    setShowContinueButton(false);
+
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -217,7 +212,7 @@ useEffect(() => {
     // Start background music
     const music = new Audio('/audio/Softy.mp3');
     music.loop = true;
-    music.volume = 0.5;
+    music.volume = 0.4;
     music.play().catch(console.warn);
     bgMusicRef.current = music;
 
@@ -227,7 +222,7 @@ useEffect(() => {
 
   const exitVariants = {
     exit: {
-      y: '-120vh',
+      y: '120vh',
       opacity: 0,
       transition: { duration: 1.5, ease: 'easeInOut' }
     }
@@ -280,31 +275,21 @@ useEffect(() => {
         <FloatingMenu />
       </div>
 
-      {/* Continue where you left off button - Top of page - Only show after video ends */}
-      {showContinueOption && lastActivityUrl && videoEnded && (
-        <motion.div
-          className="absolute top-[30%] left-0 right-0 z-[100] flex justify-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <button
-            onClick={() => {
-              console.log('🚀 Continuing from last activity:', lastActivityUrl);
-              cleanupAudio();
-              setIsExiting(true);
-              setPendingNavigation(lastActivityUrl);
-            }}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-3"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Continuar donde lo dejaste
-     
-          </button>
-        </motion.div>
+      {/* Continue where you left off button */}
+      <ContinueButton
+        showWhen={showContinueButton}
+        onNavigate={(url) => {
+          setShowContinueButton(false);
+          cleanupAudio();
+          setIsExiting(true);
+          setPendingNavigation(url);
+        }}
+        onHide={() => setShowContinueButton(false)}
+      />
+
+      {/* Blue sky background during exit animation */}
+      {isExiting && (
+        <div className="fixed inset-0 bg-gradient-to-b from-blue-400 via-blue-300 to-blue-200 z-0" />
       )}
 
       <motion.div
@@ -355,7 +340,7 @@ useEffect(() => {
                 initial={{ x: '-100%', opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 100, damping: 20 }}
               >
-                <SimpleAlex isVisible={true} />
+                <SimpleAlex ref={simpleAlexRef} isVisible={true} />
               </motion.div>
             )}
 

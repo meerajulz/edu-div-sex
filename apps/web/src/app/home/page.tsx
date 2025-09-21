@@ -64,12 +64,14 @@ const Dashboard: React.FC = () => {
       console.log('🎓 [TERMINAL] Home page - User authenticated, staying on home page');
       
       // Check if user has a saved activity to continue
-      getLastActivityUrl().then(url => {
-        if (url) {
-          setLastActivityUrl(url);
+      getLastActivityUrl().then(result => {
+        if (result && result.showButton && result.lastUrl) {
+          setLastActivityUrl(result.lastUrl);
           setShowContinueOption(true);
-          logDebug(`Found last activity: ${url}`);
+          logDebug(`Found last activity: ${result.lastUrl}`);
         }
+      }).catch(error => {
+        console.warn('⚠️ Failed to get last activity URL:', error);
       });
     } else if (status === 'unauthenticated') {
       console.log('❌ [TERMINAL] Home page - No session found, redirecting to login');

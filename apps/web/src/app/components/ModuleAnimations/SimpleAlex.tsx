@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import Image from 'next/image';
 import { playAudio, cleanupAudio } from '../../utils/audioPlayer';
 
@@ -10,23 +10,27 @@ interface SimpleAlexProps {
   className?: string;
 }
 
+export interface SimpleAlexRef {
+  stopSpeech: () => void;
+}
+
 const dialogues = [
   { path: '/audio/alex/alex-1.mp3', duration: 1800 },
   { path: '/audio/alex/alex-2.mp3', duration: 2000 },
 ];
 
-const SimpleAlex: React.FC<SimpleAlexProps> = ({
+const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
   isVisible,
   onAnimationComplete,
   className = ''
-}) => {
+}, ref) => {
   const [isMouthOpen, setIsMouthOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentDialogue, setCurrentDialogue] = useState(0);
 
   const mouthIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const voiceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasStarted = useRef(false);
+  const allTimersRef = useRef<NodeJS.Timeout[]>([]);
 
   const startMouthMovement = () => {
     if (mouthIntervalRef.current) return;
@@ -43,6 +47,23 @@ const SimpleAlex: React.FC<SimpleAlexProps> = ({
     setIsMouthOpen(false);
   };
 
+  const stopSpeech = () => {
+    console.log('[SimpleAlex] Stopping speech and clearing timers');
+
+    // Clear all voice timers
+    allTimersRef.current.forEach(timer => clearTimeout(timer));
+    allTimersRef.current = [];
+
+    // Clear mouth movement
+    stopMouthMovement();
+
+    // Stop any current audio
+    cleanupAudio();
+
+    // Reset state
+    setCurrentDialogue(0);
+  };
+
   const playAlexVoice = (index: number) => {
     const dialogue = dialogues[index];
     console.log(`[SimpleAlex] Playing voice ${index}:`, dialogue.path);
@@ -55,22 +76,34 @@ const SimpleAlex: React.FC<SimpleAlexProps> = ({
     startMouthMovement();
     let totalDelay = 0;
 
+    // Clear any existing timers first
+    allTimersRef.current.forEach(timer => clearTimeout(timer));
+    allTimersRef.current = [];
+
     dialogues.forEach((dialogue, index) => {
-      voiceTimerRef.current = setTimeout(() => {
+      const timer = setTimeout(() => {
         setCurrentDialogue(index);
         playAlexVoice(index);
       }, totalDelay);
 
+      allTimersRef.current.push(timer);
       totalDelay += dialogue.duration;
     });
 
     // Cleanup and finish after last dialogue
-    setTimeout(() => {
+    const finishTimer = setTimeout(() => {
       stopMouthMovement();
       cleanupAudio();
       onAnimationComplete?.();
     }, totalDelay + 200);
+
+    allTimersRef.current.push(finishTimer);
   };
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    stopSpeech
+  }));
 
   useEffect(() => {
     if (!isVisible || hasStarted.current) return;
@@ -81,16 +114,14 @@ const SimpleAlex: React.FC<SimpleAlexProps> = ({
     }, 200);
 
     return () => {
-      stopMouthMovement();
-      if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
-      cleanupAudio();
+      stopSpeech();
     };
   }, [isVisible, onAnimationComplete]);
 
   if (!isVisible) return null;
 
   return (
-    <div className={`absolute z-40 w-[200%] h-[1000px] ${className}`}>
+    <div className={`alexS absolute z-40 w-[200%] h-[1000px] ${className}`}>
       <Image
         src={
           isMouthOpen
@@ -104,6 +135,8 @@ const SimpleAlex: React.FC<SimpleAlexProps> = ({
       />
     </div>
   );
-};
+});
+
+SimpleAlex.displayName = 'SimpleAlex';
 
 export default SimpleAlex;
