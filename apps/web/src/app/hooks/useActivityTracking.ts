@@ -94,3 +94,24 @@ export async function hideContinueButton(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Clear the last activity tracking when an activity is completed
+ * This prevents the continue button from showing completed activities
+ */
+export async function clearLastActivity(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/user/last-activity', {
+      method: 'DELETE'
+    });
+
+    if (response.ok) {
+      console.log('✅ Last activity tracking cleared after completion');
+    }
+
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to clear last activity:', error);
+    return false;
+  }
+}

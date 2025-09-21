@@ -45,7 +45,7 @@ export const ACTIVITY_1_CONFIG: ActivityConfig = {
       zPosition: 150,
       scale: 0.9,
       rotateX: 18,
-      rotateY: -15,
+      rotateY: 15,
       delay: 0.2,
       brightness: 1
     },
@@ -61,11 +61,11 @@ export const ACTIVITY_1_CONFIG: ActivityConfig = {
       xPosition: 100,
       yPosition: 350,
       zPosition: -50,
-      scale: 0.9,
+      scale: 1,
       rotateX: 18,
-      rotateY: -25,
+      rotateY: -45,
       delay: 0.5,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 3,
@@ -79,9 +79,9 @@ export const ACTIVITY_1_CONFIG: ActivityConfig = {
       xPosition: -150,
       yPosition: 280,
       zPosition: -300,
-      scale: 0.9,
+      scale: 1.2,
       rotateX: 0,
-      rotateY: 20,
+      rotateY: 10,
       delay: 0.9,
       brightness: 0.5
     },
@@ -94,12 +94,12 @@ export const ACTIVITY_1_CONFIG: ActivityConfig = {
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       soundClick: "/audio/labels/mAct1/a4.mp3",
-      xPosition: 40,
-      yPosition: 350,
-      zPosition: -500,
-      scale: 1,
-      rotateX: 15,
-      rotateY: -10,
+      xPosition: 100,
+      yPosition: 250,
+      zPosition: -300,
+      scale: 1.2,
+      rotateX: 28,
+      rotateY: 20,
       delay: 1.1,
       brightness: 0.5
     }
@@ -125,8 +125,8 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
       yPosition: 280,
       zPosition: 150,
       scale: 0.9,
-      rotateX: 18,
-      rotateY: -15,
+      rotateX: 28,
+      rotateY: 15,
       delay: 0.2,
       brightness: 1
     },
@@ -140,13 +140,13 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
       soundClick: "/audio/labels/mAct2/a2.mp3",
       xPosition: 100,
-      yPosition: 350,
+      yPosition: 380,
       zPosition: -50,
-      scale: 0.9,
+      scale: 1.0,
       rotateX: 18,
       rotateY: -25,
       delay: 0.5,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 3,
@@ -160,11 +160,11 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
       xPosition: -150,
       yPosition: 280,
       zPosition: -300,
-      scale: 0.9,
+      scale: 1.1,
       rotateX: 0,
       rotateY: 20,
       delay: 0.9,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 4,
@@ -175,12 +175,12 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       soundClick: "/audio/labels/mAct2/a4.mp3",
-      xPosition: 40,
+      xPosition: 80,
       yPosition: 350,
       zPosition: -500,
-      scale: 1,
+      scale: 1.2,
       rotateX: 15,
-      rotateY: -10,
+      rotateY: -20,
       delay: 1.1,
       brightness: 0.5
     },
@@ -193,14 +193,14 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
       activeImage: "/svg/menu-actividad/cartell-active.svg", // We can create a specific one later
       inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
       soundClick: "/audio/labels/mAct2/a5.mp3", // We can add specific audio later
-      xPosition: -100,
+      xPosition: -50,
       yPosition: 250,
       zPosition: -700,
-      scale: 1,
+      scale: 1.3,
       rotateX: 10,
       rotateY: 30,
       delay: 1.4,
-      brightness: 0.5
+      brightness: 1
     }
   ]
 };
@@ -231,7 +231,7 @@ export const ACTIVITY_3_CONFIG: ActivityConfig = {
     },
     {
       id: 2,
-      title: "El orgasmo masculino: la eyaculación",
+      title: "EL ORGASMO MASCULINO: LA EYACULACIÓN",
       scenes: ["/actividad-3/scene1-1"],
       isUnlocked: false,
       isCompleted: false,
@@ -241,29 +241,29 @@ export const ACTIVITY_3_CONFIG: ActivityConfig = {
       xPosition: 100,
       yPosition: 350,
       zPosition: -50,
-      scale: 0.9,
+      scale: 1,
       rotateX: 18,
       rotateY: -25,
       delay: 0.5,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 3,
-      title: "La masturbación",
+      title: "LA MASTURBACIÓN",
       scenes: ["/actividad-3/scene2"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-3-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-3-hover.svg",
-      soundClick: "/audio/labels/mAct3/a3.mp3",
-      xPosition: -150,
-      yPosition: 280,
+      soundClick: "/audio/labels/mAct3/a4.mp3",
+      xPosition: 50,
+      yPosition: 250,
       zPosition: -300,
-      scale: 0.9,
+      scale: 1.2,
       rotateX: 0,
-      rotateY: 20,
+      rotateY: -30,
       delay: 0.9,
-      brightness: 0.5
+      brightness: 1
     }
   ]
 };
@@ -272,7 +272,7 @@ export const ACTIVITY_3_CONFIG: ActivityConfig = {
 export const ACTIVITY_4_CONFIG: ActivityConfig = {
   activityId: 4,
   activitySlug: 'actividad-4',
-  title: 'Higiene sexual',
+  title: 'HIGIENE SEXUAL',
   sections: [
     {
       id: 1,
@@ -288,13 +288,13 @@ export const ACTIVITY_4_CONFIG: ActivityConfig = {
       zPosition: 150,
       scale: 0.9,
       rotateX: 18,
-      rotateY: -15,
+      rotateY: 15,
       delay: 0.2,
       brightness: 1
     },
     {
       id: 2,
-      title: "Higiene menstrual",
+      title: "HIGIENE MENSTRUAL",
       scenes: ["/actividad-4/scene2"],
       isUnlocked: false,
       isCompleted: false,
@@ -304,11 +304,11 @@ export const ACTIVITY_4_CONFIG: ActivityConfig = {
       xPosition: 100,
       yPosition: 350,
       zPosition: -50,
-      scale: 0.9,
-      rotateX: 18,
+      scale: 1.1,
+      rotateX: 0,
       rotateY: -25,
       delay: 0.5,
-      brightness: 0.5
+      brightness: 1
     }
   ]
 };
@@ -321,7 +321,7 @@ export const ACTIVITY_5_CONFIG: ActivityConfig = {
   sections: [
     {
       id: 1,
-      title: "¿Qué dice mi cara?",
+      title: "¿QUÉ DICE MI CARA?",
       scenes: ["/actividad-5/scene1"],
       isUnlocked: true, // First section always unlocked
       isCompleted: false,
@@ -333,31 +333,31 @@ export const ACTIVITY_5_CONFIG: ActivityConfig = {
       zPosition: 150,
       scale: 0.9,
       rotateX: 18,
-      rotateY: -15,
+      rotateY: 15,
       delay: 0.2,
       brightness: 1
     },
     {
       id: 2,
-      title: "¿Qué dice mi tono de voz?",
+      title: "¿QUÉ DICE MI TONO DE VOZ?",
       scenes: ["/actividad-5/scene1-1"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-2-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
       soundClick: "/audio/labels/mAct5/a2.mp3",
-      xPosition: 100,
-      yPosition: 350,
-      zPosition: -50,
-      scale: 0.9,
+      xPosition: 120,
+      yPosition: 380,
+      zPosition: -40,
+      scale: 1.1,
       rotateX: 18,
       rotateY: -25,
       delay: 0.5,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 3,
-      title: "¿Qué cara pondrá...?",
+      title: "¿QUÉ CARA PONDRA?",
       scenes: ["/actividad-5/scene1-2"],
       isUnlocked: false,
       isCompleted: false,
@@ -367,29 +367,29 @@ export const ACTIVITY_5_CONFIG: ActivityConfig = {
       xPosition: -150,
       yPosition: 280,
       zPosition: -300,
-      scale: 0.9,
+      scale: 1.1,
       rotateX: 0,
       rotateY: 20,
       delay: 0.9,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 4,
-      title: "¿Cómo ligamos?",
+      title: "¿CÓMO LIGAMOS?",
       scenes: ["/actividad-5/scene2"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       soundClick: "/audio/labels/mAct5/a4.mp3",
-      xPosition: 40,
-      yPosition: 350,
+      xPosition: 30,
+      yPosition: 300,
       zPosition: -500,
-      scale: 1,
+      scale: 1.2,
       rotateX: 15,
-      rotateY: -10,
+      rotateY: -25,
       delay: 1.1,
-      brightness: 0.5
+      brightness: 1
     }
   ]
 };
@@ -398,11 +398,11 @@ export const ACTIVITY_5_CONFIG: ActivityConfig = {
 export const ACTIVITY_6_CONFIG: ActivityConfig = {
   activityId: 6,
   activitySlug: 'actividad-6',
-  title: 'Respeto y valores',
+  title: 'RESPETO Y VALORES',
   sections: [
     {
       id: 1,
-      title: "Mis partes privadas",
+      title: "MIS PARTES PRIVADAS",
       scenes: ["/actividad-6/scene1"],
       isUnlocked: true, // First section always unlocked
       isCompleted: false,
@@ -414,13 +414,13 @@ export const ACTIVITY_6_CONFIG: ActivityConfig = {
       zPosition: 150,
       scale: 0.9,
       rotateX: 18,
-      rotateY: -15,
+      rotateY: 35,
       delay: 0.2,
       brightness: 1
     },
     {
       id: 2,
-      title: "Me defiendo",
+      title: "ME DEFIENTO",
       scenes: ["/actividad-6/scene2"],
       isUnlocked: false,
       isCompleted: false,
@@ -428,17 +428,17 @@ export const ACTIVITY_6_CONFIG: ActivityConfig = {
       inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
       soundClick: "/audio/labels/mAct6/a2.mp3",
       xPosition: 100,
-      yPosition: 350,
+      yPosition: 400,
       zPosition: -50,
-      scale: 0.9,
+      scale: 1.1,
       rotateX: 18,
       rotateY: -25,
       delay: 0.5,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 3,
-      title: "Secretos buenos y malos",
+      title: "SECRETOS BUENOS Y MALOS",
       scenes: ["/actividad-6/scene3"],
       isUnlocked: false,
       isCompleted: false,
@@ -448,47 +448,47 @@ export const ACTIVITY_6_CONFIG: ActivityConfig = {
       xPosition: -150,
       yPosition: 280,
       zPosition: -300,
-      scale: 0.9,
+      scale: 1.1,
       rotateX: 0,
       rotateY: 20,
       delay: 0.9,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 4,
-      title: "Respetamos",
+      title: "RESPETAMOS",
       scenes: ["/actividad-6/scene4"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-4-active.svg",
       inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
       soundClick: "/audio/labels/mAct6/a4.mp3",
-      xPosition: 40,
-      yPosition: 350,
+      xPosition: 150,
+      yPosition: 320,
       zPosition: -500,
-      scale: 1,
+      scale: 1.2,
       rotateX: 15,
       rotateY: -10,
       delay: 1.1,
-      brightness: 0.5
+      brightness: 1
     },
     {
       id: 5,
-      title: "¿Qué hacer si sucede?",
+      title: "¿QUÉ HACER SI SUCEDE?",
       scenes: ["/actividad-6/scene4-1"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-active.svg", // We can create a specific one later
       inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
       soundClick: "/audio/labels/mAct6/a5.mp3", 
-      xPosition: -100,
+      xPosition: -30,
       yPosition: 250,
       zPosition: -700,
-      scale: 1,
+      scale: 1.3,
       rotateX: 10,
       rotateY: 30,
       delay: 1.4,
-      brightness: 0.5
+      brightness: 1
     }
   ]
 };

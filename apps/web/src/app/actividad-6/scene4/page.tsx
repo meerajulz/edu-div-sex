@@ -160,7 +160,7 @@ export default function Actividad6Scene4Page() {
         <JugarButton
           onClick={handleOpenJuegoCuatro}
           disabled={isAnimating}
-          text="Juego Abusador 1"
+          text="Juego Respetamos 1"
         />
       );
     } else if (!juegoCincoCompleted) {
@@ -168,7 +168,7 @@ export default function Actividad6Scene4Page() {
         <JugarButton
           onClick={handleOpenJuegoCinco}
           disabled={isAnimating}
-          text="Juego Abusador 2"
+          text="Juego Respetamos 2"
         />
       );
     } else {

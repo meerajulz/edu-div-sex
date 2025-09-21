@@ -279,7 +279,7 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1, transition: { delay: (section.delay || 0) + 0.3 } }}
                     >
-                      <p className={`text-base font-bold ${section.isUnlocked ? 'text-orange-800' : 'text-gray-600'}`}
+                      <p className={`font-bold ${section.isUnlocked ? 'text-orange-800' : 'text-gray-600'}`}
                         style={{ fontSize: `${12 * (section.scale || 1)}px` }}>
                         {section.title}
                       </p>

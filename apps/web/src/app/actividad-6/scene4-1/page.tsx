@@ -194,7 +194,7 @@ export default function Actividad6Scene4_1Page() {
         <FloatingMenu />
       </div>
       <div className="">
-        <LogoComponent configKey="actividad-6-scene4-1" />
+        <LogoComponent configKey="actividad-6-scene1" />
       </div>
 
       {!showFinalVideo && !showCongratulations ? (

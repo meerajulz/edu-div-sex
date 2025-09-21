@@ -145,12 +145,15 @@ export async function canUserAccessActivity(
     let hasAnyProgress = false;
 
     // First pass: find the maximum unlocked content
+    let nextAvailableScene = null;
+
     for (const row of progressQuery.rows) {
       if (row.status === 'completed') {
         // Mark this activity/scene as accessible for replay
         maxUnlockedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
         maxUnlockedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
         hasAnyProgress = true;
+        // Continue to find the next available scene
         continue;
       } else if (row.status === 'in_progress') {
         // They can access this scene
@@ -159,13 +162,28 @@ export async function canUserAccessActivity(
         hasAnyProgress = true;
         break;
       } else if (!row.status || row.status === 'not_started') {
-        // This is the next scene they should access (if they haven't progressed beyond)
+        // This is the next scene they should access
+        if (!nextAvailableScene) {
+          nextAvailableScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order, activity_id: row.activity_id, activity_slug: row.activity_slug, activity_order: row.activity_order };
+        }
+        // If we haven't found any progress yet, this is where they should start
         if (!hasAnyProgress) {
           maxUnlockedActivity = { id: row.activity_id, slug: row.activity_slug, order: row.activity_order };
           maxUnlockedScene = { id: row.scene_id, slug: row.scene_slug, order: row.scene_order };
         }
         break;
       }
+    }
+
+    // If we found completed scenes but no in_progress, unlock the next available scene
+    if (hasAnyProgress && nextAvailableScene && !maxUnlockedScene) {
+      maxUnlockedActivity = { id: nextAvailableScene.activity_id, slug: nextAvailableScene.activity_slug, order: nextAvailableScene.activity_order };
+      maxUnlockedScene = { id: nextAvailableScene.id, slug: nextAvailableScene.slug, order: nextAvailableScene.order };
+    } else if (hasAnyProgress && nextAvailableScene && maxUnlockedScene && maxUnlockedActivity &&
+               (nextAvailableScene.activity_order > maxUnlockedScene.order ||
+                (nextAvailableScene.activity_order === maxUnlockedActivity.order && nextAvailableScene.order > maxUnlockedScene.order))) {
+      // Extend access to the next scene after completed ones
+      maxUnlockedScene = { id: nextAvailableScene.id, slug: nextAvailableScene.slug, order: nextAvailableScene.order };
     }
 
     if (!maxUnlockedActivity || !maxUnlockedScene) {
@@ -181,11 +199,36 @@ export async function canUserAccessActivity(
     // 1. Any activity that's been unlocked (order <= max unlocked)
     // 2. Any scene within an unlocked activity
     // 3. Activity intro pages (no scene) for unlocked activities
+    // 4. Next activity intro page if previous activity is completed
+
+    // Check if previous activity is completed to unlock next activity intro
+    let nextActivityUnlocked = false;
+    if (targetActivity.order_number === maxUnlockedActivity.order + 1) {
+      // Check if the max unlocked activity is actually completed
+      const prevActivityCompletedQuery = await query(`
+        SELECT COUNT(*) as total_scenes,
+               COUNT(CASE WHEN sp.status = 'completed' THEN 1 END) as completed_scenes
+        FROM scenes s
+        LEFT JOIN student_progress sp ON sp.scene_id = s.id
+          AND sp.activity_id = s.activity_id
+          AND sp.student_id = $1
+        WHERE s.activity_id = (
+          SELECT id FROM activities WHERE order_number = $2 AND is_active = true
+        ) AND s.is_active = true
+      `, [studentId, maxUnlockedActivity.order]);
+
+      if (prevActivityCompletedQuery.rows.length > 0) {
+        const { total_scenes, completed_scenes } = prevActivityCompletedQuery.rows[0];
+        nextActivityUnlocked = total_scenes > 0 && total_scenes === completed_scenes;
+        console.log(`📊 Previous activity completion check: ${completed_scenes}/${total_scenes} scenes completed`);
+      }
+    }
 
     if (targetActivity.order_number < maxUnlockedActivity.order ||
         (targetActivity.order_number === maxUnlockedActivity.order &&
-         (!sceneSlug || (targetScene && targetScene.order_number <= maxUnlockedScene.order)))) {
-      console.log('✅ Access granted - within unlocked range (includes completed activities for replay)');
+         (!sceneSlug || (targetScene && targetScene.order_number <= maxUnlockedScene.order + 1))) ||
+        nextActivityUnlocked) {
+      console.log('✅ Access granted - within unlocked range, next scene after completed, or newly unlocked activity');
       return { canAccess: true };
     }
 

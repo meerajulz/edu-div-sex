@@ -55,8 +55,20 @@ export async function GET() {
         }
 
         // Find the most recently accessed incomplete scene
+        // Skip completed scenes, only consider in_progress scenes
         if (row.status === 'in_progress' && row.last_accessed_at) {
-          if (!lastAccessTime || new Date(row.last_accessed_at) > new Date(lastAccessTime)) {
+          // Additional check: make sure this isn't a final scene that should be completed
+          const isFinalScene = (
+            (row.activity_slug === 'actividad-1' && row.scene_slug === 'scene7') ||
+            (row.activity_slug === 'actividad-2' && row.scene_slug === 'scene5') ||
+            (row.activity_slug === 'actividad-3' && row.scene_slug === 'scene2') ||
+            (row.activity_slug === 'actividad-4' && row.scene_slug === 'scene2') ||
+            (row.activity_slug === 'actividad-5' && row.scene_slug === 'scene2') ||
+            (row.activity_slug === 'actividad-6' && row.scene_slug === 'scene4-1')
+          );
+
+          // Don't use final scenes as continue points if they have progress
+          if (!isFinalScene && (!lastAccessTime || new Date(row.last_accessed_at) > new Date(lastAccessTime))) {
             lastActiveUrl = `/${row.activity_slug}/${row.scene_slug}`;
             lastAccessTime = row.last_accessed_at;
           }
@@ -92,7 +104,19 @@ export async function GET() {
       if (savedUrl && savedTime) {
         const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         if (new Date(savedTime) > dayAgo) {
-          continueUrl = savedUrl;
+          // Additional check: don't use final scenes as saved continue URLs
+          const isFinalSceneUrl = (
+            savedUrl.includes('/actividad-1/scene7') ||
+            savedUrl.includes('/actividad-2/scene5') ||
+            savedUrl.includes('/actividad-3/scene2') ||
+            savedUrl.includes('/actividad-4/scene2') ||
+            savedUrl.includes('/actividad-5/scene2') ||
+            savedUrl.includes('/actividad-6/scene4-1')
+          );
+
+          if (!isFinalSceneUrl) {
+            continueUrl = savedUrl;
+          }
         }
       }
 

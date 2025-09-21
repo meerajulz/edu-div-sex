@@ -112,11 +112,48 @@ export async function GET() {
     Object.keys(activityCompletion).forEach(activityIdStr => {
       const activityId = parseInt(activityIdStr);
       const activity = activityCompletion[activityId];
-      
-      // Activity is completed if at least one scene is completed with 100% progress
-      // You can adjust this logic if you need ALL scenes to be completed
-      activity.isCompleted = activity.completedScenes > 0 && 
-        Object.values(activity.scenes).some(scene => scene.status === 'completed' && scene.progress >= 100);
+
+      // Activity completion logic based on specific final scenes
+      let isActivityCompleted = false;
+
+      switch (activityId) {
+        case 1:
+          // Activity 1 is completed when scene7 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene7']?.status === 'completed' &&
+                               activity.scenes['scene7']?.progress >= 100;
+          break;
+        case 2:
+          // Activity 2 is completed when scene5 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene5']?.status === 'completed' &&
+                               activity.scenes['scene5']?.progress >= 100;
+          break;
+        case 3:
+          // Activity 3 is completed when scene2 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene2']?.status === 'completed' &&
+                               activity.scenes['scene2']?.progress >= 100;
+          break;
+        case 4:
+          // Activity 4 is completed when scene2 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene2']?.status === 'completed' &&
+                               activity.scenes['scene2']?.progress >= 100;
+          break;
+        case 5:
+          // Activity 5 is completed when scene2 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene2']?.status === 'completed' &&
+                               activity.scenes['scene2']?.progress >= 100;
+          break;
+        case 6:
+          // Activity 6 is completed when scene4-1 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene4-1']?.status === 'completed' &&
+                               activity.scenes['scene4-1']?.progress >= 100;
+          break;
+        default:
+          // Fallback: any scene completed
+          isActivityCompleted = activity.completedScenes > 0 &&
+            Object.values(activity.scenes).some(scene => scene.status === 'completed' && scene.progress >= 100);
+      }
+
+      activity.isCompleted = isActivityCompleted;
     });
 
     console.log('🎯 Activity completion status:', activityCompletion);

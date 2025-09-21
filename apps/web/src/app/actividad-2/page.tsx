@@ -139,7 +139,11 @@ useEffect(() => {
     setTimeout(() => {
       setShowActivityMenu(true);
       setShowSun(true);
-      setShowContinueButton(true);
+      // Don't show continue button if user just completed an activity
+      const justCompleted = localStorage.getItem('completedActivityId');
+      if (!justCompleted) {
+        setShowContinueButton(true);
+      }
     }, 0);
   };
 

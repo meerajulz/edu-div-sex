@@ -149,7 +149,7 @@ export default function Actividad5Scene1_1Page() {
         <FloatingMenu />
       </div>
       <div className="">
-        <LogoComponent configKey="actividad-5-scene1-1" />
+        <LogoComponent configKey="actividad-5-scene1" />
       </div>
 
       {!showCongratulations && (

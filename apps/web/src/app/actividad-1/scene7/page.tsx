@@ -9,7 +9,7 @@ import JugarButton from '../../components/JugarButton/JugarButton';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
-import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { useActivityTracking, clearLastActivity } from '../../hooks/useActivityTracking';
 
 export default function Scene7Page() {
 
@@ -105,9 +105,13 @@ export default function Scene7Page() {
 
   const handleBackClick = async () => {
     console.log('🏠 Scene7: Returning to home page after completing activity');
+
+    // Clear last activity tracking to prevent redirect issues
+    await clearLastActivity();
+
     // Set flag that activity was just completed for auto-rotation
     localStorage.setItem('completedActivityId', '1');
-    // Go back to home main page  
+    // Go back to home main page
     router.push('/home');
   };
 
