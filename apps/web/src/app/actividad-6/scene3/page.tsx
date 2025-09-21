@@ -29,6 +29,7 @@ export default function Actividad6Scene3Page() {
   // Game states
   const [showJuegoTres, setShowJuegoTres] = useState(false);
   const [juegoTresCompleted, setJuegoTresCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -101,22 +102,26 @@ export default function Actividad6Scene3Page() {
   const handleJuegoTresComplete = () => {
     setJuegoTresCompleted(true);
     setShowJuegoTres(false);
+    // Show congratulations after a short delay
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
   };
 
-  // Continue to scene 4
-  const handleContinueToScene4 = async () => {
+  // Handle game completion and go back to menu
+  const handleGoToMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    
-    console.log('🎯 Actividad6-Scene3: Game completed, saving progress and moving to scene4');
-    
+
+    console.log('🎯 Actividad6-Scene3: Game completed, saving progress and returning to menu');
+
     const progressSaved = await saveProgress('actividad-6', 'scene3', 'completed', 100, {
       video_watched: videoEnded,
-      game_completed: juegoTresCompleted,
+      juego3_completed: juegoTresCompleted,
       completed_at: new Date().toISOString()
     });
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
@@ -124,7 +129,7 @@ export default function Actividad6Scene3Page() {
       } else {
         console.error('❌ Actividad6-Scene3: Failed to save progress, but continuing');
       }
-      router.push('/actividad-6/scene4');
+      router.push('/actividad-6');
     }, 800);
   };
 
@@ -132,30 +137,14 @@ export default function Actividad6Scene3Page() {
   const getCurrentButton = () => {
     if (!juegoTresCompleted) {
       return (
-        <JugarButton 
-          onClick={handleOpenJuegoTres} 
+        <JugarButton
+          onClick={handleOpenJuegoTres}
           disabled={isAnimating}
           text="Jugar Secretos buenos y malos"
         />
       );
     } else {
-      // Game completed - show completion message
-      return (
-        <div className="flex flex-col items-center space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-2xl font-bold text-center bg-green-500/80 px-6 py-3 rounded-full"
-          >
-            ¡Juego Completado! 🎉
-          </motion.div>
-          <JugarButton 
-            onClick={handleContinueToScene4} 
-            disabled={isAnimating}
-            text="Continuar..."
-          />
-        </div>
-      );
+      return null; // Hide button when game is completed, congratulations overlay will show
     }
   };
 
@@ -237,11 +226,45 @@ export default function Actividad6Scene3Page() {
       )}
 
       {/* Game Modal */}
-      <JuegoTresActividad6 
-        isVisible={showJuegoTres} 
+      <JuegoTresActividad6
+        isVisible={showJuegoTres}
         onClose={handleCloseJuegoTres}
         onGameComplete={handleJuegoTresComplete}
       />
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Volver al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

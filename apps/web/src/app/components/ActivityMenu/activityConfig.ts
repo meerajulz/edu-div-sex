@@ -394,6 +394,105 @@ export const ACTIVITY_5_CONFIG: ActivityConfig = {
   ]
 };
 
+// Activity 6 Configuration
+export const ACTIVITY_6_CONFIG: ActivityConfig = {
+  activityId: 6,
+  activitySlug: 'actividad-6',
+  title: 'Respeto y valores',
+  sections: [
+    {
+      id: 1,
+      title: "Mis partes privadas",
+      scenes: ["/actividad-6/scene1"],
+      isUnlocked: true, // First section always unlocked
+      isCompleted: false,
+      activeImage: "/svg/menu-actividad/cartell-active.svg",
+      inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
+      soundClick: "/audio/labels/actividad1.mp3",
+      xPosition: -60,
+      yPosition: 280,
+      zPosition: 150,
+      scale: 0.9,
+      rotateX: 18,
+      rotateY: -15,
+      delay: 0.2,
+      brightness: 1
+    },
+    {
+      id: 2,
+      title: "Me defiendo",
+      scenes: ["/actividad-6/scene2"],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: "/svg/menu-actividad/cartell-2-active.svg",
+      inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
+      soundClick: "/audio/labels/actividad2.mp3",
+      xPosition: 100,
+      yPosition: 350,
+      zPosition: -50,
+      scale: 0.9,
+      rotateX: 18,
+      rotateY: -25,
+      delay: 0.5,
+      brightness: 0.5
+    },
+    {
+      id: 3,
+      title: "Secretos buenos y malos",
+      scenes: ["/actividad-6/scene3"],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: "/svg/menu-actividad/cartell-3-active.svg",
+      inactiveImage: "/svg/menu-actividad/cartell-3-hover.svg",
+      soundClick: "/audio/labels/actividad3.mp3",
+      xPosition: -150,
+      yPosition: 280,
+      zPosition: -300,
+      scale: 0.9,
+      rotateX: 0,
+      rotateY: 20,
+      delay: 0.9,
+      brightness: 0.5
+    },
+    {
+      id: 4,
+      title: "Respetamos",
+      scenes: ["/actividad-6/scene4"],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: "/svg/menu-actividad/cartell-4-active.svg",
+      inactiveImage: "/svg/menu-actividad/cartell-4-hover.svg",
+      soundClick: "/audio/labels/actividad4.mp3",
+      xPosition: 40,
+      yPosition: 350,
+      zPosition: -500,
+      scale: 1,
+      rotateX: 15,
+      rotateY: -10,
+      delay: 1.1,
+      brightness: 0.5
+    },
+    {
+      id: 5,
+      title: "¿Qué hacer si sucede?",
+      scenes: ["/actividad-6/scene4-1"],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: "/svg/menu-actividad/cartell-active.svg", // We can create a specific one later
+      inactiveImage: "/svg/menu-actividad/cartell-hover.svg",
+      soundClick: "/audio/labels/actividad1.mp3", // We can add specific audio later
+      xPosition: -100,
+      yPosition: 250,
+      zPosition: -700,
+      scale: 1,
+      rotateX: 10,
+      rotateY: 30,
+      delay: 1.4,
+      brightness: 0.5
+    }
+  ]
+};
+
 // Helper functions
 export function getActivityConfig(activityId: number): ActivityConfig | null {
   switch (activityId) {
@@ -407,6 +506,8 @@ export function getActivityConfig(activityId: number): ActivityConfig | null {
       return ACTIVITY_4_CONFIG;
     case 5:
       return ACTIVITY_5_CONFIG;
+    case 6:
+      return ACTIVITY_6_CONFIG;
     default:
       return null;
   }

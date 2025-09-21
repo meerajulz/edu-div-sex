@@ -5,7 +5,6 @@ import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import JuegoCuatroActividad6 from './JuegoCuatroActividad6/JuegoCuatroActividad6';
 import JuegoCincoActividad6 from './JuegoCincoActividad6/JuegoCincoActividad6';
-import JuegoSeisActividad6 from './JuegoSeisActividad6/JuegoSeisActividad6';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 //import { useSession } from 'next-auth/react';
@@ -24,22 +23,18 @@ export default function Actividad6Scene4Page() {
   
   useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const finalVideoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   
   // Video states
-  const [showInitialVideo, setShowInitialVideo] = useState(false);
-  const [initialVideoEnded, setInitialVideoEnded] = useState(false);
-  const [showFinalVideo, setShowFinalVideo] = useState(false);
-  const [finalVideoEnded, setFinalVideoEnded] = useState(false);
-  
+  const [showVideo, setShowVideo] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
+
   // Game states
   const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
   const [juegoCuatroCompleted, setJuegoCuatroCompleted] = useState(false);
   const [showJuegoCinco, setShowJuegoCinco] = useState(false);
   const [juegoCincoCompleted, setJuegoCincoCompleted] = useState(false);
-  const [showJuegoSeis, setShowJuegoSeis] = useState(false);
-  const [juegoSeisCompleted, setJuegoSeisCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -84,7 +79,6 @@ export default function Actividad6Scene4Page() {
     }
   };
 
-  // Initial video handlers
   const handleJugarClick = () => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -92,12 +86,12 @@ export default function Actividad6Scene4Page() {
 
     setTimeout(() => {
       setIsAnimating(false);
-      setShowInitialVideo(true);
+      setShowVideo(true);
     }, 800);
   };
 
-  const handleInitialVideoEnd = () => {
-    setInitialVideoEnded(true);
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
   };
 
   // Game handlers
@@ -127,68 +121,35 @@ export default function Actividad6Scene4Page() {
   const handleJuegoCincoComplete = () => {
     setJuegoCincoCompleted(true);
     setShowJuegoCinco(false);
-  };
-
-  const handleOpenJuegoSeis = () => {
-    playSound();
-    setShowJuegoSeis(true);
-  };
-
-  const handleCloseJuegoSeis = () => {
-    setShowJuegoSeis(false);
-  };
-
-  const handleJuegoSeisComplete = () => {
-    setJuegoSeisCompleted(true);
-    setShowJuegoSeis(false);
-    // Trigger final video after all games completed
+    // Show congratulations after a short delay
     setTimeout(() => {
-      setShowFinalVideo(true);
-    }, 1000);
-  };
-
-  // Final video handlers
-  const handleFinalVideoEnd = () => {
-    setFinalVideoEnded(true);
-    // Play celebration sound when congratulations screen appears
-    setTimeout(() => {
-      try {
-        const celebrationAudio = new Audio('/audio/muy_bien_bright.mp3');
-        celebrationAudio.volume = 0.8;
-        celebrationAudio.play().catch(console.warn);
-      } catch (error) {
-        console.warn('Could not play celebration sound:', error);
-      }
+      setShowCongratulations(true);
     }, 500);
   };
 
-  // Continue to home
-  const handleContinueToHome = async () => {
+  // Handle game completion and go back to menu
+  const handleGoToMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    
-    console.log('🎉 Actividad6-Scene4: Level 1 completed, saving progress for completed activity');
-    
+
+    console.log('🎯 Actividad6-Scene4: Games completed, saving progress and returning to menu');
+
     const progressSaved = await saveProgress('actividad-6', 'scene4', 'completed', 100, {
-      initial_video_watched: initialVideoEnded,
-      final_video_watched: finalVideoEnded,
-      juego_cuatro_completed: juegoCuatroCompleted,
-      juego_cinco_completed: juegoCincoCompleted,
-      juego_seis_completed: juegoSeisCompleted,
-      activity_completed: true,
-      level_completed: true,
+      video_watched: videoEnded,
+      juego4_completed: juegoCuatroCompleted,
+      juego5_completed: juegoCincoCompleted,
       completed_at: new Date().toISOString()
     });
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
-        console.log('✅ Actividad6-Scene4: Level 1 completed successfully!');
+        console.log('✅ Actividad6-Scene4: Progress saved successfully');
       } else {
         console.error('❌ Actividad6-Scene4: Failed to save progress, but continuing');
       }
-      router.push('/home');
+      router.push('/actividad-6');
     }, 800);
   };
 
@@ -196,199 +157,25 @@ export default function Actividad6Scene4Page() {
   const getCurrentButton = () => {
     if (!juegoCuatroCompleted) {
       return (
-        <JugarButton 
-          onClick={handleOpenJuegoCuatro} 
+        <JugarButton
+          onClick={handleOpenJuegoCuatro}
           disabled={isAnimating}
-          text="Juego Abusador 1 "
+          text="Juego Abusador 1"
         />
       );
     } else if (!juegoCincoCompleted) {
       return (
-        <JugarButton 
-          onClick={handleOpenJuegoCinco} 
+        <JugarButton
+          onClick={handleOpenJuegoCinco}
           disabled={isAnimating}
           text="Juego Abusador 2"
         />
       );
-    } else if (!juegoSeisCompleted) {
-      return (
-        <JugarButton 
-          onClick={handleOpenJuegoSeis} 
-          disabled={isAnimating}
-          text="Jugar ¿Qué hacer si sucede?"
-        />
-      );
+    } else {
+      return null; // Hide button when games are completed, congratulations overlay will show
     }
-    // All games completed, final video will play automatically
-    return null;
   };
 
-  const getFinalButton = () => {
-    return (
-      <div className="flex flex-col items-center space-y-6">
-        {/* Celebration Emojis Floating Around */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(12)].map((_, i) => (
-            <motion.div
-              key={`celebration-${i}`}
-              className="absolute text-4xl"
-              style={{
-                left: `${Math.random() * 80 + 10}%`,
-                top: `${Math.random() * 80 + 10}%`,
-              }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ 
-                opacity: [0, 1, 1, 0],
-                scale: [0, 1.2, 1, 0.8],
-                y: [0, -30, -60],
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: 'easeOut',
-              }}
-            >
-              {['🎉', '🎊', '⭐', '🏆', '✨', '🌟'][i % 6]}
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Main Congratulations */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.5 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="relative"
-        >
-          <motion.div
-            animate={{ 
-              scale: [1, 1.1, 1],
-              rotate: [0, 2, -2, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            className="text-white text-3xl font-bold text-center bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 px-8 py-4 rounded-full shadow-xl border-4 border-yellow-300"
-          >
-            ¡Felicitaciones! 🎉
-          </motion.div>
-          
-          {/* Sparkle effect around main badge */}
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={`sparkle-${i}`}
-              className="absolute w-2 h-2 bg-yellow-300 rounded-full"
-              style={{
-                left: `${50 + Math.cos(i * Math.PI / 4) * 60}%`,
-                top: `${50 + Math.sin(i * Math.PI / 4) * 60}%`,
-              }}
-              animate={{
-                scale: [0, 1, 0],
-                opacity: [0, 1, 0],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: i * 0.2,
-              }}
-            />
-          ))}
-        </motion.div>
-
-        {/* Level Completion */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
-        >
-          <motion.div
-            animate={{ 
-              scale: [1, 1.05, 1],
-            }}
-            transition={{
-              duration: 2.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            className="text-white text-xl font-semibold text-center bg-gradient-to-r from-green-400 to-emerald-500 px-6 py-3 rounded-full shadow-lg border-2 border-green-300"
-          >
-            Has acabado Nivel 1 ⭐
-          </motion.div>
-        </motion.div>
-
-        {/* Pulsing Trophy */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1, duration: 0.5, ease: 'easeOut' }}
-          className="text-8xl"
-        >
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 5, -5, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          >
-            🏆
-          </motion.div>
-        </motion.div>
-
-        {/* Final Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-        >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <JugarButton 
-              onClick={handleContinueToHome} 
-              disabled={isAnimating}
-              text="Ir al Menú Principal"
-            />
-          </motion.div>
-        </motion.div>
-
-        {/* Confetti Rain */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={`confetti-${i}`}
-              className="absolute w-2 h-2 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: ['#fbbf24', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444'][i % 6],
-              }}
-              initial={{ y: -10, opacity: 1 }}
-              animate={{
-                y: window.innerHeight + 50,
-                x: [0, Math.random() * 200 - 100],
-                rotate: [0, 360 * 3],
-                opacity: [1, 1, 0],
-              }}
-              transition={{
-                duration: Math.random() * 3 + 3,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: 'linear',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <motion.div
@@ -434,8 +221,7 @@ export default function Actividad6Scene4Page() {
         <LogoComponent configKey="actividad-6-scene1" />
       </div>
 
-      {/* Initial flow - before games */}
-      {!showInitialVideo ? (
+      {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
@@ -444,70 +230,76 @@ export default function Actividad6Scene4Page() {
             <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      ) : !initialVideoEnded ? (
-        // Initial Video
-        <div className="absolute" style={containerStyle}>
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-20"
-            src="/video/ACTIVIDA_6-ESCENA_4.mp4"
-            autoPlay
-            playsInline
-            onEnded={handleInitialVideoEnd}
-          />
-        </div>
-      ) : !showFinalVideo ? (
-        // Games phase
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <motion.div
-            animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-          >
-            {getCurrentButton()}
-          </motion.div>
-        </div>
-      ) : !finalVideoEnded ? (
-        // Final Video
-        <div className="absolute" style={containerStyle}>
-          <video
-            ref={finalVideoRef}
-            className="absolute inset-0 w-full h-full object-cover z-20"
-            src="/video/ACTIVIDA_6-ESCENA_5-FINAL.mp4"
-            autoPlay
-            playsInline
-            onEnded={handleFinalVideoEnd}
-          />
-        </div>
       ) : (
-        // Final completion screen
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <motion.div
-            animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-          >
-            {getFinalButton()}
-          </motion.div>
+        <div className="absolute" style={containerStyle}>
+          {!videoEnded ? (
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover z-20"
+              src="/video/ACTIVIDA_6-ESCENA_4.mp4"
+              autoPlay
+              playsInline
+              onEnded={handleVideoEnd}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              <motion.div
+                animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+              >
+                {getCurrentButton()}
+              </motion.div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Game Modals */}
-      <JuegoCuatroActividad6 
-        isVisible={showJuegoCuatro} 
+      <JuegoCuatroActividad6
+        isVisible={showJuegoCuatro}
         onClose={handleCloseJuegoCuatro}
         onGameComplete={handleJuegoCuatroComplete}
       />
 
-      <JuegoCincoActividad6 
-        isVisible={showJuegoCinco} 
+      <JuegoCincoActividad6
+        isVisible={showJuegoCinco}
         onClose={handleCloseJuegoCinco}
         onGameComplete={handleJuegoCincoComplete}
       />
 
-      <JuegoSeisActividad6 
-        isVisible={showJuegoSeis} 
-        onClose={handleCloseJuegoSeis}
-        onGameComplete={handleJuegoSeisComplete}
-      />
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Volver al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

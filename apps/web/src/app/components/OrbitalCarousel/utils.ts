@@ -229,8 +229,8 @@ export const getDefaultItems = async () => {
     },
     {
       id: 6,
-      label: "Actividad 6",
-      url: "/actividad-6/scene1", // Updated to match ActivityLabels
+      label: "Aventura 6",
+      url: "/actividad-6", // Updated to go to activity menu
       svgPath: "/svg/menu/orbital/activity6.svg",
       isUnlocked: progress.find(p => p.activityId === 6)?.isUnlocked || false
     }
