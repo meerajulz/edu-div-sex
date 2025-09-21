@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import LogoComponent from '../../components/LogoComponent/LogoComponent';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import ButtonGlobe from '../../components/ButtonGlobe/ButtonGlobe';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import Cris from '../../components/Cris/Cris';
 import JuegoUno from './JuegoUno/JuegoUno';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
@@ -25,6 +25,7 @@ export default function Scene1Page() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showCris, setShowCris] = useState(true);
@@ -69,6 +70,11 @@ export default function Scene1Page() {
 
   useEffect(() => {
     setIsHydrated(true);
+    // Check if user has watched the video before
+    const hasWatched = localStorage.getItem('scene1-video-watched');
+    if (hasWatched === 'true') {
+      setHasWatchedVideo(true);
+    }
   }, []);
 
   // Session debugging
@@ -100,6 +106,15 @@ export default function Scene1Page() {
     setShowVideo(true);
   };
 
+  const handleReplayVideo = () => {
+    setVideoEnded(false);
+    setShowVideo(true);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
+  };
+
   const [isAnimating, setIsAnimating] = useState(false);
 
   const playSound = () => {
@@ -127,6 +142,9 @@ export default function Scene1Page() {
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
+    setHasWatchedVideo(true);
+    // Save to localStorage so the button shows on future visits
+    localStorage.setItem('scene1-video-watched', 'true');
   };
 
   const handleGlobeButtonClick = () => {
@@ -220,6 +238,7 @@ export default function Scene1Page() {
 
       {!showVideo ? (
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-8">
+          {/* Main Jugar Button - always show first - opens video */}
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
@@ -260,11 +279,22 @@ export default function Scene1Page() {
                 className="absolute inset-0 w-full h-full object-cover z-10"
               />
               <div className="absolute  inset-0">
-                <ButtonGlobe
-                  onButtonClick={handleGlobeButtonClick}
-                  isVisible={!showCongratulations}
-                />
+                {/* JugarButton positioned below the replay button */}
+                <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-30">
+                  <JugarButton
+                    text="Jugar"
+                    onClick={handleGlobeButtonClick}
+                  />
+                </div>
+
                 <Cris isVisible={showCris} />
+
+                {/* Volver a ver Button - positioned on top of Cris head */}
+                {hasWatchedVideo && (
+                  <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
+                    <VolverAVerButton onClick={handleReplayVideo} />
+                  </div>
+                )}
               </div>
               <JuegoUno 
                 onClose={() => setShowJuegoUno(false)}

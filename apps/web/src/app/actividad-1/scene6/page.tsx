@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoTres from './JuegoTres/JuegoTres';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
@@ -25,6 +26,8 @@ export default function Scene6Page() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showScene5Video, setShowScene5Video] = useState(false);
+  const [showScene6Replay, setShowScene6Replay] = useState(false);
   const [showJuegoTres, setShowJuegoTres] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
@@ -87,6 +90,22 @@ export default function Scene6Page() {
       setIsAnimating(false);
       handleJugarClick();
     }, 800);
+  };
+
+  const handleVolverAVerScene5 = () => {
+    setShowScene5Video(true);
+  };
+
+  const handleScene5VideoEnd = () => {
+    setShowScene5Video(false);
+  };
+
+  const handleVolverAVerScene6 = () => {
+    setShowScene6Replay(true);
+  };
+
+  const handleScene6ReplayEnd = () => {
+    setShowScene6Replay(false);
   };
 
   const handleOpenJuegoTres = () => {
@@ -196,14 +215,37 @@ export default function Scene6Page() {
         />
       )}
 
-      {!showVideo ? (
-        <div className="relative z-20 flex items-center justify-center min-h-screen">
+      {!showVideo && !showScene5Video && !showScene6Replay ? (
+        <div className="relative z-20 flex flex-col items-center justify-center min-h-screen gap-6">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton text='Jugar' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
+
+          {/* Button to replay Scene 5 */}
+          <VolverAVerButton onClick={handleVolverAVerScene5} />
+        </div>
+      ) : showScene5Video ? (
+        <div className="absolute" style={containerStyle}>
+          <video
+            className="absolute inset-0 w-full h-full object-cover z-20"
+            src="/video/ACTIVIDAD-1-ESCENA-5.mp4"
+            autoPlay
+            playsInline
+            onEnded={handleScene5VideoEnd}
+          />
+        </div>
+      ) : showScene6Replay ? (
+        <div className="absolute" style={containerStyle}>
+          <video
+            className="absolute inset-0 w-full h-full object-cover z-20"
+            src="/video/ACTIVIDAD-1-ESCENA-6.mp4"
+            autoPlay
+            playsInline
+            onEnded={handleScene6ReplayEnd}
+          />
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
@@ -219,26 +261,31 @@ export default function Scene6Page() {
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoTres && (
-                <motion.div
-                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                >
-                  {!gameCompleted ? (
-                    <JugarButton 
-                      text="Juego ¿Qué es una erección?"
-                      onClick={handleOpenJuegoTres} 
-                      disabled={isAnimating} 
-                    />
-                  ) : !showCongratulations ? (
-                    <div className="flex flex-col items-center space-y-4">
-                      <JugarButton 
-                        onClick={handleGoToActivityMenu} 
+                <div className="flex flex-col items-center gap-6">
+                  <motion.div
+                    animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  >
+                    {!gameCompleted ? (
+                      <JugarButton
+                        text="Juego ¿Qué es una erección?"
+                        onClick={handleOpenJuegoTres}
+                        disabled={isAnimating}
+                      />
+                    ) : !showCongratulations ? (
+                      <JugarButton
+                        onClick={handleGoToActivityMenu}
                         disabled={isAnimating}
                         text="Continuar..."
                       />
-                    </div>
-                  ) : null}
-                </motion.div>
+                    ) : null}
+                  </motion.div>
+
+                  {/* Button to replay Scene 6 video when game is available */}
+                  {!gameCompleted && (
+                    <VolverAVerButton onClick={handleVolverAVerScene6} />
+                  )}
+                </div>
               )}
             </div>
           )}

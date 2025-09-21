@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
@@ -24,6 +25,7 @@ export default function Scene7Page() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showScene7Replay, setShowScene7Replay] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -103,6 +105,14 @@ export default function Scene7Page() {
     }, 800);
   };
 
+  const handleVolverAVerScene7 = () => {
+    setShowScene7Replay(true);
+  };
+
+  const handleScene7ReplayEnd = () => {
+    setShowScene7Replay(false);
+  };
+
   const handleBackClick = async () => {
     console.log('🏠 Scene7: Returning to home page after completing activity');
 
@@ -172,7 +182,7 @@ export default function Scene7Page() {
               <LogoComponent configKey="actividad-1-scene1" />
             </div>
 
-      {!showVideo ? (
+      {!showVideo && !showScene7Replay ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
@@ -180,6 +190,16 @@ export default function Scene7Page() {
           >
             <JugarButton onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
+        </div>
+      ) : showScene7Replay ? (
+        <div className="absolute" style={containerStyle}>
+          <video
+            className="absolute inset-0 w-full h-full object-cover z-20"
+            src="/video/ACTIVIDAD-1-ESCENA-7.mp4"
+            autoPlay
+            playsInline
+            onEnded={handleScene7ReplayEnd}
+          />
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
@@ -207,16 +227,21 @@ export default function Scene7Page() {
                                 Haz completado la aventura.
                             </p>
                         </motion.div>
-                        <motion.div
-                            className="inline-block"
-                            animate={{ rotate: [0, -5, 5, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                            style={{ transformOrigin: 'center center' }}
-                        >
-                            <div className="whitespace-nowrap">
-                                <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleBackClick} disabled={isAnimating} />
-                            </div>
-                        </motion.div>
+                        <div className="flex flex-col items-center gap-6">
+                          <motion.div
+                              className="inline-block"
+                              animate={{ rotate: [0, -5, 5, 0] }}
+                              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                              style={{ transformOrigin: 'center center' }}
+                          >
+                              <div className="whitespace-nowrap">
+                                  <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleBackClick} disabled={isAnimating} />
+                              </div>
+                          </motion.div>
+
+                          {/* Button to replay Scene 7 video */}
+                          <VolverAVerButton onClick={handleVolverAVerScene7} />
+                        </div>
                     </div>
                     
           )}

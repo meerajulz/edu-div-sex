@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 //import { useSession } from 'next-auth/react';
@@ -24,6 +25,7 @@ export default function Scene3Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [showScene2Video, setShowScene2Video] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -76,6 +78,14 @@ export default function Scene3Page() {
       setIsAnimating(false);
       setShowVideo(true);
     }, 800);
+  };
+
+  const handleVolverAVerScene2 = () => {
+    setShowScene2Video(true);
+  };
+
+  const handleScene2VideoEnd = () => {
+    setShowScene2Video(false);
   };
 
   const handleVideoEnd = async () => {
@@ -139,14 +149,27 @@ export default function Scene3Page() {
         <LogoComponent configKey="actividad-1-scene1" />
       </div>
 
-      {!showVideo ? (
-        <div className="relative z-20 flex items-center justify-center min-h-screen">
+      {!showVideo && !showScene2Video ? (
+        <div className="relative z-20 flex flex-col items-center justify-center min-h-screen gap-6">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
+
+          {/* Button to replay Scene 2 */}
+          <VolverAVerButton onClick={handleVolverAVerScene2} />
+        </div>
+      ) : showScene2Video ? (
+        <div className="absolute" style={containerStyle}>
+          <video
+            className="absolute inset-0 w-full h-full object-cover z-20"
+            src="/video/ACTIVIDAD_1_ESCENA_2.mp4"
+            autoPlay
+            playsInline
+            onEnded={handleScene2VideoEnd}
+          />
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
