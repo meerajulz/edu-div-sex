@@ -463,7 +463,7 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
           subtitle="Has completado exitosamente todas las situaciones"
           emoji="🎯"
           bgColor="bg-emerald-500/20"
-          textColor="text-emerald-800"
+          textColor="text-emerald-900"
           onComplete={handleGameComplete}
           autoCloseDelay={3000}
         />

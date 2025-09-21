@@ -297,7 +297,7 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
             subtitle="Has aprendido sobre la higiene menstrual correctamente"
             emoji="🩸"
             bgColor="bg-pink-500/20"
-            textColor="text-purple-800"
+            textColor="text-purple-900"
             onComplete={handleGameComplete}
             autoCloseDelay={3000}
           />

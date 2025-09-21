@@ -211,8 +211,8 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) =
           title={gender === 'boy' ? "¡Muy Bien!" : "¡Excelente!"}
           subtitle={gender === 'boy' ? "Ahora vamos con la niña" : "Has completado el juego de las partes del cuerpo"}
           emoji="🎉"
-          bgColor="bg-blue-500/20"
-          textColor="text-blue-800"
+          bgColor="bg-blue-500/50"
+          textColor="text-white"
           onComplete={handleCongratsComplete}
           autoCloseDelay={2500}
         />

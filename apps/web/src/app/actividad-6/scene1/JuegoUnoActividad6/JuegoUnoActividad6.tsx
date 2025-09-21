@@ -329,8 +329,8 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
               title="¡Muy Bien!"
               subtitle="Has encontrado todas las partes privadas"
               emoji="🎉"
-              bgColor="bg-green-500/20"
-              textColor="text-green-800"
+              bgColor="bg-green-500/80"
+              textColor="text-white"
               onComplete={onGameComplete}
               autoCloseDelay={3000}
             />

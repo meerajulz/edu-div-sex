@@ -459,8 +459,8 @@ export default function JuegoSeisActividad6({
             title="¡Excelente trabajo!"
             subtitle="Has completado el juego ¿Qué hacer si sucede?"
             emoji="🎉"
-            bgColor="bg-green-500/20"
-            textColor="text-green-800"
+            bgColor="bg-green-500/80"
+            textColor="text-white"
             onComplete={handleCongratsComplete}
             autoCloseDelay={3000}
           />

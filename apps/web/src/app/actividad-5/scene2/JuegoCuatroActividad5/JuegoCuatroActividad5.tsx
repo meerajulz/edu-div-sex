@@ -333,7 +333,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                   subtitle="Has completado el juego correctamente"
                   emoji="🎉"
                   bgColor="bg-blue-500/20"
-                  textColor="text-blue-800"
+                  textColor="text-blue-900"
                   onComplete={handleCompleteGame}
                   autoCloseDelay={3000}
                 />

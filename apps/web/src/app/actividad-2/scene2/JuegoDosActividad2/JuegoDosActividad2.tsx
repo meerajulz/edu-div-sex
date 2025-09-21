@@ -234,8 +234,8 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           title="¡Fantástico!"
           subtitle={`Has identificado correctamente ${score} de ${shuffledBodyParts.length} partes del cuerpo`}
           emoji="🌟"
-          bgColor="bg-blue-500/30"
-          textColor="text-blue-900"
+          bgColor="bg-blue-500/50"
+          textColor="text-white"
           autoCloseDelay={GAME_CONFIG.timing.congratsDuration || 3000}
         />
       </motion.div>

@@ -352,8 +352,8 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
           title="¡Excelente!"
           subtitle="Has aprendido sobre las respuestas corporales normales"
           emoji="🎯"
-          bgColor="bg-purple-500/20"
-          textColor="text-purple-800"
+          bgColor="bg-purple-500/50"
+          textColor="text-white"
           onComplete={handleGameComplete}
           autoCloseDelay={3000}
         />

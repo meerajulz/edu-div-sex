@@ -138,7 +138,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
           </button>
 
           {/* Center image - Full responsive */}
-          <div className="absolute inset-0 z-0 flex items-center justify-center pl-24 pr-4 py-4">
+          <div className="absolute inset-0 z-0 flex items-center justify-center px-4 pt-4 pb-40">
             <div className="relative w-full h-full">
               <Image
                 src="/image/juego_2/nenas.png"
@@ -158,8 +158,8 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
             </div>
           </div>
 
-          {/* Sidebar with draggable parts */}
-          <div className="absolute left-0 top-0 z-10 h-full w-24 flex flex-col items-center justify-center space-y-4 bg-black/10 p-2">
+          {/* Bottom horizontal draggable parts */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 h-40 flex items-center justify-center space-x-6 bg-white/80 p-4 border-t-2 border-white/50">
             {bodyParts.map((part) =>
               !matchedParts.includes(part.id) && (
                 <DraggablePart key={part.id} id={part.id} image={part.image} sound={part.sound}/>
@@ -196,8 +196,8 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
           title="¡Felicidades!"
           subtitle="Has completado el juego de identificar las partes del cuerpo"
           emoji="🎉"
-          bgColor="bg-purple-500/20"
-          textColor="text-purple-800"
+          bgColor="bg-purple-500/50"
+          textColor="text-white"
           onComplete={handleCongratsComplete}
           autoCloseDelay={2500}
         />

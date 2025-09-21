@@ -569,7 +569,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                   subtitle="Has aprendido sobre los tonos de voz. Recuerda: si queremos que una persona haga algo, no podemos hablar obligándole."
                   emoji="🎉"
                   bgColor="bg-teal-500/20"
-                  textColor="text-teal-800"
+                  textColor="text-teal-900"
                   onComplete={handleCompleteGame}
                   autoCloseDelay={3000}
                 />

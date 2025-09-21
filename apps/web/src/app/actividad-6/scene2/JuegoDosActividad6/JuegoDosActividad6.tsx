@@ -391,8 +391,8 @@ export default function JuegoDosActividad6({
             title="¡Excelente trabajo!"
             subtitle="Has completado el juego de Victimización"
             emoji="🎉"
-            bgColor="bg-green-500/20"
-            textColor="text-green-800"
+            bgColor="bg-green-500/80"
+            textColor="text-white"
             onComplete={handleCongratsComplete}
             autoCloseDelay={3000}
           />

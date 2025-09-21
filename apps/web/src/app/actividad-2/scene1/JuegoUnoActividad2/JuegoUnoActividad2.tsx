@@ -320,7 +320,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
           }}
           title="¡Felicidades!"
           subtitle={`¡Has completado todas las situaciones con ${score} puntos!`}
-          bgColor="bg-fuchsia-500/30"
+          bgColor="bg-fuchsia-500/50"
           textColor="text-white"
           emoji="🏆"
           autoCloseDelay={GAME_CONFIG.timing.congratsDuration || 3000}

@@ -14,7 +14,7 @@ const DropZone: React.FC<DropZoneProps> = ({ id, position, isMatched }) => {
   return (
     <div
       ref={setNodeRef}
-      className={`absolute w-10 h-10 rounded-full transition-all duration-300 ${
+      className={`absolute w-20 h-20 rounded-full transition-all duration-300 ${
         isMatched ? 'bg-green-400/50 border-4 border-green-600' : 'bg-white/20 border-4 border-magenta-500'
       }`}
       style={{ 

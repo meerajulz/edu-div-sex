@@ -34,7 +34,7 @@ const DraggablePart: React.FC<DraggablePartProps> = ({ id, image, sound }) => {
       }}
       className="cursor-grab"
     >
-    <div className="w-[60px] h-[60px] relative">
+    <div className="w-[120px] h-[120px] relative">
 
       {/* Transparent overlay to trigger sound */}
       <button

@@ -251,7 +251,7 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
                   subtitle="Has completado la actividad de higiene personal"
                   emoji="🧼"
                   bgColor="bg-blue-500/20"
-                  textColor="text-blue-800"
+                  textColor="text-blue-900"
                   onComplete={handleFinalGameComplete}
                   autoCloseDelay={3000}
                 />
