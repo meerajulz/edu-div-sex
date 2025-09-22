@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
 // import { signOut } from "@/auth";
@@ -18,6 +18,7 @@ interface MenuItem {
 
 const FloatingMenu = () => {
 	const router = useRouter();
+	const pathname = usePathname();
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [iconStates, setIconStates] = useState<Record<string, boolean>>({});
 	const [ripples, setRipples] = useState<
@@ -52,6 +53,19 @@ const FloatingMenu = () => {
 		};
 	}, []);
 
+	// Helper function to get current activity from pathname
+	const getCurrentActivity = () => {
+		const match = pathname.match(/\/actividad-(\d+)/);
+		return match ? `/actividad-${match[1]}` : null;
+	};
+
+	// Check if user is currently in an activity scene (not main activity page)
+	const isInActivityScene = () => {
+		const activityMatch = pathname.match(/\/actividad-\d+/);
+		const sceneMatch = pathname.match(/\/actividad-\d+\/scene/);
+		return activityMatch && sceneMatch;
+	};
+
 	const menuItems: MenuItem[] = [
 		{
 			id: "home",
@@ -60,6 +74,14 @@ const FloatingMenu = () => {
 			href: "/home",
 			sound: "/ui-sound/click.mp3",
 		},
+		// Map button - only show when in activity scenes
+		...(isInActivityScene() ? [{
+			id: "map",
+			icon1: "/svg/menu/map1.svg",
+			icon2: "/svg/menu/map2.svg",
+			href: getCurrentActivity() || "/home",
+			sound: "/ui-sound/click.mp3",
+		}] : []),
 		// {
 		// 	id: "hola",
 		// 	icon1: "/svg/menu/hola1.svg",
@@ -273,7 +295,7 @@ const FloatingMenu = () => {
 							}}
 							transition={{ duration: 0.2 }}
 						>
-							{item.id.charAt(0).toUpperCase() + item.id.slice(1)}
+							{item.id === "map" ? "Actividad" : item.id.charAt(0).toUpperCase() + item.id.slice(1)}
 						</motion.div>
 					)}
 
@@ -285,7 +307,7 @@ const FloatingMenu = () => {
 								opacity: activeId === item.id ? 1 : 0.7,
 							}}
 						>
-							{item.id}
+							{item.id === "map" ? "actividad" : item.id}
 						</motion.div>
 					)}
 				</motion.div>
