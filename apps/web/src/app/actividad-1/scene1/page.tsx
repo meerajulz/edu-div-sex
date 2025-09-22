@@ -26,9 +26,11 @@ export default function Scene1Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
+  const [isReplayingVideo, setIsReplayingVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showCris, setShowCris] = useState(true);
+  const [crisPaused, setCrisPaused] = useState(false);
   const [showJuegoUno, setShowJuegoUno] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
 
@@ -107,8 +109,12 @@ export default function Scene1Page() {
   };
 
   const handleReplayVideo = () => {
+    console.log('🔄 Replay video clicked - pausing Cris');
+    setIsReplayingVideo(true);
     setVideoEnded(false);
     setShowVideo(true);
+    setCrisPaused(true); // Pause Cris during video replay
+    console.log('🔇 Cris should now be paused');
     // Reset video to beginning
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
@@ -141,8 +147,12 @@ export default function Scene1Page() {
 
 
   const handleVideoEnd = () => {
+    console.log('🎬 Video ended - resuming Cris');
     setVideoEnded(true);
+    setIsReplayingVideo(false);
     setHasWatchedVideo(true);
+    setCrisPaused(false); // Resume Cris after video ends
+    console.log('🗣️ Cris should now be resumed');
     // Save to localStorage so the button shows on future visits
     localStorage.setItem('scene1-video-watched', 'true');
   };
@@ -260,48 +270,66 @@ export default function Scene1Page() {
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
-          {!videoEnded ? (
+          {/* Video layer */}
+          {!videoEnded && (
             <video
               ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-10"
+              className="absolute inset-0 w-full h-full object-cover z-20"
               src="/video/ACTIVIDA_1-ESCENA-1.mp4"
               autoPlay
               playsInline
               onEnded={handleVideoEnd}
             />
-          ) : (
-            <>
-              <Image
-                width={containerDimensions.width}
-                height={containerDimensions.height}
-                src="/image/escena_1/bg.jpg"
-                alt="Escena 1 Background"
-                className="absolute inset-0 w-full h-full object-cover z-10"
-              />
-              <div className="absolute  inset-0">
-                {/* JugarButton positioned below the replay button */}
-                <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-30">
-                  <JugarButton
-                    text="Jugar"
-                    onClick={handleGlobeButtonClick}
-                  />
-                </div>
-
-                <Cris isVisible={showCris} />
-
-                {/* Volver a ver Button - positioned on top of Cris head */}
-                {hasWatchedVideo && (
-                  <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
-                    <VolverAVerButton onClick={handleReplayVideo} />
-                  </div>
-                )}
-              </div>
-              <JuegoUno 
-                onClose={() => setShowJuegoUno(false)}
-                onComplete={handleGameComplete}
-                isVisible={showJuegoUno} />
-            </>
           )}
+
+          {/* Background image - only show when video has ended */}
+          {videoEnded && (
+            <Image
+              width={containerDimensions.width}
+              height={containerDimensions.height}
+              src="/image/escena_1/bg.jpg"
+              alt="Escena 1 Background"
+              className="absolute inset-0 w-full h-full object-cover z-10"
+            />
+          )}
+
+          {/* UI Elements - only show when video has ended */}
+          {videoEnded && (
+            <div className="absolute inset-0">
+              {/* JugarButton positioned below the replay button */}
+              <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-30">
+                <JugarButton
+                  text="Jugar"
+                  onClick={handleGlobeButtonClick}
+                />
+              </div>
+
+              {/* Volver a ver Button - positioned on top of Cris head */}
+              {hasWatchedVideo && (
+                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
+                  <VolverAVerButton onClick={handleReplayVideo} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Cris - always present after first video (stays mounted) */}
+          {hasWatchedVideo && (
+            <Cris isVisible={showCris && videoEnded} isPaused={crisPaused} />
+          )}
+
+          {/* Debug info - always present for debugging */}
+          {hasWatchedVideo && (
+            <div className="absolute top-10 right-10 bg-black/70 text-white p-2 text-xs z-50">
+              crisPaused: {crisPaused.toString()}
+            </div>
+          )}
+
+          {/* Game component */}
+          <JuegoUno
+            onClose={() => setShowJuegoUno(false)}
+            onComplete={handleGameComplete}
+            isVisible={showJuegoUno} />
         </div>
       )}
 
