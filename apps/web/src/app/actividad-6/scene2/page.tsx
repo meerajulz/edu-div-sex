@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoDosActividad6 from './JuegoDosActividad6/JuegoDosActividad6';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -30,6 +31,7 @@ export default function Actividad6Scene2Page() {
   const [showJuegoDos, setShowJuegoDos] = useState(false);
   const [juegoDosCompleted, setJuegoDosCompleted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -87,6 +89,16 @@ export default function Actividad6Scene2Page() {
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
+    setHasWatchedVideo(true);
+  };
+
+  const handleReplayVideo = () => {
+    setVideoEnded(false);
+    setShowVideo(true);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
   };
 
   // Juego Dos handlers
@@ -138,11 +150,18 @@ export default function Actividad6Scene2Page() {
   const getCurrentButton = () => {
     if (!juegoDosCompleted) {
       return (
-        <JugarButton 
-          onClick={handleOpenJuegoDos} 
-          disabled={isAnimating}
-          text="Jugar Me defiendo"
-        />
+        <div className="flex flex-col items-center gap-6">
+          <JugarButton
+            onClick={handleOpenJuegoDos}
+            disabled={isAnimating}
+            text="Jugar Me defiendo"
+          />
+
+          {/* Volver a ver Button - positioned under main button */}
+          {hasWatchedVideo && (
+            <VolverAVerButton onClick={handleReplayVideo} />
+          )}
+        </div>
       );
     } else {
       return null; // Hide button when game is completed, congratulations overlay will show

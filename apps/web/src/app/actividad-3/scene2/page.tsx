@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoTresActividad3 from './JuegoTresActividad3/JuegoTresActividad3'; // FIXED: Correct import name
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -43,6 +44,7 @@ const { data: session } = useSession();
   const [videoEnded, setVideoEnded] = useState(false);
   const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   
   // Get user gender from session
   const userGender = getUserGender(session);
@@ -111,6 +113,16 @@ const { data: session } = useSession();
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
+    setHasWatchedVideo(true);
+  };
+
+  const handleReplayVideo = () => {
+    setVideoEnded(false);
+    setShowVideo(true);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
   };
 
   const handleOpenJuegoCuatro = () => {
@@ -269,16 +281,23 @@ const { data: session } = useSession();
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoCuatro && (
-                <motion.div
-                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                >
-                  <JugarButton 
-                    onClick={handleOpenJuegoCuatro} 
-                    disabled={isAnimating}
-                    text="Jugar La masturbación"
-                  />
-                </motion.div>
+                <div className="flex flex-col items-center gap-6">
+                  <motion.div
+                    animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  >
+                    <JugarButton
+                      onClick={handleOpenJuegoCuatro}
+                      disabled={isAnimating}
+                      text="Jugar La masturbación"
+                    />
+                  </motion.div>
+
+                  {/* Volver a ver Button - positioned under main button */}
+                  {hasWatchedVideo && (
+                    <VolverAVerButton onClick={handleReplayVideo} />
+                  )}
+                </div>
               )}
             </div>
           )}

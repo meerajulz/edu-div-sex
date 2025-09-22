@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoCincoActividad2 from '../scene5/JuegoCincoActividad2/JuegoCincoActividad2';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import dynamic from 'next/dynamic';
@@ -28,6 +29,7 @@ export default function Scene5Page() {
   const [showAlexCongratulations, setShowAlexCongratulations] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [hasWatchedFinalVideo, setHasWatchedFinalVideo] = useState(false);
 
 
   useEffect(() => {
@@ -72,8 +74,14 @@ export default function Scene5Page() {
     }, 1000);
   };
 
+  const handleReplayFinalVideo = () => {
+    setShowCongratulations(false);
+    setShowAlexCongratulations(true);
+  };
+
   const handleAlexAnimationComplete = () => {
     setShowAlexCongratulations(false);
+    setHasWatchedFinalVideo(true);
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
@@ -211,15 +219,22 @@ export default function Scene5Page() {
             <p className="text-white text-lg mb-6">
               Has completado la Actividad Intimidad
             </p>
-            <motion.button
-              onClick={handleGoToHome}
-              disabled={isAnimating}
-              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              IR A LA PROXIMA AVENTURA!
-            </motion.button>
+            <div className="flex flex-col items-center gap-4">
+              <motion.button
+                onClick={handleGoToHome}
+                disabled={isAnimating}
+                className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                IR A LA PROXIMA AVENTURA!
+              </motion.button>
+
+              {/* Volver a ver Button - positioned under main button */}
+              {hasWatchedFinalVideo && (
+                <VolverAVerButton onClick={handleReplayFinalVideo} />
+              )}
+            </div>
           </motion.div>
         </motion.div>
       )}

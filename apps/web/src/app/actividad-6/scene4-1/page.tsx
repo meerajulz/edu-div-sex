@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoSeisActividad6 from '../scene4/JuegoSeisActividad6/JuegoSeisActividad6';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,6 +27,7 @@ export default function Actividad6Scene4_1Page() {
   const [showFinalVideo, setShowFinalVideo] = useState(false);
   const [finalVideoEnded, setFinalVideoEnded] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [hasWatchedFinalVideo, setHasWatchedFinalVideo] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -91,10 +93,21 @@ export default function Actividad6Scene4_1Page() {
 
   const handleFinalVideoEnd = () => {
     setFinalVideoEnded(true);
+    setHasWatchedFinalVideo(true);
     // Show congratulations after final video
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
+  };
+
+  const handleReplayFinalVideo = () => {
+    setFinalVideoEnded(false);
+    setShowCongratulations(false);
+    setShowFinalVideo(true);
+    // Reset video to beginning
+    if (finalVideoRef.current) {
+      finalVideoRef.current.currentTime = 0;
+    }
   };
 
   // Handle final completion and go to home
@@ -251,15 +264,22 @@ export default function Actividad6Scene4_1Page() {
             <p className="text-white text-lg mb-6">
               Has completado todas las aventuras
             </p>
-            <motion.button
-              onClick={handleGoToHome}
-              disabled={isAnimating}
-              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Ir a la próxima aventura
-            </motion.button>
+            <div className="flex flex-col items-center gap-4">
+              <motion.button
+                onClick={handleGoToHome}
+                disabled={isAnimating}
+                className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Ir a la próxima aventura
+              </motion.button>
+
+              {/* Volver a ver Button - positioned under main button */}
+              {hasWatchedFinalVideo && (
+                <VolverAVerButton onClick={handleReplayFinalVideo} />
+              )}
+            </div>
           </motion.div>
         </motion.div>
       )}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoCuatroActividad2 from './JuegoCuatroActividad2/JuegoCuatroActividad2';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
@@ -26,6 +27,7 @@ export default function Scene4Page() {
   const [showJuegoCuatro, setShowJuegoCuatro] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -64,6 +66,16 @@ export default function Scene4Page() {
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
+    setHasWatchedVideo(true);
+  };
+
+  const handleReplayVideo = () => {
+    setVideoEnded(false);
+    setShowVideo(true);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
   };
 
   const playSound = () => {
@@ -216,22 +228,29 @@ export default function Scene4Page() {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
-              <motion.div
-                animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
-              >
-                {!gameCompleted ? (
-                  <JugarButton text='Jugar ¿Qué hacer si alguien no respeta tu intimidad?' onClick={handleOpenJuegoCuatro} disabled={isAnimating} />
-                ) : !showCongratulations ? (
-                  <div className="flex flex-col items-center space-y-4">
-                    <JugarButton 
-                      onClick={handleGoToActivityMenu} 
-                      disabled={isAnimating}
-                      text="Continuar..."
-                    />
-                  </div>
-                ) : null}
-              </motion.div>
+              <div className="flex flex-col items-center gap-6">
+                <motion.div
+                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                >
+                  {!gameCompleted ? (
+                    <JugarButton text='Jugar ¿Qué hacer si alguien no respeta tu intimidad?' onClick={handleOpenJuegoCuatro} disabled={isAnimating} />
+                  ) : !showCongratulations ? (
+                    <div className="flex flex-col items-center space-y-4">
+                      <JugarButton
+                        onClick={handleGoToActivityMenu}
+                        disabled={isAnimating}
+                        text="Continuar..."
+                      />
+                    </div>
+                  ) : null}
+                </motion.div>
+
+                {/* Volver a ver Button - positioned under main button */}
+                {hasWatchedVideo && !gameCompleted && (
+                  <VolverAVerButton onClick={handleReplayVideo} />
+                )}
+              </div>
             </div>
           )}
         </div>

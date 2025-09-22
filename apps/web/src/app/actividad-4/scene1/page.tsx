@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoUnoActividad4 from './JuegoUnoActividad4/JuegoUnoActividad4';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -29,6 +30,7 @@ export default function Actividad4Scene1Page() {
   const [showJuegoUno, setShowJuegoUno] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [hasWatchedVideos, setHasWatchedVideos] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -98,7 +100,14 @@ export default function Actividad4Scene1Page() {
     } else {
       // All videos have ended
       setAllVideosEnded(true);
+      setHasWatchedVideos(true);
     }
+  };
+
+  const handleReplayVideos = () => {
+    setCurrentVideoIndex(0);
+    setAllVideosEnded(false);
+    setShowVideo(true);
   };
 
   const handleOpenJuegoUno = () => {
@@ -212,20 +221,27 @@ export default function Actividad4Scene1Page() {
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoUno && (
-                <motion.div
-                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                >
-                  {!gameCompleted ? (
-                    <JugarButton text='Juego Ayuda a Cris o Dani en su higiene.' onClick={handleOpenJuegoUno} disabled={isAnimating} />
-                  ) : !showCongratulations ? (
-                    <JugarButton
-                      text="Volver al menú"
-                      onClick={handleContinue}
-                      disabled={isAnimating}
-                    />
-                  ) : null}
-                </motion.div>
+                <div className="flex flex-col items-center gap-6">
+                  <motion.div
+                    animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  >
+                    {!gameCompleted ? (
+                      <JugarButton text='Juego Ayuda a Cris o Dani en su higiene.' onClick={handleOpenJuegoUno} disabled={isAnimating} />
+                    ) : !showCongratulations ? (
+                      <JugarButton
+                        text="Volver al menú"
+                        onClick={handleContinue}
+                        disabled={isAnimating}
+                      />
+                    ) : null}
+                  </motion.div>
+
+                  {/* Volver a ver Button - positioned under main button */}
+                  {hasWatchedVideos && !gameCompleted && (
+                    <VolverAVerButton onClick={handleReplayVideos} />
+                  )}
+                </div>
               )}
             </div>
           )}

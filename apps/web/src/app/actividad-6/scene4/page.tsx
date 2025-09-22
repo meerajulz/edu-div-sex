@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoCuatroActividad6 from './JuegoCuatroActividad6/JuegoCuatroActividad6';
 import JuegoCincoActividad6 from './JuegoCincoActividad6/JuegoCincoActividad6';
 import { useState, useRef, useEffect } from 'react';
@@ -35,6 +36,7 @@ export default function Actividad6Scene4Page() {
   const [showJuegoCinco, setShowJuegoCinco] = useState(false);
   const [juegoCincoCompleted, setJuegoCincoCompleted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -92,6 +94,16 @@ export default function Actividad6Scene4Page() {
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
+    setHasWatchedVideo(true);
+  };
+
+  const handleReplayVideo = () => {
+    setVideoEnded(false);
+    setShowVideo(true);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
   };
 
   // Game handlers
@@ -157,19 +169,33 @@ export default function Actividad6Scene4Page() {
   const getCurrentButton = () => {
     if (!juegoCuatroCompleted) {
       return (
-        <JugarButton
-          onClick={handleOpenJuegoCuatro}
-          disabled={isAnimating}
-          text="Juego Respetamos 1"
-        />
+        <div className="flex flex-col items-center gap-6">
+          <JugarButton
+            onClick={handleOpenJuegoCuatro}
+            disabled={isAnimating}
+            text="Juego Respetamos 1"
+          />
+
+          {/* Volver a ver Button - positioned under main button */}
+          {hasWatchedVideo && (
+            <VolverAVerButton onClick={handleReplayVideo} />
+          )}
+        </div>
       );
     } else if (!juegoCincoCompleted) {
       return (
-        <JugarButton
-          onClick={handleOpenJuegoCinco}
-          disabled={isAnimating}
-          text="Juego Respetamos 2"
-        />
+        <div className="flex flex-col items-center gap-6">
+          <JugarButton
+            onClick={handleOpenJuegoCinco}
+            disabled={isAnimating}
+            text="Juego Respetamos 2"
+          />
+
+          {/* Volver a ver Button - positioned under main button */}
+          {hasWatchedVideo && (
+            <VolverAVerButton onClick={handleReplayVideo} />
+          )}
+        </div>
       );
     } else {
       return null; // Hide button when games are completed, congratulations overlay will show

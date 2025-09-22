@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoDosActividad4 from './JuegoDosActividad4/JuegoDosActividad4';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -27,6 +28,7 @@ export default function Actividad4Scene2Page() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [showJuegoDos, setShowJuegoDos] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
@@ -84,6 +86,16 @@ export default function Actividad4Scene2Page() {
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
+    setHasWatchedVideo(true);
+  };
+
+  const handleReplayVideo = () => {
+    setVideoEnded(false);
+    setShowVideo(true);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
   };
 
   const handleOpenJuegoDos = () => {
@@ -193,39 +205,46 @@ export default function Actividad4Scene2Page() {
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoDos && (
-                <motion.div
-                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                >
-                  {!gameCompleted ? (
-                    <JugarButton text='Juego Higiene menstrual' onClick={handleOpenJuegoDos} disabled={isAnimating} />
-                  ) : (
+                <div className="flex flex-col items-center gap-6">
+                  <motion.div
+                    animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  >
+                    {!gameCompleted ? (
+                      <JugarButton text='Juego Higiene menstrual' onClick={handleOpenJuegoDos} disabled={isAnimating} />
+                    ) : (
 
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
+                          <motion.div
+                              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
+                              initial={{ rotate: -5 }}
+                              animate={{ rotate: [0, 2, -2, 0] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            >
+                              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                                  ¡Felicidades!
+                              </h1>
+                              <p className="text-lg sm:text-xl text-white drop-shadow-md">
+                                 Has completado la actividad.
+                              </p>
+                          </motion.div>
                         <motion.div
-                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
-                            initial={{ rotate: -5 }}
-                            animate={{ rotate: [0, 2, -2, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                          >
-                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                                ¡Felicidades!
-                            </h1>
-                            <p className="text-lg sm:text-xl text-white drop-shadow-md">
-                               Has completado la actividad.
-                            </p>
+                          className="inline-block"
+                          style={{ transformOrigin: 'center center' }}
+                        >
+                          <div className="whitespace-nowrap">
+                            <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleContinue} disabled={isAnimating} />
+                          </div>
                         </motion.div>
-                      <motion.div
-                        className="inline-block"
-                        style={{ transformOrigin: 'center center' }}
-                      >
-                        <div className="whitespace-nowrap">
-                          <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleContinue} disabled={isAnimating} />
-                        </div>
-                      </motion.div>
-                    </div>
+                      </div>
+                    )}
+                  </motion.div>
+
+                  {/* Volver a ver Button - positioned under main button */}
+                  {hasWatchedVideo && !gameCompleted && (
+                    <VolverAVerButton onClick={handleReplayVideo} />
                   )}
-                </motion.div>
+                </div>
               )}
             </div>
           )}

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoTresActividad2 from './JuegoTresActividad2/JuegoTresActividad2';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -28,6 +29,7 @@ export default function Actividad2Scene3Page() {
   const [showButton, setShowButton] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
@@ -84,6 +86,16 @@ export default function Actividad2Scene3Page() {
 
   const handleVideoEnd = () => {
     setShowButton(true);
+    setHasWatchedVideo(true);
+  };
+
+  const handleReplayVideo = () => {
+    setShowVideo(true);
+    setShowButton(false);
+    // Reset video to beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
   };
 
   const handleOpenGame = () => {
@@ -226,16 +238,23 @@ export default function Actividad2Scene3Page() {
         </div>
       ) : showButton ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
-          <motion.div
-            animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-          >
-            <JugarButton 
-              text={gameCompleted ? 'Jugar' : 'Juego ¿Qué es privado y qué es público?'} 
-              onClick={handleButtonClick} 
-              disabled={isAnimating} 
-            />
-          </motion.div>
+          <div className="flex flex-col items-center gap-6">
+            <motion.div
+              animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+            >
+              <JugarButton
+                text={gameCompleted ? 'Jugar' : 'Juego ¿Qué es privado y qué es público?'}
+                onClick={handleButtonClick}
+                disabled={isAnimating}
+              />
+            </motion.div>
+
+            {/* Volver a ver Button - positioned under main button */}
+            {hasWatchedVideo && !gameCompleted && (
+              <VolverAVerButton onClick={handleReplayVideo} />
+            )}
+          </div>
         </div>
       ) : null}
 

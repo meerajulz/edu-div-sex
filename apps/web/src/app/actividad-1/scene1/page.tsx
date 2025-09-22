@@ -26,7 +26,6 @@ export default function Scene1Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
-  const [isReplayingVideo, setIsReplayingVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showCris, setShowCris] = useState(true);
@@ -110,7 +109,6 @@ export default function Scene1Page() {
 
   const handleReplayVideo = () => {
     console.log('🔄 Replay video clicked - pausing Cris');
-    setIsReplayingVideo(true);
     setVideoEnded(false);
     setShowVideo(true);
     setCrisPaused(true); // Pause Cris during video replay
@@ -149,7 +147,6 @@ export default function Scene1Page() {
   const handleVideoEnd = () => {
     console.log('🎬 Video ended - resuming Cris');
     setVideoEnded(true);
-    setIsReplayingVideo(false);
     setHasWatchedVideo(true);
     setCrisPaused(false); // Resume Cris after video ends
     console.log('🗣️ Cris should now be resumed');
