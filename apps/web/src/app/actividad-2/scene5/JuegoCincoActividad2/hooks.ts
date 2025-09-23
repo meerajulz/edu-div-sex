@@ -343,6 +343,7 @@ export const useJuegoCincoGame = () => {
     getItemStateById,
     canDragItem,
     resetGame,
+    playAudio,
     config: GAME_CONFIG
   };
 };

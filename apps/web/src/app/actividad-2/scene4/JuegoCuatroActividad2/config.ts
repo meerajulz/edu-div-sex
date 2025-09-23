@@ -5,6 +5,7 @@ export const GAME_CONFIG = {
   // Global audio files
   globalAudio: {
     title: '/audio/actividad-2/juego4/title.mp3', // "Clica a la imagen correcto"
+    subtitle: '/audio/actividad-2/juego4/subtitle.mp3', // Subtitle explaining the game
     congratulations: '/audio/actividad-2/juego4/muybien.mp3',
     animationSound: '/audio/button/Bright.mp3' // Sound for image animations
   },

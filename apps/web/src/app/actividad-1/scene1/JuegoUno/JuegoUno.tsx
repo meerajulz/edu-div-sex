@@ -17,6 +17,7 @@ import { boyBodyParts, girlBodyParts } from './config';
 import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 
 interface JuegoUnoProps {
   isVisible: boolean;
@@ -140,6 +141,11 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) =
     onClose();
   };
 
+  const handleListenInstructions = () => {
+    // Play Cris's introduction audio for the game
+    playGameAudio('/audio/actividad-1/escena_1/juego_1_cris.mp3', 1.0, 'JuegoUno-Cris-Instructions');
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -154,6 +160,12 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) =
           >
             Salir juego
           </button>
+
+          {/* Listen Instructions Button */}
+          <EscucharInstruccionesButton
+            onPlayInstructions={handleListenInstructions}
+            position="below-exit"
+          />
 
           {/* Baby image */}
           <div className="absolute inset-0 z-0 lex items-center justify-center">

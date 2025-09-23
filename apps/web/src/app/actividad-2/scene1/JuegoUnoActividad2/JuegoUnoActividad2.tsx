@@ -7,6 +7,7 @@ import SituationDisplay from './SituationDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '@/app/components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { useProgressSaver } from '../../../hooks/useProgressSaver';
 
 interface JuegoUnoActividad2Props {
@@ -41,6 +42,9 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
 
   // State for congratulations overlay
   const [showCongrats, setShowCongrats] = useState(false);
+
+  // State for showing situation card again
+  const [showSituationCard, setShowSituationCard] = useState(false);
 
   // Session tracking
   const { currentSession, startSession, endSession } = useGameSession();
@@ -198,6 +202,31 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
     onClose();
   };
 
+  const handleListenInstructions = () => {
+    // Play the game's question audio
+    playAudio('/audio/actividad-2/juego1/t.mp3');
+  };
+
+  const handleListenSituation = async () => {
+    if (!currentSituationData) return;
+
+    // Show the situation card
+    setShowSituationCard(true);
+
+    // Play situation audio, then text, then question
+    await playAudioSequence(
+      currentSituationData.audio.situation,
+      currentSituationData.audio.text,
+      GAME_CONFIG.globalAudio.question,
+      () => {
+        // Hide the card after audio sequence completes
+        setTimeout(() => {
+          setShowSituationCard(false);
+        }, 1000);
+      }
+    );
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -211,6 +240,22 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         }}
       >
 
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
+        />
+
+        {/* Listen Situation Button - Only show during question phase */}
+        {gamePhase === 'question' && (
+          <button
+            onClick={handleListenSituation}
+            className="absolute top-4 left-4 z-10 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 font-semibold"
+          >
+            🔊 Escuchar situación {currentSituation + 1}
+          </button>
+        )}
+
         {/* Close Button */}
         <button
           onClick={handleClose}
@@ -221,7 +266,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
 
         {/* Debug Info (development only) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-4 left-4 z-10 text-xs text-white bg-black/50 p-2 rounded">
+          <div className="absolute top-16 left-4 z-10 text-xs text-white bg-black/50 p-2 rounded">
             Situación: {currentSituation + 1}/{GAME_CONFIG.situations.length} | 
             Fase: {gamePhase} | 
             Score: {score} | 
@@ -253,14 +298,14 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             
             {gamePhase === 'situation' && (
               <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20">
-                <div className="bg-black/50 p-6 rounded-lg text-center text-white max-w-md">
-                  <div className="text-lg font-bold mb-2 text-fuchsia-300">
+                <div className="bg-white/95 p-6 rounded-lg text-center max-w-md border-2 border-blue-400 shadow-lg">
+                  <div className="text-lg font-bold mb-2 text-blue-800">
                     🎯 {currentSituationData.title}
                   </div>
-                  <p className="text-sm leading-relaxed mb-3">
+                  <p className="text-sm leading-relaxed mb-3 font-semibold text-blue-700">
                     {currentSituationData.description}
                   </p>
-                  <div className="text-xs text-yellow-300">
+                  <div className="text-xs text-orange-600 font-medium">
                     🎵 Escuchando explicación...
                   </div>
                 </div>
@@ -270,10 +315,27 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             {gamePhase === 'question' && (
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-20">
                 <div className="text-center">
-                  <div className="bg-transparent backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                    <div className="text-xl font-bold text-fuchsia-900 mb-4">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-4 border-2 border-blue-400 shadow-lg">
+                    <div className="text-xl font-bold text-blue-800 mb-4">
                       ¿Está bien que se lo cuente a todos los amigos?
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Situation Card - Show when user clicks green button */}
+            {showSituationCard && currentSituationData && (
+              <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-30">
+                <div className="bg-white/95 p-6 rounded-lg text-center max-w-md border-2 border-green-400 shadow-lg">
+                  <div className="text-lg font-bold mb-2 text-blue-800">
+                    🎯 {currentSituationData.title}
+                  </div>
+                  <p className="text-sm leading-relaxed mb-3 font-semibold text-blue-700">
+                    {currentSituationData.description}
+                  </p>
+                  <div className="text-xs text-orange-600 font-medium">
+                    🎵 Escuchando explicación completa...
                   </div>
                 </div>
               </div>

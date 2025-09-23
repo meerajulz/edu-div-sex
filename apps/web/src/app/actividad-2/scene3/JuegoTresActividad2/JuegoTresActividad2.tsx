@@ -9,6 +9,7 @@ import SituationItems from './SituationItems';
 // Update import to use the central CongratsOverlay component
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
 import JugarButton from '../../../components/JugarButton/JugarButton';
+import EscucharInstruccionesButton from '@/app/components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 
 interface JuegoTresActividad2Props {
   isVisible: boolean;
@@ -50,14 +51,15 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
   const { recordAttempt } = useGameTracking();
   
   // Audio management
-  const { 
-    playTitleAudio, 
-    playCorrectAudio, 
-    playIncorrectAudio, 
+  const {
+    playTitleAudio,
+    playSubtitleAudio,
+    playCorrectAudio,
+    playIncorrectAudio,
     playTryAgainAudio,
     playDragAudio,
-    playFeedbackAudio, 
-    stopAudio 
+    playFeedbackAudio,
+    stopAudio
   } = useAudioManager();
 
   // Reset game when modal opens
@@ -208,6 +210,14 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     onClose();
   };
 
+  const handleListenInstructions = async () => {
+    // Play title audio, then subtitle audio
+    await playTitleAudio();
+    setTimeout(async () => {
+      await playSubtitleAudio();
+    }, 1000); // Small delay between title and subtitle
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -230,6 +240,12 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
           }}
         />
         
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
+        />
+
         {/* Close Button */}
         <button
           onClick={handleClose}

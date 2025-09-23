@@ -253,6 +253,7 @@ export const useJuegoCuatroGame = () => {
     startGame,
     handleAnswerClick,
     resetGame,
+    playAudio,
     config: GAME_CONFIG
   };
 };

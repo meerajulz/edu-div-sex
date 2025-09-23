@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useJuegoCuatroGame } from './hooks';
 // Update import to use the central CongratsOverlay component
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '@/app/components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 
 interface JuegoCuatroActividad2Props {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete 
     startGame,
     handleAnswerClick,
     resetGame,
+    playAudio,
     config
   } = useJuegoCuatroGame();
 
@@ -61,6 +63,14 @@ export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete 
     handleClose();
   };
 
+  const handleListenInstructions = async () => {
+    // Play title audio, then subtitle audio
+    await playAudio(config.globalAudio.title);
+    setTimeout(async () => {
+      await playAudio(config.globalAudio.subtitle);
+    }, 1000); // Small delay between title and subtitle
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4"
@@ -84,6 +94,12 @@ export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete 
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
+        />
+
         {/* Close Button */}
         <button
           onClick={handleClose}

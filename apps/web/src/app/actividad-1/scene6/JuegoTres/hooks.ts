@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { GAME_CONFIG, GameAttempt, GameSession } from './config';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 export const useGameState = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -125,8 +126,7 @@ export const useAudioManager = () => {
 
   const playAudio = useCallback(async (audioPath: string, volume = 0.7) => {
     try {
-      const audio = new Audio(audioPath);
-      audio.volume = volume;
+      const audio = createGameAudio(audioPath, volume, 'JuegoTres-Scene6');
       await audio.play();
       return audio;
     } catch (err) {

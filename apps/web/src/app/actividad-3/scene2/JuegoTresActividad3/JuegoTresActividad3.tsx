@@ -8,6 +8,7 @@ import SituationDisplay from './SituationDisplay';
 import OptionsList from './OptionsList';
 import FeedbackOverlay from './FeedbackOverlay';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoTresActividad3Props {
@@ -73,7 +74,6 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
 
   const { currentSession, startSession, endSession } = useGameSession(userGender);
   const { recordAttempt } = useGameTracking(userGender);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { playAudio, playAudioWithCallback, stopAudio } = useAudioManager();
 
   // Local state for feedback control
@@ -345,6 +345,12 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
     onClose();
   }, [stopAudio, endSession, score, situationsCorrect, resetGame, onClose]);
 
+  // Handle listen instructions button
+  const handleListenInstructions = useCallback(() => {
+    // Play the gender-specific title audio
+    playAudio(gameConfig.title.audio);
+  }, [playAudio, gameConfig.title.audio]);
+
   if (!isVisible) return null;
 
   const currentSituationData = gameConfig.situations[currentSituation];
@@ -359,6 +365,12 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
           aspectRatio: '800/500'
         }}
       >
+
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
+        />
 
         {/* Close Button */}
         <button

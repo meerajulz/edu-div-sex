@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '@/app/components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { useProgressSaver } from '../../../hooks/useProgressSaver';
 
 interface JuegoTresProps {
@@ -138,12 +139,32 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
     onClose();
   };
 
+  const handleListenInstructions = async () => {
+    // Play the complete instructions: introduction + instructions
+    try {
+      // First play the introduction audio (title)
+      const introAudio = await playAudio(GAME_CONFIG.audio.introduction);
+
+      if (introAudio) {
+        // When introduction ends, play the instructions
+        introAudio.onended = () => {
+          playAudio(GAME_CONFIG.audio.instructions);
+        };
+      }
+    } catch (error) {
+      console.warn('Error playing full instructions:', error);
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
     <>
       <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto">
-        <div className="relative w-[80%] h-[50%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
+        <div className="relative w-[80%] h-[65%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
+
+          {/* Listen Instructions Button */}
+          <EscucharInstruccionesButton onPlayInstructions={handleListenInstructions} />
 
           {/* Close Button */}
           <button
@@ -184,7 +205,7 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
           </div>
 
           {/* Bottom decoration */}
-          <div className="absolute top-[120px] left-1/2 transform -translate-x-1/2 z-5">
+          <div className="absolute top-[140px] left-1/2 transform -translate-x-1/2 z-5">
             <Image
               src="/image/escena_1/juego_3/starts.png"
               alt="Stars decoration"
@@ -214,9 +235,11 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
               <div className="w-full h-full flex flex-col">
 
                 {/* Question */}
-                <div className="text-center pt-8">
-                  <h2 className="text-3xl font-bold text-blue-600 mb-2">{GAME_CONFIG.title}</h2>
-                  <p className="text-xl text-blue-600">{GAME_CONFIG.question}</p>
+                <div className="text-center pt-20">
+                  <div className="inline-block bg-white/90 backdrop-blur-sm rounded-lg px-6 py-4 shadow-lg">
+                    <h2 className="text-3xl font-bold text-blue-600 mb-2">{GAME_CONFIG.title}</h2>
+                    <p className="text-xl text-blue-600">{GAME_CONFIG.question}</p>
+                  </div>
                 </div>
 
                 {/* Options - Touch bottom */}

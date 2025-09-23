@@ -9,6 +9,7 @@ import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
 // Update import to use the central CongratsOverlay component
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '@/app/components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 
 interface JuegoDosActividad2Props {
   isVisible: boolean;
@@ -154,6 +155,14 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
     onClose();
   };
 
+  const handleListenInstructions = async () => {
+    // Play title audio, then subtitle audio
+    await playTitleAudio();
+    setTimeout(async () => {
+      await playSubtitleAudio();
+    }, GAME_CONFIG.timing.subtitleAudioDelay);
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -173,6 +182,12 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           backgroundPosition: 'center'
         }}
       >
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
+        />
+
         <button
           onClick={handleClose}
           className="absolute top-4 right-4 z-10 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 font-semibold"

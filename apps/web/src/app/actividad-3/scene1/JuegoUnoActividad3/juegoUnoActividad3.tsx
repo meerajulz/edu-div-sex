@@ -9,6 +9,7 @@ import BodyPartDisplay from './BodyPartDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad3Props {
@@ -223,6 +224,11 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
     onClose();
   };
 
+  const handleListenInstructions = () => {
+    // Play the title audio
+    playAudio(GAME_CONFIG.titleAudio.path);
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -234,6 +240,12 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
           aspectRatio: '800/500'
         }}
       >
+
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="side-by-side"
+        />
 
         {/* Close Button */}
         <button

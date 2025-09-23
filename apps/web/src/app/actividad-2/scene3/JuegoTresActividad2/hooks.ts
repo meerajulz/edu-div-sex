@@ -213,6 +213,10 @@ export const useAudioManager = () => {
     await playAudio(GAME_CONFIG.globalAudio.titleGame);
   }, [playAudio]);
 
+  const playSubtitleAudio = useCallback(async () => {
+    await playAudio(GAME_CONFIG.globalAudio.subtitleGame);
+  }, [playAudio]);
+
   const playCorrectAudio = useCallback(async () => {
     await playAudio(GAME_CONFIG.globalAudio.correct);
   }, [playAudio]);
@@ -245,6 +249,7 @@ export const useAudioManager = () => {
     playAudio,
     playButtonSound,
     playTitleAudio,
+    playSubtitleAudio,
     playCorrectAudio,
     playIncorrectAudio,
     playTryAgainAudio,

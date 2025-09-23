@@ -5,6 +5,7 @@ export const GAME_CONFIG = {
   // Global audio files
   globalAudio: {
     titleGame: '/audio/actividad-2/juego3/title.mp3',
+    subtitleGame: '/audio/actividad-2/juego3/subtitle.mp3',
     buttonClick: '/audio/button/Bright.mp3',
     correct: '/audio/actividad-2/juego3/correcto.mp3',
     incorrect: '/audio/actividad-2/juego3/ops-respuesta-mal.mp3',

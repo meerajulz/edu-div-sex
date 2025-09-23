@@ -5,6 +5,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useJuegoCincoGame } from './hooks';
 // Update import to use the central CongratsOverlay component
 import CongratsOverlay from '@/app/components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '@/app/components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 
 interface JuegoCincoActividad2Props {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
     getItemStateById,
     canDragItem,
     resetGame,
+    playAudio,
     config
   } = useJuegoCincoGame();
 
@@ -73,6 +75,11 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
       onGameComplete();
     }
     handleClose();
+  };
+
+  const handleListenInstructions = async () => {
+    // Play the title audio
+    await playAudio(config.globalAudio.title);
   };
 
   // FIXED: Better drop zone detection using chest element ID with proper types
@@ -143,6 +150,12 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
           src={config.globalImages.decorationStarLeft}
           alt="Decoration"
           className="absolute top-4 left-4  w-28 h-28 "
+        />
+
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
         />
 
         {/* Close Button */}
