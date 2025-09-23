@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { GAME_CONFIG, VideoSegment } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoCincoActividad6Props {
   isVisible: boolean;
@@ -88,13 +89,12 @@ export default function JuegoCincoActividad6({
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      audioRef.current = new Audio(src);
-      audioRef.current.volume = 0.7;
-      
+      audioRef.current = createGameAudio(src, 0.7, 'scenario-audio');
+
       audioRef.current.onended = () => {
         if (onEnded) onEnded();
       };
-      
+
       audioRef.current.play().catch(console.warn);
     } catch (error) {
       console.warn('Could not play audio:', error);
@@ -107,13 +107,12 @@ export default function JuegoCincoActividad6({
       if (feedbackAudioRef.current) {
         feedbackAudioRef.current.pause();
       }
-      feedbackAudioRef.current = new Audio(src);
-      feedbackAudioRef.current.volume = 0.7;
-      
+      feedbackAudioRef.current = createGameAudio(src, 0.7, 'feedback-audio');
+
       feedbackAudioRef.current.onended = () => {
         if (onEnded) onEnded();
       };
-      
+
       feedbackAudioRef.current.play().catch(console.warn);
     } catch (error) {
       console.warn('Could not play feedback audio:', error);
@@ -128,9 +127,7 @@ export default function JuegoCincoActividad6({
         incorrect: GAME_CONFIG.soundEffects.incorrect,
         button: GAME_CONFIG.soundEffects.buttonClick
       };
-      const audio = new Audio(soundMap[type]);
-      audio.volume = 0.5;
-      audio.play().catch(console.warn);
+      playGameAudio(soundMap[type], 0.5, `${type}-sound`);
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

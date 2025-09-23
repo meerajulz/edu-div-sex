@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { playGameAudio } from '../../utils/gameAudio';
 
 interface CongratsOverlayProps {
   isVisible: boolean;
@@ -28,26 +29,7 @@ export default function CongratsOverlay({
   useEffect(() => {
     if (isVisible) {
       // Play the congratulations sound when component becomes visible
-      try {
-        const audio = new Audio('/audio/muy_bien_bright.mp3');
-
-        // Get saved volume from localStorage, fallback to 0.7
-        const savedVolume = localStorage.getItem('video-volume');
-        audio.volume = savedVolume ? parseFloat(savedVolume) : 0.7;
-        console.log(`🎉 CongratsOverlay: Playing audio with volume ${audio.volume}`);
-
-        audio.play().catch(error => {
-          console.warn('Could not play congratulations sound:', error);
-        });
-        
-        // Clean up function to stop audio if component unmounts
-        return () => {
-          audio.pause();
-          audio.currentTime = 0;
-        };
-      } catch (error) {
-        console.warn('Could not create audio object:', error);
-      }
+      playGameAudio('/audio/muy_bien_bright.mp3', 0.7, 'CongratsOverlay');
     }
   }, [isVisible]);
 

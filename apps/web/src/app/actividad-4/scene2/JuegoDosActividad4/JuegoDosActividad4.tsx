@@ -7,6 +7,7 @@ import { useGameState, useGameSession, useGameTracking, useAudioManager } from '
 import DragDropArea from './DragDropArea';
 import FeedbackDisplay from './FeedbackDisplay';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoDosActividad4Props {
   isVisible: boolean;
@@ -161,13 +162,7 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
     setIsAnimating(true);
     
     // Play completion sound
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Game Completion Sound');
     
     setTimeout(() => {
       setIsAnimating(false);
@@ -195,13 +190,7 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
   }, [isAnimating, stopAudio, endSession, score, currentSequence, resetGame, onClose]);
 
   const playButtonSound = () => {
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoDos Button Sound');
   };
 
   if (!isVisible) return null;

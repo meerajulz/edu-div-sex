@@ -3,15 +3,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { 
-  EMOTION_GAME_CONFIG, 
-  EmotionGameSession, 
-  isScenarioCompletedCorrectly, 
-  isEmotionGameCompleted, 
+import {
+  EMOTION_GAME_CONFIG,
+  EmotionGameSession,
+  isScenarioCompletedCorrectly,
+  isEmotionGameCompleted,
   getCurrentScenario,
   getFeedbackAudio
 } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoTresActividad5Props {
   isVisible: boolean;
@@ -167,15 +168,14 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
-      
-      const audio = new Audio(src);
-      audio.volume = 0.7;
+
+      const audio = createGameAudio(src, 0.7, 'JuegoTres playAudio');
       setCurrentAudio(audio);
-      
+
       if (onEnded) {
         audio.onended = onEnded;
       }
-      
+
       audio.play().catch(console.warn);
     } catch (error) {
       console.warn('Could not play audio:', error);
@@ -219,18 +219,16 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
   const handleSalirJuego = () => {
     if (isAnimating && !showFeedback) return; // Allow exit during feedback
     setIsAnimating(true);
-    
+
     // Stop any current audio
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
     }
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoTres exit button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
@@ -244,11 +242,9 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
   // Handle game completion
   const handleCompleteGame = () => {
     setIsAnimating(true);
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoTres complete button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

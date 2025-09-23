@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { GAME_CONFIG, getPrivateItemsCount } from './config';
 import type { GameSession } from './config';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 type GamePhase = 'intro' | 'playing' | 'feedback' | 'completed';
 
@@ -69,7 +70,7 @@ export const useJuegoCincoGame = () => {
         currentAudioRef.current = null;
       }
 
-      const audio = new Audio(audioPath);
+      const audio = createGameAudio(audioPath, 0.7, 'Game Audio');
       currentAudioRef.current = audio;
       
       audio.onended = () => {
@@ -93,8 +94,7 @@ export const useJuegoCincoGame = () => {
 
   const playSound = useCallback((soundPath: string) => {
     try {
-      const audio = new Audio(soundPath);
-      audio.volume = 0.7;
+      const audio = createGameAudio(soundPath, 0.7, 'Sound Effect');
       audio.play().catch(console.warn);
     } catch (error) {
       console.warn('Could not play sound:', error);

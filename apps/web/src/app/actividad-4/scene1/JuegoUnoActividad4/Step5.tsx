@@ -6,6 +6,7 @@ import { DndContext, DragEndEvent, useDraggable, useSensor, useSensors, MouseSen
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 interface Step5Props {
   character: Character;
@@ -82,8 +83,7 @@ export default function Step5({ character, onStepComplete }: Step5Props) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const audio = new Audio(stepData.audio.title);
-      audio.volume = 0.7;
+      const audio = createGameAudio(stepData.audio.title, 0.7, 'Step5 Title Audio');
       setCurrentAudio(audio);
       audio.play().then(() => {
         setTimeout(() => {
@@ -122,10 +122,11 @@ export default function Step5({ character, onStepComplete }: Step5Props) {
     setIsCorrect(correct);
     setShowFeedback(true);
 
-    const feedbackAudio = new Audio(
-      correct ? stepData.feedback.correct.audio : stepData.feedback.incorrect.audio
+    const feedbackAudio = createGameAudio(
+      correct ? stepData.feedback.correct.audio : stepData.feedback.incorrect.audio,
+      0.7,
+      `Step5 ${correct ? 'Correct' : 'Incorrect'} Feedback`
     );
-    feedbackAudio.volume = 0.7;
     setCurrentAudio(feedbackAudio);
 
     feedbackAudio.addEventListener('loadedmetadata', () => {

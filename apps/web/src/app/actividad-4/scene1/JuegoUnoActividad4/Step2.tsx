@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface Step2Props {
   character: Character;
@@ -128,10 +129,9 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
 
     const timer = setTimeout(() => {
       try {
-        const audio = new Audio(stepData.audio.title);
-        audio.volume = 0.7;
+        const audio = createGameAudio(stepData.audio.title, 0.7, 'Step2 Title Audio');
         setCurrentAudio(audio);
-        
+
         audio.play().then(() => {
           setTimeout(() => {
             setTitlePlayed(true);
@@ -174,18 +174,19 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
   const playFeedbackAudio = (correct: boolean) => {
     try {
       // Play immediate feedback sound
-      const feedbackSound = new Audio(
-        correct ? HYGIENE_GAME_CONFIG.feedbackSounds.correct : HYGIENE_GAME_CONFIG.feedbackSounds.incorrect
+      playGameAudio(
+        correct ? HYGIENE_GAME_CONFIG.feedbackSounds.correct : HYGIENE_GAME_CONFIG.feedbackSounds.incorrect,
+        0.7,
+        `Step2 ${correct ? 'Correct' : 'Incorrect'} Feedback`
       );
-      feedbackSound.volume = 0.7;
-      feedbackSound.play().catch(console.warn);
 
       // Play descriptive feedback after a short delay
       setTimeout(() => {
-        const descriptionAudio = new Audio(
-          correct ? stepData.feedback.correct.audio : stepData.feedback.incorrect.audio
+        const descriptionAudio = createGameAudio(
+          correct ? stepData.feedback.correct.audio : stepData.feedback.incorrect.audio,
+          0.7,
+          `Step2 ${correct ? 'Correct' : 'Incorrect'} Description`
         );
-        descriptionAudio.volume = 0.7;
         setCurrentAudio(descriptionAudio);
         
         // Use the actual audio duration, not config duration

@@ -1,6 +1,7 @@
-// 'use client';
+'use client';
 import Image from 'next/image';
 import { useDraggable } from '@dnd-kit/core';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 interface DraggablePartProps {
   id: string;
@@ -13,13 +14,7 @@ const DraggablePart: React.FC<DraggablePartProps> = ({ id, image, sound }) => {
   
 
   const playSound = () => {
-    try {
-      const audio = new Audio(sound);
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (err) {
-      console.warn('Error playing sound', err);
-    }
+    playGameAudio(sound, 0.7, `DraggablePart-${id}`);
   };
 
 

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TONE_GAME_CONFIG, ToneGameSession, isScenarioCompleted, isToneGameCompleted, getCurrentScenario } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoDosActividad5Props {
   isVisible: boolean;
@@ -186,11 +187,10 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
-      
-      const audio = new Audio(src);
-      audio.volume = 0.7;
+
+      const audio = createGameAudio(src, 0.7, 'JuegoDos playAudio');
       setCurrentAudio(audio);
-      
+
       if (onEnded) {
         if (duration) {
           audio.play().catch(console.warn);
@@ -211,13 +211,10 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
   // Play feedback sound
   const playFeedbackSound = (correct: boolean) => {
     try {
-      const audio = new Audio(
-        correct 
-          ? TONE_GAME_CONFIG.feedback.sounds.correct
-          : TONE_GAME_CONFIG.feedback.sounds.incorrect
-      );
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      const audioPath = correct
+        ? TONE_GAME_CONFIG.feedback.sounds.correct
+        : TONE_GAME_CONFIG.feedback.sounds.incorrect;
+      playGameAudio(audioPath, 0.7, 'JuegoDos feedback sound');
     } catch (error) {
       console.warn('Could not play feedback sound:', error);
     }
@@ -287,11 +284,9 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
   const handleSalirJuego = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoDos exit button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
@@ -306,11 +301,9 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
   const handleCompleteGame = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoDos complete button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

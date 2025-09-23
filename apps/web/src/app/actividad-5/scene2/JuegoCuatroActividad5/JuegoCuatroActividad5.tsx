@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { JUEGO_CUATRO_CONFIG, GamePhase, getOptionById } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoCuatroActividad5Props {
   isVisible: boolean;
@@ -64,15 +65,14 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
-      
-      const audio = new Audio(src);
-      audio.volume = 0.7;
+
+      const audio = createGameAudio(src, 0.7, 'JuegoCuatro playAudio');
       setCurrentAudio(audio);
-      
+
       if (onEnded) {
         audio.onended = onEnded;
       }
-      
+
       audio.play().catch(console.warn);
     } catch (error) {
       console.warn('Could not play audio:', error);
@@ -129,18 +129,16 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
   const handleSalirJuego = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     // Stop any current audio
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
     }
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoCuatro exit button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
@@ -154,11 +152,9 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
   // Handle game completion
   const handleCompleteGame = () => {
     setIsAnimating(true);
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoCuatro complete button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { GAME_CONFIG, DropAttempt, GameSession } from './config';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 export const useGameState = () => {
   const [gamePhase, setGamePhase] = useState<'title' | 'playing' | 'complete'>('title');
@@ -136,14 +137,13 @@ export const useAudioManager = () => {
   const playAudio = useCallback(async (audioPath: string, volume = 0.7): Promise<void> => {
     try {
       console.log('🎵 Attempting to play audio:', audioPath);
-      
+
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
-      
-      const audio = new Audio(audioPath);
-      audio.volume = volume;
+
+      const audio = createGameAudio(audioPath, volume, `AudioManager ${audioPath}`);
       audioRef.current = audio;
       currentAudioRef.current = audioPath;
       
@@ -161,14 +161,13 @@ export const useAudioManager = () => {
   ): Promise<void> => {
     try {
       console.log('🎵 Playing audio with callback:', audioPath);
-      
+
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
-      
-      const audio = new Audio(audioPath);
-      audio.volume = volume;
+
+      const audio = createGameAudio(audioPath, volume, `AudioManagerCallback ${audioPath}`);
       audioRef.current = audio;
       currentAudioRef.current = audioPath;
       

@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { GAME_CONFIG } from './config';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 interface YesNoButtonsProps {
   isVisible: boolean;
@@ -27,9 +28,7 @@ const YesNoButtons: React.FC<YesNoButtonsProps> = ({
       : GAME_CONFIG.globalAudio.noButton;
     
     try {
-      const audio = new Audio(audioPath);
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio(audioPath, 0.7, answer === 'YES' ? 'Yes Button' : 'No Button');
     } catch (err) {
       console.warn('Error playing button audio:', err);
     }

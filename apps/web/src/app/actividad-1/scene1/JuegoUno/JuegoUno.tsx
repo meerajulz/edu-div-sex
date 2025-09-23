@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProgressSaver } from '../../../hooks/useProgressSaver';
+import { playGameAudio } from '../../../utils/gameAudio';
 import { 
   DndContext,
   TouchSensor,
@@ -120,10 +121,14 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) =
         return newMatchedParts;
       });
       setFeedback('ok');
-      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+
+      // Play success sound with saved volume
+      playGameAudio('/audio/actividad-1/escena_1/Game_Score.mp3', 1.0, 'JuegoUno-Success');
     } else {
       setFeedback('wrong');
-      new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
+
+      // Play failure sound with saved volume
+      playGameAudio('/audio/actividad-1/escena_1/Game_No_Score.mp3', 1.0, 'JuegoUno-Failure');
     }
 
     setTimeout(() => setFeedback(null), 1000);

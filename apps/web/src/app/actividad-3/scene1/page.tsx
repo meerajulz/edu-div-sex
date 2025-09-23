@@ -12,6 +12,7 @@ import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { playGameAudio } from '../../utils/gameAudio';
 
 export default function Actividad3Scene1Page() {
   
@@ -67,9 +68,7 @@ export default function Actividad3Scene1Page() {
 
   const playSound = () => {
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'Activity 3 Scene 1 button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

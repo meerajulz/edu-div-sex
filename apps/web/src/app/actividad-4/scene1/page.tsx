@@ -12,6 +12,7 @@ import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { playGameAudio } from '../../utils/gameAudio';
 
 export default function Actividad4Scene1Page() {
   
@@ -73,13 +74,7 @@ export default function Actividad4Scene1Page() {
   };
 
   const playSound = () => {
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Scene1 Button Sound');
   };
 
   const handleJugarClick = () => {

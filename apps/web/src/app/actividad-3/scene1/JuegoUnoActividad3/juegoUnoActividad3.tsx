@@ -9,6 +9,7 @@ import BodyPartDisplay from './BodyPartDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad3Props {
   isVisible: boolean;
@@ -201,9 +202,7 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
     endSession(true, score, situationsCorrect);
     
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoUnoActividad3 completion');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

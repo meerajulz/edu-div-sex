@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { GAME_CONFIG, SituationAttempt, GameSession } from './config';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 export const useGameState = () => {
   const [currentSituation, setCurrentSituation] = useState(0);
@@ -141,8 +142,7 @@ export const useAudioManager = () => {
         audioRef.current.currentTime = 0;
       }
       
-      const audio = new Audio(audioPath);
-      audio.volume = volume;
+      const audio = createGameAudio(audioPath, volume, 'Game Audio');
       audioRef.current = audio;
       currentAudioRef.current = audioPath;
       

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { GAME_CONFIG, SituationAttempt, GameSession, getCurrentGameConfig } from './config';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 export const useGameState = (userGender: 'male' | 'female') => {
   const gameConfig = getCurrentGameConfig(userGender);
@@ -185,9 +186,8 @@ export const useAudioManager = () => {
       
       // Stop any current audio first
       stopAudio();
-      
-      const audio = new Audio(audioPath);
-      audio.volume = volume;
+
+      const audio = createGameAudio(audioPath, volume, 'JuegoDosActividad3');
       audioRef.current = audio;
       currentAudioRef.current = audioPath;
       
@@ -211,9 +211,8 @@ export const useAudioManager = () => {
       
       // Wait a moment to ensure everything is cleared
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const audio = new Audio(audioPath);
-      audio.volume = volume;
+
+      const audio = createGameAudio(audioPath, volume, 'JuegoDosActividad3 callback');
       audioRef.current = audio;
       currentAudioRef.current = audioPath;
       

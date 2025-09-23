@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { DndContext, DragEndEvent, useDraggable, useDroppable, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import Image from 'next/image';
 import { GAME_CONFIG } from './config';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 interface DragDropAreaProps {
   onCorrectDrop: (imageId: string, position: number) => void;
@@ -151,13 +152,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     const imageData = GAME_CONFIG.images.find(img => img.id === draggedId);
     if (imageData) {
       console.log('🎵 Playing drag audio:', imageData.audio);
-      try {
-        const audio = new Audio(imageData.audio);
-        audio.volume = 0.7;
-        audio.play().catch(console.warn);
-      } catch (error) {
-        console.warn('Could not play drag audio:', error);
-      }
+      playGameAudio(imageData.audio, 0.7, `DragDrop ${draggedId} Audio`);
     }
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

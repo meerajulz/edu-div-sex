@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { juego1Config } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad6Props {
   isVisible: boolean;
@@ -84,9 +85,8 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      audioRef.current = new Audio(audioPath);
-      audioRef.current.volume = 0.7;
-      
+      audioRef.current = createGameAudio(audioPath, 0.7, 'game-audio');
+
       // Track when feedback audio ends
       if (audioPath.includes('fb-')) {
         setIsPlayingFeedbackAudio(true);
@@ -94,7 +94,7 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
           setIsPlayingFeedbackAudio(false);
         };
       }
-      
+
       audioRef.current.play().catch(console.warn);
     } catch (error) {
       console.warn('Could not play audio:', error);

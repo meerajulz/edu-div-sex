@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { FACIAL_EXPRESSION_GAME_CONFIG, GameSession, isScenarioCompleted, isGameCompleted } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad5Props {
   isVisible: boolean;
@@ -135,11 +136,10 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
-      
-      const audio = new Audio(src);
-      audio.volume = 0.7;
+
+      const audio = createGameAudio(src, 0.7, 'JuegoUno playAudio');
       setCurrentAudio(audio);
-      
+
       if (onEnded) {
         if (duration) {
           audio.play().catch(console.warn);
@@ -160,13 +160,10 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
   // Play feedback sound
   const playFeedbackSound = (correct: boolean) => {
     try {
-      const audio = new Audio(
-        correct 
-          ? FACIAL_EXPRESSION_GAME_CONFIG.feedback.sounds.correct
-          : FACIAL_EXPRESSION_GAME_CONFIG.feedback.sounds.incorrect
-      );
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      const audioPath = correct
+        ? FACIAL_EXPRESSION_GAME_CONFIG.feedback.sounds.correct
+        : FACIAL_EXPRESSION_GAME_CONFIG.feedback.sounds.incorrect;
+      playGameAudio(audioPath, 0.7, 'JuegoUno feedback sound');
     } catch (error) {
       console.warn('Could not play feedback sound:', error);
     }
@@ -274,11 +271,9 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
   const handleSalirJuego = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoUno exit button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
@@ -293,11 +288,9 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
   const handleCompleteGame = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoUno complete button');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

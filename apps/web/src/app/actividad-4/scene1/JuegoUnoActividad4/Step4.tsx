@@ -6,6 +6,7 @@ import { DndContext, DragEndEvent, DragOverEvent, useDraggable, useDroppable, To
 import Image from 'next/image';
 import { Character } from './JuegoUnoActividad4';
 import { getCharacterGameConfig, HYGIENE_GAME_CONFIG } from './config';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface Step4Props {
   character: Character;
@@ -170,10 +171,9 @@ export default function Step4({ character, onStepComplete }: Step4Props) {
 
     const timer = setTimeout(() => {
       try {
-        const audio = new Audio(stepData.audio.title);
-        audio.volume = 0.7;
+        const audio = createGameAudio(stepData.audio.title, 0.7, 'Step4 Title Audio');
         setCurrentAudio(audio);
-        
+
         audio.play().then(() => {
           setTimeout(() => {
             setTitlePlayed(true);
@@ -216,11 +216,11 @@ export default function Step4({ character, onStepComplete }: Step4Props) {
   const playFeedbackAudio = (correct: boolean, isPartial: boolean = false) => {
     try {
       // Play immediate feedback sound
-      const feedbackSound = new Audio(
-        correct ? HYGIENE_GAME_CONFIG.feedbackSounds.correct : HYGIENE_GAME_CONFIG.feedbackSounds.incorrect
+      playGameAudio(
+        correct ? HYGIENE_GAME_CONFIG.feedbackSounds.correct : HYGIENE_GAME_CONFIG.feedbackSounds.incorrect,
+        0.7,
+        `Step4 ${correct ? 'Correct' : 'Incorrect'} Feedback`
       );
-      feedbackSound.volume = 0.7;
-      feedbackSound.play().catch(console.warn);
 
       // Play descriptive feedback after a short delay
       setTimeout(() => {
@@ -229,24 +229,24 @@ export default function Step4({ character, onStepComplete }: Step4Props) {
         if (character === 'cris') {
           if (isPartial) {
             // 1-2 drops: wrong feedback
-            descriptionAudio = new Audio('/audio/actividad-4/juego1/enjugarse/cris/fb-i-step4.mp3');
+            descriptionAudio = createGameAudio('/audio/actividad-4/juego1/enjugarse/cris/fb-i-step4.mp3', 0.7, 'Step4 Cris Partial Feedback');
           } else if (correct) {
             // 3 drops: correct feedback
-            descriptionAudio = new Audio('/audio/actividad-4/juego1/enjugarse/fb-step4.mp3');
+            descriptionAudio = createGameAudio('/audio/actividad-4/juego1/enjugarse/fb-step4.mp3', 0.7, 'Step4 Cris Correct Feedback');
           } else {
             // Error case
-            descriptionAudio = new Audio('/audio/actividad-4/juego1/enjugarse/cris/fb-i-step4.mp3');
+            descriptionAudio = createGameAudio('/audio/actividad-4/juego1/enjugarse/cris/fb-i-step4.mp3', 0.7, 'Step4 Cris Error Feedback');
           }
         } else {
           // Dani: use correct or incorrect audio based on choice
-          descriptionAudio = new Audio(
-            correct 
+          descriptionAudio = createGameAudio(
+            correct
               ? '/audio/actividad-4/juego1/enjugarse/fb-step4.mp3'
-              : '/audio/actividad-4/juego1/enjugarse/dani/fb-i-step4.mp3'
+              : '/audio/actividad-4/juego1/enjugarse/dani/fb-i-step4.mp3',
+            0.7,
+            `Step4 Dani ${correct ? 'Correct' : 'Incorrect'} Feedback`
           );
         }
-
-        descriptionAudio.volume = 0.7;
         setCurrentAudio(descriptionAudio);
         
         // Use the actual audio duration

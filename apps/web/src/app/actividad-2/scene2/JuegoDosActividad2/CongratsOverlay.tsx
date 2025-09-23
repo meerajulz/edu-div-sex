@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 const sparkleVariants = {
   animate: {
@@ -21,8 +22,7 @@ const CongratsOverlay: React.FC<CongratsOverlayProps> = ({ onComplete }) => {
   useEffect(() => {
     if (!hasPlayedRef.current) {
       hasPlayedRef.current = true;
-      const audio = new Audio('/audio/actividad-1/escena_2/elements/muy_bien_bright.mp3');
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/actividad-1/escena_2/elements/muy_bien_bright.mp3', 1.0, 'CongratsOverlay-JuegoDos-Actividad2');
     }
 
     const timeout = setTimeout(() => {

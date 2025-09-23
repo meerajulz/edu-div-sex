@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
+import { playGameAudio, createGameAudio } from '../utils/gameAudio';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -77,9 +78,7 @@ export default function Actividad2Page() {
 
   const playSound = () => {
     try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button Click Sound');
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
@@ -221,12 +220,8 @@ useEffect(() => {
     setNeedsInteraction(false);
 
     // Start background music
-    const music = new Audio('/audio/Softy.mp3');
+    const music = createGameAudio('/audio/Softy.mp3', 0.4, 'Background Music');
     music.loop = true;
-
-    // Get saved volume from localStorage, fallback to 0.4 if not found
-    const savedVolume = localStorage.getItem('video-volume');
-    music.volume = savedVolume ? parseFloat(savedVolume) : 0.4;
     console.log(`🎵 Starting background music with volume: ${music.volume}`);
 
     music.play().catch(console.warn);

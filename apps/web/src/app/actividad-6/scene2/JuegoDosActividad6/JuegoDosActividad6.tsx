@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { GAME_CONFIG, Scenario } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoDosActividad6Props {
   isVisible: boolean;
@@ -81,8 +82,7 @@ export default function JuegoDosActividad6({
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      audioRef.current = new Audio(src);
-      audioRef.current.volume = 0.7;
+      audioRef.current = createGameAudio(src, 0.7, 'JuegoDos-Actividad6');
       setIsPlayingAudio(true);
       
       audioRef.current.onended = () => {
@@ -103,8 +103,7 @@ export default function JuegoDosActividad6({
       if (feedbackAudioRef.current) {
         feedbackAudioRef.current.pause();
       }
-      feedbackAudioRef.current = new Audio(src);
-      feedbackAudioRef.current.volume = 0.7;
+      feedbackAudioRef.current = createGameAudio(src, 0.7, 'JuegoDos-Feedback-Actividad6');
       
       feedbackAudioRef.current.onended = () => {
         if (onEnded) onEnded();
@@ -124,9 +123,7 @@ export default function JuegoDosActividad6({
         incorrect: GAME_CONFIG.soundEffects.incorrect,
         button: GAME_CONFIG.soundEffects.buttonClick
       };
-      const audio = new Audio(soundMap[type]);
-      audio.volume = 0.5;
-      audio.play().catch(console.warn);
+      playGameAudio(soundMap[type], 0.5, `JuegoDos-${type}-Actividad6`);
     } catch (error) {
       console.warn('Could not play sound:', error);
     }

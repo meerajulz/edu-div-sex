@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { createGameAudio } from '../../../utils/gameAudio';
 
 interface AlexFinalCongratulationsProps {
   isVisible: boolean;
@@ -19,7 +20,7 @@ const AlexFinalCongratulations: React.FC<AlexFinalCongratulationsProps> = ({
   useEffect(() => {
     if (isVisible && !alexAudioRef.current) {
       // Play Alex's audio exactly like in the original Scene 4
-      const audio = new Audio('/audio/actividad-2/juego5/Alex-final.mp3');
+      const audio = createGameAudio('/audio/actividad-2/juego5/Alex-final.mp3', 0.7, 'Alex Final Audio');
       alexAudioRef.current = audio;
       
       audio.onended = () => {

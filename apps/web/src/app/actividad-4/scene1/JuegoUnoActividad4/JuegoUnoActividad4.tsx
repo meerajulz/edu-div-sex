@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import CharacterSelection from './CharacterSelection';
 import GameContent from './GameContent';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad4Props {
   isVisible: boolean;
@@ -28,13 +29,12 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
     if (isVisible && gameState === 'intro') {
       const timer = setTimeout(() => {
         try {
-          const audio = new Audio('/audio/actividad-4/juego1/t.mp3');
+          const audio = createGameAudio('/audio/actividad-4/juego1/t.mp3', 0.7, 'Juego Uno Intro');
           audio.id = 'intro-audio'; // Add ID for reference in CharacterSelection
-          audio.volume = 0.7;
           setCurrentAudio(audio);
           audioRef.current = audio;
           setIsAudioPlaying(true);
-          
+
           audio.play().then(() => {
             // After audio finishes, move to character selection
             audio.addEventListener('ended', () => {
@@ -88,13 +88,7 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
   }, [isVisible, currentAudio]);
 
   const playBrightSound = () => {
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Juego Uno Button Sound');
   };
 
   const handleCharacterSelect = (character: Character) => {
