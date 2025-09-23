@@ -27,6 +27,16 @@ const FloatingMenu = () => {
 	const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 	const [isMobile, setIsMobile] = useState(false);
 	const [isReady, setIsReady] = useState(false);
+	const [volumeLevel, setVolumeLevel] = useState(0.9); // Default volume 90%
+	const [hasVideos, setHasVideos] = useState(false);
+
+	// Load volume from localStorage on mount
+	useEffect(() => {
+		const savedVolume = localStorage.getItem('video-volume');
+		if (savedVolume) {
+			setVolumeLevel(parseFloat(savedVolume));
+		}
+	}, []);
 
 	// Initialize audio and check screen size on mount
 	useEffect(() => {
@@ -53,6 +63,59 @@ const FloatingMenu = () => {
 		};
 	}, []);
 
+	// Check for video and audio elements and update state
+	useEffect(() => {
+		const checkForMediaElements = () => {
+			const videos = document.querySelectorAll('video');
+			const audios = document.querySelectorAll('audio');
+
+			// Always show volume button - it controls all audio in the app
+			setHasVideos(true);
+			console.log(`🎬 Found ${videos.length} video elements and ${audios.length} audio elements on page`);
+			if (isOnActivityMainPage()) {
+				console.log(`🎵 On activity main page - showing volume button for background music`);
+			}
+
+			// Apply current volume level to all video elements
+			videos.forEach((video: HTMLVideoElement) => {
+				if (video.volume !== volumeLevel) {
+					video.volume = volumeLevel;
+					console.log(`🎵 Applied saved volume ${volumeLevel} to video element`);
+				}
+			});
+
+			// Apply current volume level to all audio elements (background music, character speech, etc.)
+			audios.forEach((audio: HTMLAudioElement) => {
+				if (audio.volume !== volumeLevel) {
+					audio.volume = volumeLevel;
+					console.log(`🎵 Applied saved volume ${volumeLevel} to audio element`);
+				}
+			});
+
+			// Also dispatch event for programmatically created audio when page loads
+			if (isOnActivityMainPage()) {
+				window.dispatchEvent(new CustomEvent('globalVolumeChange', {
+					detail: { volume: volumeLevel }
+				}));
+			}
+		};
+
+		// Check immediately
+		checkForMediaElements();
+
+		// Also check after a delay (for dynamically loaded content)
+		const timer = setTimeout(checkForMediaElements, 1000);
+
+		// Set up observer for DOM changes
+		const observer = new MutationObserver(checkForMediaElements);
+		observer.observe(document.body, { childList: true, subtree: true });
+
+		return () => {
+			clearTimeout(timer);
+			observer.disconnect();
+		};
+	}, [pathname, volumeLevel]); // Re-check when page changes or volume changes
+
 	// Helper function to get current activity from pathname
 	const getCurrentActivity = () => {
 		const match = pathname.match(/\/actividad-(\d+)/);
@@ -64,6 +127,38 @@ const FloatingMenu = () => {
 		const activityMatch = pathname.match(/\/actividad-\d+/);
 		const sceneMatch = pathname.match(/\/actividad-\d+\/scene/);
 		return activityMatch && sceneMatch;
+	};
+
+	// Check if user is on an activity main page (has background music)
+	const isOnActivityMainPage = () => {
+		const activityMainPageMatch = pathname.match(/^\/actividad-\d+$/);
+		return activityMainPageMatch;
+	};
+
+	// Get volume icon based on current volume level
+	const getVolumeIcon = () => {
+		if (volumeLevel === 0) {
+			return "/svg/menu/vol1.svg"; // Muted (red/gray)
+		} else if (volumeLevel <= 0.4) {
+			return "/svg/menu/vol1.svg"; // Low volume (yellow/orange)
+		} else {
+			return "/svg/menu/vol2.svg"; // High volume (green/bright)
+		}
+	};
+
+	// Get volume icon color filter based on level
+	const getVolumeIconStyle = () => {
+		if (volumeLevel === 0) {
+			return { filter: 'grayscale(100%) brightness(0.5)' }; // Muted - gray
+		} else if (volumeLevel <= 0.4) {
+			return { filter: 'hue-rotate(45deg) saturate(1.2)' }; // Low - orange/yellow
+		} else if (volumeLevel <= 0.6) {
+			return { filter: 'hue-rotate(25deg) saturate(1.1)' }; // Medium - light orange
+		} else if (volumeLevel <= 0.8) {
+			return { filter: 'hue-rotate(0deg) saturate(1.0)' }; // Normal - original color
+		} else {
+			return { filter: 'hue-rotate(120deg) saturate(1.3) brightness(1.1)' }; // High - green/bright
+		}
 	};
 
 	const menuItems: MenuItem[] = [
@@ -82,17 +177,18 @@ const FloatingMenu = () => {
 			href: getCurrentActivity() || "/home",
 			sound: "/ui-sound/click.mp3",
 		}] : []),
+		// Volume button - only show when videos are present
+		...(hasVideos ? [{
+			id: "volumen",
+			icon1: getVolumeIcon(),
+			icon2: getVolumeIcon(),
+			href: "#",
+			sound: "/ui-sound/click.mp3",
+		}] : []),
 		// {
 		// 	id: "hola",
 		// 	icon1: "/svg/menu/hola1.svg",
 		// 	icon2: "/svg/menu/hola2.svg",
-		// 	href: "#",
-		// 	sound: "/ui-sound/click.mp3",
-		// },
-		// {
-		// 	id: "volumen",
-		// 	icon1: "/svg/menu/vol1.svg",
-		// 	icon2: "/svg/menu/vol2.svg",
 		// 	href: "#",
 		// 	sound: "/ui-sound/click.mp3",
 		// },
@@ -161,15 +257,77 @@ const FloatingMenu = () => {
 					[item.id]: false,
 				}));
 			}, 600);
-			
+
 			// Wait for animation to complete
 			await new Promise((resolve) => setTimeout(resolve, 600));
-			
+
 			// Sign out without redirect, then manually navigate
 			await signOut({ redirect: false });
-			
+
 			// Manually redirect to login page
 			router.push('/auth/login');
+			return;
+		}
+
+		// Handle volume control
+		if (item.id === "volumen") {
+			console.log('🔊 VOLUME button clicked - adjusting volume');
+
+			// Cycle through 5 volume levels: 90% -> 70% -> 50% -> 30% -> 0% -> 90%
+			let newVolume;
+			if (volumeLevel >= 0.85) {
+				newVolume = 0.7; // High (90%) to Medium-High (70%)
+			} else if (volumeLevel >= 0.65) {
+				newVolume = 0.5; // Medium-High (70%) to Medium (50%)
+			} else if (volumeLevel >= 0.45) {
+				newVolume = 0.3; // Medium (50%) to Low (30%)
+			} else if (volumeLevel >= 0.15) {
+				newVolume = 0; // Low (30%) to Muted (0%)
+			} else {
+				newVolume = 0.9; // Muted (0%) to High (90%)
+			}
+
+			setVolumeLevel(newVolume);
+			console.log(`🎵 Volume changed from ${volumeLevel} to ${newVolume}`);
+
+			// Log volume level description
+			const levelDescription = newVolume === 0 ? 'Muted' :
+								 newVolume <= 0.3 ? 'Low' :
+								 newVolume <= 0.5 ? 'Medium' :
+								 newVolume <= 0.7 ? 'Medium-High' : 'High';
+			console.log(`🔊 Volume level: ${levelDescription} (${Math.round(newVolume * 100)}%)`);
+
+			// Save volume to localStorage
+			localStorage.setItem('video-volume', newVolume.toString());
+
+			// Apply volume to all video and audio elements on the page
+			const videos = document.querySelectorAll('video');
+			const audios = document.querySelectorAll('audio');
+
+			videos.forEach((video: HTMLVideoElement) => {
+				video.volume = newVolume;
+				console.log(`🎬 Applied volume ${newVolume} to video element`);
+			});
+
+			audios.forEach((audio: HTMLAudioElement) => {
+				audio.volume = newVolume;
+				console.log(`🎵 Applied volume ${newVolume} to audio element (background music/character speech)`);
+			});
+
+			// Dispatch custom event for programmatically created audio (background music)
+			window.dispatchEvent(new CustomEvent('globalVolumeChange', {
+				detail: { volume: newVolume }
+			}));
+			console.log(`📡 Dispatched global volume change event: ${newVolume}`);
+
+			// Reset icon state quickly for volume, no navigation
+			setTimeout(() => {
+				setIconStates((prev) => ({
+					...prev,
+					[item.id]: false,
+				}));
+				setActiveId(null); // Reset active state so button can be clicked again
+			}, 300);
 			return;
 		}
 
@@ -215,15 +373,19 @@ const FloatingMenu = () => {
 						whileTap={{ scale: 0.95 }}
 						animate={
 							activeId === item.id
-								? {
-										scale: [1, 1.2, 1],
-										rotate: [0, 360],
-									}
+								? item.id === "volumen"
+									? {
+											scale: [1, 1.1, 1],
+										}
+									: {
+											scale: [1, 1.2, 1],
+											rotate: [0, 360],
+										}
 								: {}
 						}
 						transition={{
-							duration: 0.6,
-							times: [0, 0.5, 1],
+							duration: item.id === "volumen" ? 0.3 : 0.6,
+							times: item.id === "volumen" ? [0, 0.5, 1] : [0, 0.5, 1],
 							ease: "easeInOut",
 						}}
 					>
@@ -239,10 +401,11 @@ const FloatingMenu = () => {
 							className="relative w-24 h-24"
 						>
 							<Image
-								src={iconStates[item.id] ? item.icon2 : item.icon1}
+								src={item.id === "volumen" ? getVolumeIcon() : (iconStates[item.id] ? item.icon2 : item.icon1)}
 								alt={item.id}
 								fill
 								className="object-contain"
+								style={item.id === "volumen" ? getVolumeIconStyle() : {}}
 							/>
 						</motion.div>
 
@@ -295,7 +458,9 @@ const FloatingMenu = () => {
 							}}
 							transition={{ duration: 0.2 }}
 						>
-							{item.id === "map" ? "Actividad" : item.id.charAt(0).toUpperCase() + item.id.slice(1)}
+							{item.id === "map" ? "Actividad" :
+							 item.id === "volumen" ? `Volumen ${Math.round(volumeLevel * 100)}%` :
+							 item.id.charAt(0).toUpperCase() + item.id.slice(1)}
 						</motion.div>
 					)}
 
@@ -307,7 +472,9 @@ const FloatingMenu = () => {
 								opacity: activeId === item.id ? 1 : 0.7,
 							}}
 						>
-							{item.id === "map" ? "actividad" : item.id}
+							{item.id === "map" ? "actividad" :
+							 item.id === "volumen" ? `vol ${Math.round(volumeLevel * 100)}%` :
+							 item.id}
 						</motion.div>
 					)}
 				</motion.div>

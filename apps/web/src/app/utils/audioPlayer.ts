@@ -63,6 +63,33 @@ let currentSource: AudioBufferSourceNode | null = null;
 let globalAudioElement: HTMLAudioElement | null = null;
 const audioElementCache: Record<string, HTMLAudioElement> = {};
 
+// ========== Global Volume Control ==========
+let currentGlobalVolume = 1.0;
+
+// Initialize global volume listener
+if (typeof window !== 'undefined') {
+  window.addEventListener('globalVolumeChange', (e: Event) => {
+    const customEvent = e as CustomEvent;
+    const newVolume = customEvent.detail.volume;
+    currentGlobalVolume = newVolume;
+    console.log(`🎵 audioPlayer: Received global volume change: ${newVolume}`);
+
+    // Apply to all cached audio elements
+    Object.values(audioElementCache).forEach(audio => {
+      audio.volume = newVolume;
+      console.log(`🎵 audioPlayer: Applied volume ${newVolume} to cached audio element`);
+    });
+
+    // Apply to global audio element
+    if (globalAudioElement) {
+      globalAudioElement.volume = newVolume;
+    }
+
+    // Note: AudioContext sources can't have their volume changed after creation,
+    // but new audio will use the updated volume
+  });
+}
+
 // Initialize the audio system - must be called after user interaction on iOS
 export const initAudio = async (): Promise<boolean> => {
   // Already initialized
@@ -182,10 +209,15 @@ export const preloadAudio = async (url: string): Promise<boolean> => {
 
 // Play audio with unified approach and fallbacks
 export const playAudio = async (
-  url: string, 
+  url: string,
   onEnd?: () => void,
-  volume = 1.0
+  volume?: number
 ): Promise<boolean> => {
+  // Get saved volume from localStorage if not provided, or use current global volume
+  const savedVolume = localStorage.getItem('video-volume');
+  const effectiveVolume = volume !== undefined ? volume :
+                         (savedVolume ? parseFloat(savedVolume) : currentGlobalVolume);
+  console.log(`🎵 playAudio: Using volume ${effectiveVolume} for ${url}`);
   try {
     // Initialize audio if not already done
     if (!audioContext) {
@@ -235,7 +267,7 @@ export const playAudio = async (
         source.buffer = buffer;
         
         const gainNode = audioContext.createGain();
-        gainNode.gain.value = volume;
+        gainNode.gain.value = effectiveVolume;
         
         source.connect(gainNode);
         gainNode.connect(audioContext.destination);
@@ -268,7 +300,7 @@ export const playAudio = async (
       }
       
       // Reset state
-      audio.volume = volume;
+      audio.volume = effectiveVolume;
       audio.currentTime = 0;
       
       // Set up completion callback

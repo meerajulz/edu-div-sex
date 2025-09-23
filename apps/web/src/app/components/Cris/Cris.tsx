@@ -28,12 +28,34 @@ const Cris: React.FC<CrisProps> = ({
     console.log('🎭 Cris props changed - isVisible:', isVisible, 'isPaused:', isPaused);
   }, [isVisible, isPaused]);
 
+  // Listen for global volume changes
+  useEffect(() => {
+    const handleGlobalVolumeChange = (e: CustomEvent) => {
+      const newVolume = e.detail.volume;
+      console.log(`🎵 Cris: Received global volume change: ${newVolume}`);
+
+      if (audioRef.current) {
+        audioRef.current.volume = newVolume;
+        console.log(`🎵 Cris: Applied volume ${newVolume} to current audio`);
+      }
+    };
+
+    window.addEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
+    return () => window.removeEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
+  }, []);
+
   useEffect(() => {
     if (isVisible && !isPaused) {
       timeoutRef.current = setTimeout(() => {
         console.log('🗣️ Starting Cris audio');
         // Start talking
         const audio = new Audio('/audio/actividad-1/escena_1/juego_1_cris.mp3');
+
+        // Get saved volume from localStorage, fallback to 1.0
+        const savedVolume = localStorage.getItem('video-volume');
+        audio.volume = savedVolume ? parseFloat(savedVolume) : 1.0;
+        console.log(`🎵 Cris: Starting audio with volume ${audio.volume}`);
+
         audioRef.current = audio;
         setIsTalking(true);
 

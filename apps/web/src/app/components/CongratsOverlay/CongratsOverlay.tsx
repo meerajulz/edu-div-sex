@@ -30,7 +30,12 @@ export default function CongratsOverlay({
       // Play the congratulations sound when component becomes visible
       try {
         const audio = new Audio('/audio/muy_bien_bright.mp3');
-        audio.volume = 0.7;
+
+        // Get saved volume from localStorage, fallback to 0.7
+        const savedVolume = localStorage.getItem('video-volume');
+        audio.volume = savedVolume ? parseFloat(savedVolume) : 0.7;
+        console.log(`🎉 CongratsOverlay: Playing audio with volume ${audio.volume}`);
+
         audio.play().catch(error => {
           console.warn('Could not play congratulations sound:', error);
         });

@@ -130,6 +130,21 @@ useEffect(() => {
   console.log('🔒 Actividad-4: Session data:', session);
 }, [session, status]);
 
+// Listen for global volume changes from FloatingMenu
+useEffect(() => {
+  const handleGlobalVolumeChange = (e: CustomEvent) => {
+    const newVolume = e.detail.volume;
+    console.log(`🎵 Activity 4: Received global volume change: ${newVolume}`);
+
+    if (bgMusicRef.current) {
+      bgMusicRef.current.volume = newVolume;
+      console.log(`🎵 Activity 4: Applied volume ${newVolume} to background music`);
+    }
+  };
+
+  window.addEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
+  return () => window.removeEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
+}, []);
 
   const handleVideoEnd = () => {
     cleanupAudio();
@@ -204,7 +219,12 @@ useEffect(() => {
     // Start background music
     const music = new Audio('/audio/Softy.mp3');
     music.loop = true;
-    music.volume = 0.4;
+
+    // Get saved volume from localStorage, fallback to 0.4 if not found
+    const savedVolume = localStorage.getItem('video-volume');
+    music.volume = savedVolume ? parseFloat(savedVolume) : 0.4;
+    console.log(`🎵 Starting background music with volume: ${music.volume}`);
+
     music.play().catch(console.warn);
     bgMusicRef.current = music;
 
