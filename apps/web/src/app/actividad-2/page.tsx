@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
-import { playGameAudio, createGameAudio } from '../utils/gameAudio';
+import { playGameAudio, getDeviceAudioInfo } from '../utils/gameAudio';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -41,16 +41,75 @@ export default function Actividad2Page() {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [showContinueButton, setShowContinueButton] = useState(false);
   const simpleAlexRef = useRef<SimpleAlexRef>(null);
+  const [currentVolume, setCurrentVolume] = useState(0.9);
+  const [deviceInfo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const info = getDeviceAudioInfo();
+      console.log(`🎬 Activity2: Device audio info:`, info);
+      return info;
+    }
+    return { isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false };
+  });
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
 
+  // Function to connect video element to Web Audio API for iOS volume control
+  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
+    try {
+      console.log(`🍎 Activity2 iPhone: Attempting to connect video to Web Audio API...`);
+      console.log(`🍎 Activity2 iPhone: Video readyState: ${video.readyState}`);
+      console.log(`🍎 Activity2 iPhone: AudioContext state: ${audioContext.state}`);
+
+      // Check if video already connected to avoid double-connection
+      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) {
+        console.log(`🍎 Activity2 iPhone: Video already connected to Web Audio API, skipping`);
+        return;
+      }
+
+      // Create MediaElementSource from video
+      const source = audioContext.createMediaElementSource(video);
+      console.log(`🍎 Activity2 iPhone: MediaElementSource created successfully`);
+
+      // CRITICAL: Use the EXACT same gain node that FloatingMenu volume buttons control
+      let sharedGainNode = window.globalGainNode;
+
+      if (!sharedGainNode) {
+        // Create the shared gain node that FloatingMenu will also use
+        sharedGainNode = audioContext.createGain();
+        window.globalGainNode = sharedGainNode;
+        console.log(`🍎 Activity2 iPhone: Created shared gainNode (FloatingMenu will use this same one)`);
+      } else {
+        console.log(`🍎 Activity2 iPhone: Using pre-existing shared gainNode`);
+      }
+
+      // Set initial volume
+      sharedGainNode.gain.value = currentVolume;
+      console.log(`🍎 Activity2 iPhone: Shared gainNode value set to: ${sharedGainNode.gain.value}`);
+
+      // Connect: video -> sharedGainNode -> speakers
+      source.connect(sharedGainNode);
+      console.log(`🍎 Activity2 iPhone: Video source connected to shared gainNode`);
+
+      sharedGainNode.connect(audioContext.destination);
+      console.log(`🍎 Activity2 iPhone: Shared gainNode connected to AudioContext destination`);
+
+      // Store same reference for both video and global controls
+      window.videoGainNode = sharedGainNode;
+      window.globalGainNode = sharedGainNode; // Ensure they're the same object
+      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
+
+      console.log(`🍎 Activity2 iPhone: ✅ Video SUCCESSFULLY connected to shared Web Audio API!`);
+      console.log(`🍎 Activity2 iPhone: videoGainNode stored: ${!!window.videoGainNode}`);
+      console.log(`🍎 Activity2 iPhone: globalGainNode stored: ${!!window.globalGainNode}`);
+    } catch (e) {
+      console.error('🍎 Activity2 iPhone: ❌ FAILED to connect video to Web Audio API:', e);
+    }
+  };
 
   // Debug mode for development
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
-  
-  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   
   useEffect(() => {
     const updateDimensions = () => {
@@ -91,6 +150,55 @@ export default function Actividad2Page() {
     top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
   };
 
+  // Initialize video volume from localStorage
+  useEffect(() => {
+    const savedVolume = localStorage.getItem('video-volume');
+    if (savedVolume) {
+      setCurrentVolume(parseFloat(savedVolume));
+    }
+  }, []);
+
+  // Listen for global volume changes from FloatingMenu
+  useEffect(() => {
+    const handleVolumeChange = (event: CustomEvent) => {
+      const { volume } = event.detail;
+      console.log(`🎵 Activity2: Received global volume change: ${volume} (deviceInfo.isIOS: ${deviceInfo.isIOS})`);
+
+      // Apply volume immediately to video element if it exists and is loaded
+      const video = videoRef.current;
+      if (video && video.readyState > 0) {
+        const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+
+        if (isIPhone) {
+          // iPhone: Use Web Audio API gain node
+          video.muted = false; // Ensure not muted
+          video.volume = 1.0; // Keep at max, gain node controls volume
+
+          if (window.videoGainNode) {
+            window.videoGainNode.gain.value = volume;
+            console.log(`📱 Activity2 iPhone: Applied volume ${volume} via Web Audio videoGainNode`);
+          } else {
+            console.warn(`📱 Activity2 iPhone: videoGainNode not available for volume ${volume}`);
+          }
+        } else {
+          // Desktop/Android/iPad: Direct video volume (original behavior)
+          video.muted = false;
+          video.volume = volume;
+          console.log(`🖥️ Activity2 Desktop/Android/iPad: Applied volume ${volume} directly to video`);
+        }
+      } else {
+        console.log(`🎬 Activity2: Video not ready (readyState: ${video?.readyState}), setting volume for later`);
+      }
+
+      setCurrentVolume(volume);
+    };
+
+    window.addEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    return () => {
+      window.removeEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    };
+  }, [deviceInfo.isIOS]);
+
 useEffect(() => {
   const checkAudio = async () => {
     const needs = needsInteractionForAudio();
@@ -129,21 +237,6 @@ useEffect(() => {
   console.log('🔒 Actividad-2: Session data:', session);
 }, [session, status]);
 
-// Listen for global volume changes from FloatingMenu
-useEffect(() => {
-  const handleGlobalVolumeChange = (e: CustomEvent) => {
-    const newVolume = e.detail.volume;
-    console.log(`🎵 Activity 2: Received global volume change: ${newVolume}`);
-
-    if (bgMusicRef.current) {
-      bgMusicRef.current.volume = newVolume;
-      console.log(`🎵 Activity 2: Applied volume ${newVolume} to background music`);
-    }
-  };
-
-  window.addEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
-  return () => window.removeEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
-}, []);
 
   const handleVideoEnd = () => {
     cleanupAudio();
@@ -187,14 +280,7 @@ useEffect(() => {
       setPendingNavigation(firstScene);
     }
 
-    if (bgMusicRef.current) {
-      try {
-        bgMusicRef.current.pause();
-        bgMusicRef.current.currentTime = 0;
-      } catch (e) {
-        console.warn('Failed to stop background music:', e);
-      }
-    }
+    // Background music will stop automatically when leaving page
   };
 
   const handleExitComplete = () => {
@@ -219,13 +305,8 @@ useEffect(() => {
     setUserInteractionReceived(true);
     setNeedsInteraction(false);
 
-    // Start background music
-    const music = createGameAudio('/audio/Softy.mp3', 0.4, 'Background Music');
-    music.loop = true;
-    console.log(`🎵 Starting background music with volume: ${music.volume}`);
-
-    music.play().catch(console.warn);
-    bgMusicRef.current = music;
+    // Start background music using iOS-compatible audio
+    playGameAudio('/audio/Softy.mp3', 0.4, 'Background-Music');
 
     setCanPlayVideo(true);
   };
@@ -322,6 +403,70 @@ useEffect(() => {
                 console.error('Video failed to load:', e);
                 console.log('Skipping video and showing activity menu directly');
                 handleVideoEnd();
+              }}
+              onLoadedData={() => {
+                const video = videoRef.current;
+                if (!video) return;
+
+                // Apply volume when video loads
+                video.volume = currentVolume;
+                console.log(`🎬 Activity2: Video loaded, volume applied: ${currentVolume}`);
+              }}
+              onPlay={() => {
+                const video = videoRef.current;
+                if (!video) return;
+
+                // When video starts playing, ensure it's unmuted and volume is applied
+                video.muted = false;
+                video.volume = currentVolume;
+                console.log(`🎬 Activity2: Video started playing, unmuted: ${!video.muted}, volume set to: ${currentVolume}`);
+
+                // Only for iPhone: Initialize Web Audio API
+                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+
+                if (isIPhone) {
+                  console.log(`📱 Activity2 iPhone detected - initializing Web Audio API`);
+
+                  try {
+                    // CRITICAL: Initialize the SAME AudioContext that FloatingMenu will use
+                    let sharedAudioContext = window.globalAudioContext;
+
+                    if (!sharedAudioContext) {
+                      console.log('🍎 Activity2 iPhone: Initializing shared AudioContext for video');
+                      const AudioContext = window.AudioContext || window.webkitAudioContext;
+                      if (AudioContext) {
+                        sharedAudioContext = new AudioContext();
+                        window.globalAudioContext = sharedAudioContext;
+
+                        // ALSO initialize the gain node here so FloatingMenu can use it
+                        if (!(window.globalGainNode)) {
+                          const initialGainNode = sharedAudioContext.createGain();
+                          initialGainNode.gain.value = currentVolume;
+                          window.globalGainNode = initialGainNode;
+                          console.log('🍎 Activity2 iPhone: Pre-created globalGainNode for FloatingMenu to use');
+                        }
+                      }
+                    } else {
+                      console.log('🍎 Activity2 iPhone: Using existing shared AudioContext');
+                    }
+
+                    if (sharedAudioContext) {
+                      if (sharedAudioContext.state === 'suspended') {
+                        sharedAudioContext.resume().then(() => {
+                          console.log('🍎 Activity2 iPhone: Shared AudioContext resumed');
+                          connectVideoToWebAudio(video, sharedAudioContext);
+                        });
+                      } else {
+                        console.log('🍎 Activity2 iPhone: Shared AudioContext already running');
+                        connectVideoToWebAudio(video, sharedAudioContext);
+                      }
+                    }
+                  } catch (e) {
+                    console.error('🍎 Activity2 iPhone: AudioContext setup failed:', e);
+                  }
+                } else {
+                  console.log(`🖥️ Activity2 Desktop/Android/iPad: Using direct video volume (original behavior)`);
+                }
               }}
             />
           ) : (

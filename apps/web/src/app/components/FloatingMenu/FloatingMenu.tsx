@@ -7,6 +7,7 @@ import Image from "next/image";
 
 // import { signOut } from "@/auth";
 import { signOut } from "next-auth/react";
+import { initializeAudioForUserInteraction, getDeviceAudioInfo } from "../../utils/gameAudio";
 
 interface MenuItem {
 	id: string;
@@ -29,6 +30,14 @@ const FloatingMenu = () => {
 	const [isReady, setIsReady] = useState(false);
 	const [volumeLevel, setVolumeLevel] = useState(0.9); // Default volume 90%
 	const [hasVideos, setHasVideos] = useState(false);
+	const [deviceAudioInfo, setDeviceAudioInfo] = useState<{
+		isIOS: boolean;
+		isSafari: boolean;
+		hasWebAudio: boolean;
+		hasGainNode: boolean;
+		audioContextState?: string;
+	} | null>(null);
+	const [audioInitialized, setAudioInitialized] = useState(false);
 
 	// Load volume from localStorage on mount
 	useEffect(() => {
@@ -48,15 +57,20 @@ const FloatingMenu = () => {
 			setIsMobile(window.innerWidth < 768);
 		};
 
+		// Get device audio info for iOS handling
+		const deviceInfo = getDeviceAudioInfo();
+		setDeviceAudioInfo(deviceInfo);
+		console.log('🎵 Device Audio Info:', deviceInfo);
+
 		checkMobile();
 		window.addEventListener("resize", checkMobile);
-		
+
 		// Add a delay to prevent accidental triggering on page load
 		const readyTimer = setTimeout(() => {
 			setIsReady(true);
 			console.log('🔍 FloatingMenu is ready for interactions');
 		}, 1000);
-		
+
 		return () => {
 			window.removeEventListener("resize", checkMobile);
 			clearTimeout(readyTimer);
@@ -272,6 +286,19 @@ const FloatingMenu = () => {
 		// Handle volume control
 		if (item.id === "volumen") {
 			console.log('🔊 VOLUME button clicked - adjusting volume');
+			console.log('🎵 Device info:', deviceAudioInfo);
+
+			// Initialize audio for user interaction on first click (iPhone requirement only)
+			const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+			if (!audioInitialized && isIPhone) {
+				console.log('📱 Initializing iPhone audio for user interaction');
+				await initializeAudioForUserInteraction();
+				setAudioInitialized(true);
+				// Update device info after initialization
+				const updatedDeviceInfo = getDeviceAudioInfo();
+				setDeviceAudioInfo(updatedDeviceInfo);
+				console.log('📱 Updated device info after iPhone initialization:', updatedDeviceInfo);
+			}
 
 			// Cycle through 5 volume levels: 90% -> 70% -> 50% -> 30% -> 0% -> 90%
 			let newVolume;
@@ -304,6 +331,9 @@ const FloatingMenu = () => {
 			const videos = document.querySelectorAll('video');
 			const audios = document.querySelectorAll('audio');
 
+			// Apply volume - same simple approach that works on desktop/Mac/tablets
+			console.log('🖥️ Applying volume control');
+
 			videos.forEach((video: HTMLVideoElement) => {
 				video.volume = newVolume;
 				console.log(`🎬 Applied volume ${newVolume} to video element`);
@@ -311,14 +341,18 @@ const FloatingMenu = () => {
 
 			audios.forEach((audio: HTMLAudioElement) => {
 				audio.volume = newVolume;
-				console.log(`🎵 Applied volume ${newVolume} to audio element (background music/character speech)`);
+				console.log(`🎵 Applied volume ${newVolume} to audio element`);
 			});
 
 			// Dispatch custom event for programmatically created audio (background music)
 			window.dispatchEvent(new CustomEvent('globalVolumeChange', {
-				detail: { volume: newVolume }
+				detail: {
+					volume: newVolume,
+					isIOS: isIPhone,
+					hasWebAudio: deviceAudioInfo?.hasWebAudio || false
+				}
 			}));
-			console.log(`📡 Dispatched global volume change event: ${newVolume}`);
+			console.log(`📡 Dispatched global volume change event: ${newVolume} (iPhone: ${isIPhone})`);
 
 			// Reset icon state quickly for volume, no navigation
 			setTimeout(() => {
@@ -459,7 +493,8 @@ const FloatingMenu = () => {
 							transition={{ duration: 0.2 }}
 						>
 							{item.id === "map" ? "Actividad" :
-							 item.id === "volumen" ? `Volumen ${Math.round(volumeLevel * 100)}%` :
+							 item.id === "volumen" ?
+								`Volumen ${Math.round(volumeLevel * 100)}%${/iPhone/.test(navigator?.userAgent || '') ? ' (iPhone)' : ''}` :
 							 item.id.charAt(0).toUpperCase() + item.id.slice(1)}
 						</motion.div>
 					)}
@@ -473,7 +508,8 @@ const FloatingMenu = () => {
 							}}
 						>
 							{item.id === "map" ? "actividad" :
-							 item.id === "volumen" ? `vol ${Math.round(volumeLevel * 100)}%` :
+							 item.id === "volumen" ?
+								`vol ${Math.round(volumeLevel * 100)}%${/iPhone/.test(navigator?.userAgent || '') ? ' iPhone' : ''}` :
 							 item.id}
 						</motion.div>
 					)}

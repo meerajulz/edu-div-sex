@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import CharacterSelection from './CharacterSelection';
 import GameContent from './GameContent';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad4Props {
@@ -104,9 +105,19 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
     }, 800);
   };
 
+  const handleListenInstructions = () => {
+    // Play the intro audio
+    try {
+      const audio = createGameAudio('/audio/actividad-4/juego1/t.mp3', 0.7, 'Juego Uno Instructions');
+      audio.play();
+    } catch (error) {
+      console.warn('Could not play instructions audio:', error);
+    }
+  };
+
   const handleSalirJuego = () => {
     if (isAnimating) return;
-    
+
     // Stop any currently playing audio
     if (currentAudio) {
       currentAudio.pause();
@@ -172,10 +183,16 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
                 backgroundRepeat: 'no-repeat'
               }}
             >
+              {/* Listen Instructions Button */}
+              <EscucharInstruccionesButton
+                onPlayInstructions={handleListenInstructions}
+                position="top-right"
+              />
+
               {/* Close Button */}
               <motion.button
                 onClick={handleSalirJuego}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
+                className="absolute top-4 right-48 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isAnimating}

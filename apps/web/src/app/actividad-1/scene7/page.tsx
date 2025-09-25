@@ -11,6 +11,8 @@ import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking, clearLastActivity } from '../../hooks/useActivityTracking';
+import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
+import { initAudio } from '../../utils/audioHandler';
 
 export default function Scene7Page() {
 
@@ -21,7 +23,7 @@ export default function Scene7Page() {
   const { saveProgress } = useProgressSaver();
   
   useActivityProtection();
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
@@ -31,6 +33,10 @@ export default function Scene7Page() {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
+
+  // iOS volume control state
+  const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
+  const [currentVolume, setCurrentVolume] = useState(0.8);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -54,18 +60,100 @@ export default function Scene7Page() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
+  // Function to connect video to Web Audio API for iOS
+  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
+    try {
+      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) return;
+      const source = audioContext.createMediaElementSource(video);
+      let sharedGainNode = window.sharedGainNode;
+      if (!sharedGainNode) {
+        sharedGainNode = audioContext.createGain();
+        sharedGainNode.gain.value = currentVolume;
+        window.sharedGainNode = sharedGainNode;
+        sharedGainNode.connect(audioContext.destination);
+      }
+      source.connect(sharedGainNode);
+      window.videoGainNode = sharedGainNode;
+      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
+      console.log('🍎 Scene7 iPhone: Video connected to Web Audio');
+    } catch (e) {
+      console.error('🍎 Scene7 iPhone: Web Audio failed:', e);
+    }
+  };
+
+  // Setup iOS volume handling
+  const setupVideoVolumeHandling = async (video: HTMLVideoElement) => {
+    if (!video) return;
+    video.muted = false;
+    video.volume = currentVolume;
+
+    try {
+      await initAudio();
+      const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+      if (isIPhone) {
+        let sharedAudioContext = window.sharedAudioContext;
+        if (!sharedAudioContext) {
+          sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+          window.sharedAudioContext = sharedAudioContext;
+        }
+        if (sharedAudioContext.state === 'suspended') {
+          await sharedAudioContext.resume();
+        }
+        connectVideoToWebAudio(video, sharedAudioContext);
+      }
+    } catch (error) {
+      console.error('Scene7: Audio setup failed:', error);
+    }
+  };
+
   useEffect(() => {
     setIsHydrated(true);
+    // Initialize device info
+    const info = getDeviceAudioInfo();
+    setDeviceInfo(info);
+    const savedVolume = localStorage.getItem('video-volume');
+    if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
   }, []);
+
+  // Listen for global volume changes
+  useEffect(() => {
+    const handleVolumeChange = (event: CustomEvent) => {
+      const { volume } = event.detail;
+      setCurrentVolume(volume);
+
+      // Apply to all possible videos in Scene 7
+      const videos = [
+        videoRef.current,
+        document.querySelector('[src="/video/ACTIVIDAD-1-ESCENA-7.mp4"]')
+      ] as HTMLVideoElement[];
+
+      videos.forEach((video) => {
+        if (video && video.readyState > 0) {
+          const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+          if (isIPhone) {
+            video.muted = false;
+            video.volume = 1.0;
+            if (window.videoGainNode) {
+              window.videoGainNode.gain.value = volume;
+            }
+          } else {
+            video.muted = false;
+            video.volume = volume;
+          }
+        }
+      });
+    };
+
+    window.addEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    return () => window.removeEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+  }, [deviceInfo.isIOS]);
 
   const handleJugarClick = () => {
     setShowVideo(true);
   };
 
   const handleVideoEnd = async () => {
-    const audio = new Audio('/audio/button/Bright.mp3');
-    audio.volume = 0.7;
-    audio.play().catch(console.warn);
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Video-End-Sound');
     setVideoEnded(true);
     
     console.log('🎉 Scene7: Final scene video ended, saving progress for completed activity');
@@ -85,13 +173,7 @@ export default function Scene7Page() {
   };
 
   const playSound = () => {
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button-Sound');
   };
 
   const handleButtonClick = () => {
@@ -199,6 +281,11 @@ export default function Scene7Page() {
             autoPlay
             playsInline
             onEnded={handleScene7ReplayEnd}
+            onLoadedData={(e) => {
+              const video = e.target as HTMLVideoElement;
+              video.volume = currentVolume;
+            }}
+            onPlay={(e) => setupVideoVolumeHandling(e.target as HTMLVideoElement)}
           />
         </div>
       ) : (
@@ -211,6 +298,13 @@ export default function Scene7Page() {
               autoPlay
               playsInline
               onEnded={handleVideoEnd}
+              onLoadedData={() => {
+                const video = videoRef.current;
+                if (video) video.volume = currentVolume;
+              }}
+              onPlay={() => {
+                if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
+              }}
             />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">

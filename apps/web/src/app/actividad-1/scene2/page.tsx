@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
+import { initAudio } from '../../utils/audioHandler';
 
 export default function Scene2Page() {
   
@@ -23,6 +25,94 @@ export default function Scene2Page() {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
+
+  // iOS volume control state
+  const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
+  const [currentVolume, setCurrentVolume] = useState(0.8);
+
+  // Function to connect video element to Web Audio API for iOS volume control
+  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
+    try {
+      console.log(`🍎 Scene2 iPhone: Attempting to connect video to Web Audio API...`);
+      console.log(`🍎 Scene2 iPhone: Video readyState: ${video.readyState}`);
+
+      // Check if video already connected to avoid double-connection
+      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) {
+        console.log(`🍎 Scene2 iPhone: Video already connected to Web Audio API`);
+        return;
+      }
+
+      // Create MediaElementSource from video
+      const source = audioContext.createMediaElementSource(video);
+      console.log(`🍎 Scene2 iPhone: Created MediaElementSource`);
+
+      // Get or create shared gain node from FloatingMenu
+      let sharedGainNode = window.sharedGainNode;
+      if (!sharedGainNode) {
+        console.log(`🍎 Scene2 iPhone: Creating new shared gain node`);
+        sharedGainNode = audioContext.createGain();
+        sharedGainNode.gain.value = currentVolume;
+        window.sharedGainNode = sharedGainNode;
+        sharedGainNode.connect(audioContext.destination);
+      }
+
+      // Connect: video -> sharedGainNode -> speakers
+      source.connect(sharedGainNode);
+      window.videoGainNode = sharedGainNode;
+      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
+
+      console.log(`🍎 Scene2 iPhone: ✅ Successfully connected video to Web Audio API`);
+    } catch (e) {
+      console.error('🍎 Scene2 iPhone: ❌ FAILED to connect video to Web Audio API:', e);
+    }
+  };
+
+  useEffect(() => {
+    // Initialize device info for iOS volume control
+    const info = getDeviceAudioInfo();
+    setDeviceInfo(info);
+    console.log('📱 Scene2: Device info initialized:', info);
+
+    // Initialize video volume from localStorage
+    const savedVolume = localStorage.getItem('video-volume');
+    if (savedVolume) {
+      setCurrentVolume(parseFloat(savedVolume));
+    }
+  }, []);
+
+  // Listen for global volume changes from FloatingMenu
+  useEffect(() => {
+    const handleVolumeChange = (event: CustomEvent) => {
+      const { volume } = event.detail;
+      console.log(`🎵 Scene2: Received global volume change: ${volume}`);
+
+      // Apply volume to video element if it exists
+      const video = videoRef.current;
+      if (video && video.readyState > 0) {
+        const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+
+        if (isIPhone) {
+          video.muted = false;
+          video.volume = 1.0;
+          if (window.videoGainNode) {
+            window.videoGainNode.gain.value = volume;
+            console.log(`📱 Scene2 iPhone: Applied volume ${volume} via Web Audio`);
+          }
+        } else {
+          video.muted = false;
+          video.volume = volume;
+          console.log(`🖥️ Scene2 Desktop/Android/iPad: Applied volume ${volume} directly`);
+        }
+      }
+
+      setCurrentVolume(volume);
+    };
+
+    window.addEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    return () => {
+      window.removeEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    };
+  }, [deviceInfo.isIOS]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -54,13 +144,7 @@ export default function Scene2Page() {
   };
 
   const playSound = () => {
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button-Sound');
   };
 
   const handleJugarClick = () => {
@@ -155,6 +239,49 @@ export default function Scene2Page() {
             autoPlay
             playsInline
             onEnded={handleVideoEnd}
+            onLoadedData={() => {
+              const video = videoRef.current;
+              if (video) {
+                video.volume = currentVolume;
+                console.log(`🎬 Scene2: Video loaded, volume set to: ${currentVolume}`);
+              }
+            }}
+            onPlay={async () => {
+              const video = videoRef.current;
+              if (!video) return;
+
+              video.muted = false;
+              video.volume = currentVolume;
+              console.log(`🎬 Scene2: Video playing, volume: ${currentVolume}`);
+
+              // Initialize audio for volume control
+              try {
+                await initAudio();
+                console.log('🍎 Scene2: Audio initialized');
+              } catch (e) {
+                console.warn('Scene2: Audio init failed:', e);
+              }
+
+              // For iPhone, connect to Web Audio API
+              const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+              if (isIPhone) {
+                try {
+                  let sharedAudioContext = window.sharedAudioContext;
+                  if (!sharedAudioContext) {
+                    sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    window.sharedAudioContext = sharedAudioContext;
+                  }
+
+                  if (sharedAudioContext.state === 'suspended') {
+                    await sharedAudioContext.resume();
+                  }
+
+                  connectVideoToWebAudio(video, sharedAudioContext);
+                } catch (error) {
+                  console.error('🍎 Scene2 iPhone: Error setting up Web Audio:', error);
+                }
+              }
+            }}
           />
         </div>
       )}

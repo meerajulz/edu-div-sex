@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { FACIAL_EXPRESSION_GAME_CONFIG, GameSession, isScenarioCompleted, isGameCompleted } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad5Props {
@@ -294,12 +295,17 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       onGameComplete();
       onClose();
     }, 500);
+  };
+
+  // Handle listen instructions
+  const handleListenInstructions = () => {
+    playAudio(FACIAL_EXPRESSION_GAME_CONFIG.audio.title);
   };
   
   return (
@@ -352,11 +358,17 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                 ))}
               </div>
               
-              {/* Header with exit button */}
+              {/* Header with buttons */}
               <div className="relative z-10 flex justify-between items-center p-4">
+                {/* Listen Instructions Button */}
+                <EscucharInstruccionesButton
+                  onPlayInstructions={handleListenInstructions}
+                  position="top-right"
+                />
+
                 <motion.button
                   onClick={handleSalirJuego}
-                  className="absolute top-4 right-4 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
+                  className="absolute top-4 right-48 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={isAnimating}

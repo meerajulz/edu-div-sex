@@ -7,6 +7,7 @@ import { useGameState, useGameSession, useGameTracking, useAudioManager } from '
 import DragDropArea from './DragDropArea';
 import FeedbackDisplay from './FeedbackDisplay';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoDosActividad4Props {
@@ -193,6 +194,10 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
     playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoDos Button Sound');
   };
 
+  const handleListenInstructions = () => {
+    playAudio(GAME_CONFIG.titleAudio.path);
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -213,13 +218,19 @@ const JuegoDosActividad4: React.FC<JuegoDosActividad4Props> = ({
       >
         <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] bg-gradient-to-br from-pink-200 via-rose-100 to-pink-300 rounded-xl shadow-xl border-4 border-pink-400 overflow-hidden">
 
+          {/* Listen Instructions Button */}
+          <EscucharInstruccionesButton
+            onPlayInstructions={handleListenInstructions}
+            position="top-right"
+          />
+
           {/* Close Button */}
           <motion.button
             onClick={() => {
               playButtonSound();
               handleClose();
             }}
-            className="absolute top-4 right-4 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
+            className="absolute top-4 right-48 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             disabled={isAnimating}

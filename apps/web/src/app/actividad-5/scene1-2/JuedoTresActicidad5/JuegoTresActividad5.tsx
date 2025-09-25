@@ -12,6 +12,7 @@ import {
   getFeedbackAudio
 } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoTresActividad5Props {
@@ -248,12 +249,17 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       onGameComplete();
       onClose();
     }, 500);
+  };
+
+  // Handle listen instructions
+  const handleListenInstructions = () => {
+    playAudio(EMOTION_GAME_CONFIG.audio.title);
   };
   
   // Get current background image
@@ -312,11 +318,17 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <div className="bg-gradient-to-br from-yellow-200 via-orange-100 to-red-200 rounded-xl shadow-2xl w-[85vw] h-[85vh] overflow-hidden relative border-4 border-yellow-300">
-              
+
+              {/* Listen Instructions Button */}
+              <EscucharInstruccionesButton
+                onPlayInstructions={handleListenInstructions}
+                position="top-right"
+              />
+
               {/* Exit button */}
               <motion.button
                 onClick={handleSalirJuego}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
+                className="absolute top-4 right-48 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isAnimating}

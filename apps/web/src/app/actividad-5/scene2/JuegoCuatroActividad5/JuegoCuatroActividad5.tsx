@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { JUEGO_CUATRO_CONFIG, GamePhase, getOptionById } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoCuatroActividad5Props {
@@ -158,12 +159,17 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
     } catch (error) {
       console.warn('Could not play sound:', error);
     }
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       onGameComplete();
       onClose();
     }, JUEGO_CUATRO_CONFIG.timing.exitDelay);
+  };
+
+  // Handle listen instructions
+  const handleListenInstructions = () => {
+    playAudio(JUEGO_CUATRO_CONFIG.audio.title);
   };
 
   // Get feedback image based on selected option
@@ -205,11 +211,16 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                 backgroundRepeat: 'no-repeat'
               }}
             >
-              
+              {/* Listen Instructions Button */}
+              <EscucharInstruccionesButton
+                onPlayInstructions={handleListenInstructions}
+                position="top-right"
+              />
+
               {/* Exit button */}
               <motion.button
                 onClick={handleSalirJuego}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg font-semibold transition-colors duration-200 shadow-lg text-sm"
+                className="absolute top-4 right-48 z-50 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg font-semibold transition-colors duration-200 shadow-lg text-sm"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isAnimating}

@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
-import { playGameAudio, createGameAudio } from '../utils/gameAudio';
+import { playGameAudio, getDeviceAudioInfo } from '../utils/gameAudio';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -41,16 +41,76 @@ export default function Actividad3Page() {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [showContinueButton, setShowContinueButton] = useState(false);
   const simpleAlexRef = useRef<SimpleAlexRef>(null);
+  const [currentVolume, setCurrentVolume] = useState(0.9);
+  const [deviceInfo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const info = getDeviceAudioInfo();
+      console.log(`🎬 Activity3: Device audio info:`, info);
+      return info;
+    }
+    return { isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false };
+  });
+
+  // Function to connect video element to Web Audio API for iOS volume control
+  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
+    try {
+      console.log(`🍎 Activity3 iPhone: Attempting to connect video to Web Audio API...`);
+      console.log(`🍎 Activity3 iPhone: Video readyState: ${video.readyState}`);
+      console.log(`🍎 Activity3 iPhone: AudioContext state: ${audioContext.state}`);
+
+      // Check if video already connected to avoid double-connection
+      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) {
+        console.log(`🍎 Activity3 iPhone: Video already connected to Web Audio API, skipping`);
+        return;
+      }
+
+      // Create MediaElementSource from video
+      const source = audioContext.createMediaElementSource(video);
+      console.log(`🍎 Activity3 iPhone: MediaElementSource created successfully`);
+
+      // CRITICAL: Use the EXACT same gain node that FloatingMenu volume buttons control
+      let sharedGainNode = window.globalGainNode;
+
+      if (!sharedGainNode) {
+        // Create the shared gain node that FloatingMenu will also use
+        sharedGainNode = audioContext.createGain();
+        window.globalGainNode = sharedGainNode;
+        console.log(`🍎 Activity3 iPhone: Created shared gainNode (FloatingMenu will use this same one)`);
+      } else {
+        console.log(`🍎 Activity3 iPhone: Using pre-existing shared gainNode`);
+      }
+
+      // Set initial volume
+      sharedGainNode.gain.value = currentVolume;
+      console.log(`🍎 Activity3 iPhone: Shared gainNode value set to: ${sharedGainNode.gain.value}`);
+
+      // Connect: video -> sharedGainNode -> speakers
+      source.connect(sharedGainNode);
+      console.log(`🍎 Activity3 iPhone: Video source connected to shared gainNode`);
+
+      sharedGainNode.connect(audioContext.destination);
+      console.log(`🍎 Activity3 iPhone: Shared gainNode connected to AudioContext destination`);
+
+      // Store same reference for both video and global controls
+      window.videoGainNode = sharedGainNode;
+      window.globalGainNode = sharedGainNode; // Ensure they're the same object
+
+      // Mark video as connected to prevent duplicate connections
+      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
+      console.log(`🍎 Activity3 iPhone: Video successfully connected to Web Audio API for volume control`);
+
+    } catch (error) {
+      console.error(`🍎 Activity3 iPhone: Failed to connect video to Web Audio API:`, error);
+    }
+  };
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
 
-
   // Debug mode for development
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
 
-  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -134,16 +194,28 @@ useEffect(() => {
   const handleGlobalVolumeChange = (e: CustomEvent) => {
     const newVolume = e.detail.volume;
     console.log(`🎵 Activity 3: Received global volume change: ${newVolume}`);
+    setCurrentVolume(newVolume);
 
-    if (bgMusicRef.current) {
-      bgMusicRef.current.volume = newVolume;
-      console.log(`🎵 Activity 3: Applied volume ${newVolume} to background music`);
+    // Apply volume to video element for iPhone compatibility
+    if (deviceInfo.isIOS && videoRef.current) {
+      console.log(`🍎 Activity3 iPhone: Applying volume ${newVolume} to video element`);
+
+      // Use shared gain node (controlled by FloatingMenu volume buttons)
+      const sharedGainNode = window.globalGainNode || window.videoGainNode;
+      if (sharedGainNode && sharedGainNode.gain) {
+        sharedGainNode.gain.value = newVolume;
+        console.log(`🍎 Activity3 iPhone: Volume applied via shared gainNode: ${newVolume}`);
+      }
+
+      // Also apply to video element as fallback
+      videoRef.current.volume = newVolume;
+      console.log(`🍎 Activity3 iPhone: Volume applied to video element: ${newVolume}`);
     }
   };
 
   window.addEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
   return () => window.removeEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
-}, []);
+}, [deviceInfo.isIOS]);
 
   const handleVideoEnd = () => {
     cleanupAudio();
@@ -183,14 +255,7 @@ useEffect(() => {
       setPendingNavigation(firstScene);
     }
 
-    if (bgMusicRef.current) {
-      try {
-        bgMusicRef.current.pause();
-        bgMusicRef.current.currentTime = 0;
-      } catch (e) {
-        console.warn('Failed to stop background music:', e);
-      }
-    }
+    // Background music will stop automatically when leaving page
   };
 
   const handleExitComplete = () => {
@@ -215,13 +280,8 @@ useEffect(() => {
     setUserInteractionReceived(true);
     setNeedsInteraction(false);
 
-    // Start background music
-    const music = createGameAudio('/audio/Softy.mp3', 0.4, 'Activity 3 background music');
-    music.loop = true;
-    console.log(`🎵 Starting background music with volume: ${music.volume}`);
-
-    music.play().catch(console.warn);
-    bgMusicRef.current = music;
+    // Start background music using iOS-compatible audio
+    playGameAudio('/audio/Softy.mp3', 0.4, 'Background-Music');
 
     setCanPlayVideo(true);
   };
@@ -319,6 +379,28 @@ useEffect(() => {
                 console.log('Skipping video and showing activity menu directly');
                 handleVideoEnd();
               }}
+              onLoadedMetadata={() => {
+                console.log(`🎬 Activity3: Video metadata loaded`);
+                if (deviceInfo.isIOS && videoRef.current) {
+                  console.log(`🍎 Activity3 iPhone: Setting up Web Audio API for volume control`);
+
+                  // Get or create AudioContext for iPhone volume control
+                  if (!window.globalAudioContext) {
+                    window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log(`🍎 Activity3 iPhone: AudioContext created`);
+                  }
+
+                  // Connect video to Web Audio API for volume control
+                  connectVideoToWebAudio(videoRef.current, window.globalAudioContext);
+                }
+              }}
+              onCanPlay={() => {
+                console.log(`🎬 Activity3: Video can play`);
+                if (deviceInfo.isIOS && videoRef.current) {
+                  videoRef.current.volume = currentVolume;
+                  console.log(`🍎 Activity3 iPhone: Set initial video volume to ${currentVolume}`);
+                }
+              }}
             />
           ) : (
             <Image
@@ -385,6 +467,8 @@ useEffect(() => {
           <div>🎬 Video Ended: {videoEnded ? 'yes' : 'no'}</div>
           <div>🔊 Can Play Video: {canPlayVideo ? 'yes' : 'no'}</div>
           <div>👆 Needs Interaction: {needsInteraction ? 'yes' : 'no'}</div>
+          <div>🍎 iOS: {deviceInfo.isIOS ? 'yes' : 'no'}</div>
+          <div>🔊 Volume: {currentVolume.toFixed(2)}</div>
           <div className="text-yellow-300">Press Ctrl+D to toggle</div>
         </div>
       )}

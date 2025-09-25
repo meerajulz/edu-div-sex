@@ -11,6 +11,8 @@ import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { getDeviceAudioInfo } from '../../utils/gameAudio';
+import { initAudio } from '../../utils/audioHandler';
 
 export default function Actividad6Scene4_1Page() {
 
@@ -32,6 +34,72 @@ export default function Actividad6Scene4_1Page() {
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
+
+  // iOS volume control state
+  const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
+  const [currentVolume, setCurrentVolume] = useState(0.8);
+
+  // Function to connect video element to Web Audio API for iOS volume control
+  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
+    try {
+      console.log(`🍎 Activity6-Scene4-1 iPhone: Connecting video to Web Audio API...`);
+      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) return;
+
+      const source = audioContext.createMediaElementSource(video);
+      let sharedGainNode = window.sharedGainNode;
+      if (!sharedGainNode) {
+        sharedGainNode = audioContext.createGain();
+        sharedGainNode.gain.value = currentVolume;
+        window.sharedGainNode = sharedGainNode;
+        sharedGainNode.connect(audioContext.destination);
+      }
+
+      source.connect(sharedGainNode);
+      window.videoGainNode = sharedGainNode;
+      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
+      console.log(`🍎 Activity6-Scene4-1 iPhone: ✅ Video connected to Web Audio`);
+    } catch (e) {
+      console.error('🍎 Activity6-Scene4-1 iPhone: ❌ Web Audio connection failed:', e);
+    }
+  };
+
+  useEffect(() => {
+    // Initialize device info and volume
+    const info = getDeviceAudioInfo();
+    setDeviceInfo(info);
+    const savedVolume = localStorage.getItem('video-volume');
+    if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    console.log('📱 Activity6-Scene4-1: Device info initialized:', info);
+  }, []);
+
+  // Listen for global volume changes from FloatingMenu
+  useEffect(() => {
+    const handleVolumeChange = (event: CustomEvent) => {
+      const { volume } = event.detail;
+      console.log(`🎵 Activity6-Scene4-1: Received global volume change: ${volume}`);
+
+      const video = finalVideoRef.current;
+      if (video && video.readyState > 0) {
+        const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+        if (isIPhone) {
+          video.muted = false;
+          video.volume = 1.0;
+          if (window.videoGainNode) {
+            window.videoGainNode.gain.value = volume;
+            console.log(`📱 Activity6-Scene4-1 iPhone: Applied volume ${volume} via Web Audio`);
+          }
+        } else {
+          video.muted = false;
+          video.volume = volume;
+          console.log(`🖥️ Activity6-Scene4-1 Desktop/Android/iPad: Applied volume ${volume}`);
+        }
+      }
+      setCurrentVolume(volume);
+    };
+
+    window.addEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    return () => window.removeEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+  }, [deviceInfo.isIOS]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -232,6 +300,39 @@ export default function Actividad6Scene4_1Page() {
             autoPlay
             playsInline
             onEnded={handleFinalVideoEnd}
+            onLoadedData={() => {
+              const video = finalVideoRef.current;
+              if (video) {
+                video.volume = currentVolume;
+                console.log(`🎬 Activity6-Scene4-1: Final video loaded, volume: ${currentVolume}`);
+              }
+            }}
+            onPlay={async () => {
+              const video = finalVideoRef.current;
+              if (!video) return;
+
+              video.muted = false;
+              video.volume = currentVolume;
+              console.log(`🎬 Activity6-Scene4-1: Final video playing, volume: ${currentVolume}`);
+
+              try {
+                await initAudio();
+                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                if (isIPhone) {
+                  let sharedAudioContext = window.sharedAudioContext;
+                  if (!sharedAudioContext) {
+                    sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    window.sharedAudioContext = sharedAudioContext;
+                  }
+                  if (sharedAudioContext.state === 'suspended') {
+                    await sharedAudioContext.resume();
+                  }
+                  connectVideoToWebAudio(video, sharedAudioContext);
+                }
+              } catch (error) {
+                console.error('Activity6-Scene4-1: Audio setup failed:', error);
+              }
+            }}
           />
         </div>
       ) : null}

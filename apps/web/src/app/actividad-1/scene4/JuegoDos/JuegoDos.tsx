@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   DndContext,
   TouchSensor,
@@ -15,6 +15,7 @@ import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
 import { useProgressSaver } from '../../../hooks/useProgressSaver';
+import { playGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoDosProps {
   isVisible: boolean;
@@ -33,7 +34,6 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
   const sensors = useSensors(mouseSensor, touchSensor);
 
   const [showCongrats, setShowCongrats] = useState(false);
-  const titleAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Detect when all parts are matched
   useEffect(() => {
@@ -46,14 +46,8 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
   const handleCongratsComplete = async () => {
     setShowCongrats(false);
     
-    // Play completion sound
-    try {
-      const audio = new Audio('/audio/button/Bright.mp3');
-      audio.volume = 0.7;
-      audio.play().catch(console.warn);
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    // Play completion sound with volume control
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoDos-Completion');
     
     // Save progress before completing
     await saveProgress('actividad-1', 'scene4', 'completed', 100, {
@@ -78,20 +72,8 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
       setFeedback(null);
       setShowCongrats(false);
       
-      // Play the title audio when game opens
-      try {
-        titleAudioRef.current = new Audio('/audio/actividad-1/escena_1/scene4/t-actividad-1-scene-4.mp3');
-        titleAudioRef.current.volume = 0.8;
-        titleAudioRef.current.play().catch(console.warn);
-      } catch (error) {
-        console.warn('Could not play title audio:', error);
-      }
-    } else {
-      // Stop the audio if the game is closed
-      if (titleAudioRef.current) {
-        titleAudioRef.current.pause();
-        titleAudioRef.current = null;
-      }
+      // Play the title audio when game opens with volume control
+      playGameAudio('/audio/actividad-1/escena_1/scene4/t-actividad-1-scene-4.mp3', 0.8, 'JuegoDos-Title');
     }
   }, [isVisible]);
 
@@ -102,21 +84,16 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
     if (over.id === active.id) {
       setMatchedParts((prev) => [...prev, String(active.id)]);
       setFeedback('ok');
-      new Audio('/audio/actividad-1/escena_1/Game_Score.mp3').play();
+      playGameAudio('/audio/actividad-1/escena_1/Game_Score.mp3', 1.0, 'JuegoDos-Success');
     } else {
       setFeedback('wrong');
-      new Audio('/audio/actividad-1/escena_1/Game_No_Score.mp3').play();
+      playGameAudio('/audio/actividad-1/escena_1/Game_No_Score.mp3', 1.0, 'JuegoDos-Failure');
     }
 
     setTimeout(() => setFeedback(null), 1000);
   };
 
   const handleClose = () => {
-    // Stop title audio when closing
-    if (titleAudioRef.current) {
-      titleAudioRef.current.pause();
-      titleAudioRef.current = null;
-    }
     setMatchedParts([]);
     setFeedback(null);
     onClose();

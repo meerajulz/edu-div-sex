@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { juego1Config } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoUnoActividad6Props {
@@ -104,11 +105,15 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
   const handleSalirJuego = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       onClose();
     }, 300);
+  };
+
+  const handleListenInstructions = () => {
+    playAudio(juego1Config.titleAudio);
   };
 
   const handleDollClick = (event: React.MouseEvent, dollIndex: number) => {
@@ -395,9 +400,15 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
               </div>
 
               {/* Header */}
+              {/* Listen Instructions Button */}
+              <EscucharInstruccionesButton
+                onPlayInstructions={handleListenInstructions}
+                position="top-right"
+              />
+
               <motion.button
                 onClick={handleSalirJuego}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
+                className="absolute top-4 right-48 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isAnimating}
