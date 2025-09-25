@@ -376,12 +376,12 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                 {/* Listen Instructions Button */}
                 <EscucharInstruccionesButton
                   onPlayInstructions={handleListenInstructions}
-                  position="top-right"
+                  position="side-by-side"
                 />
 
                 <motion.button
                   onClick={handleSalirJuego}
-                  className="absolute top-4 right-48 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
+                  className="absolute top-4 right-4 z-[110] bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={isAnimating}

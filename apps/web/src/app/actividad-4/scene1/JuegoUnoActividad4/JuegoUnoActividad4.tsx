@@ -186,13 +186,13 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
               {/* Listen Instructions Button */}
               <EscucharInstruccionesButton
                 onPlayInstructions={handleListenInstructions}
-                position="top-right"
+                position="side-by-side"
               />
 
               {/* Close Button */}
               <motion.button
                 onClick={handleSalirJuego}
-                className="absolute top-4 right-48 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
+                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isAnimating}

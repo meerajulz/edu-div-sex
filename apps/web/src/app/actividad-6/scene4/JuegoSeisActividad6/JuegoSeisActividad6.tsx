@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { GAME_CONFIG, Situation } from './config';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
 import { playGameAudio, createGameAudio } from '../../../utils/gameAudio';
 
 interface JuegoSeisActividad6Props {
@@ -237,6 +238,11 @@ export default function JuegoSeisActividad6({
     onGameComplete();
   };
 
+  const handleListenInstructions = () => {
+    // Play the intro audio
+    playAudio(GAME_CONFIG.introAudio);
+  };
+
   const handleSalirJuego = () => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -306,6 +312,13 @@ export default function JuegoSeisActividad6({
               </div>
 
               {/* Header */}
+              {/* Listen Instructions Button */}
+              <EscucharInstruccionesButton
+                onPlayInstructions={handleListenInstructions}
+                position="side-by-side"
+                className="z-[60]"
+              />
+
               <motion.button
                 onClick={handleSalirJuego}
                 className="absolute top-4 right-4 z-10 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-lg"
