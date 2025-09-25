@@ -51,22 +51,23 @@ const Cris: React.FC<CrisProps> = ({
         // Start talking
         const audio = new Audio('/audio/actividad-1/escena_1/juego_1_cris.mp3');
 
-        // Get saved volume from localStorage, fallback to 1.0
+        // Get saved volume from localStorage, fallback to 0.8
         const savedVolume = localStorage.getItem('video-volume');
-        audio.volume = savedVolume ? parseFloat(savedVolume) : 1.0;
+        audio.volume = savedVolume ? parseFloat(savedVolume) : 0.8;
         console.log(`🎵 Cris: Starting audio with volume ${audio.volume}`);
 
         audioRef.current = audio;
         setIsTalking(true);
 
         audio.play().then(() => {
-          console.log('🎵 Audio started playing successfully');
+          console.log('🎵 Cris audio started playing successfully');
         }).catch((error) => {
-          console.warn('❌ Error playing audio:', error);
+          console.warn('❌ Error playing Cris audio:', error);
+          setIsTalking(false);
         });
 
         audio.onended = () => {
-          console.log('🔚 Audio ended naturally');
+          console.log('🔚 Cris audio ended naturally');
           setIsTalking(false);
         };
       }, 3000); // wait 3s after showing
