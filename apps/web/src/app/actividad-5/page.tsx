@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
-import { playGameAudio, getDeviceAudioInfo } from '../utils/gameAudio';
+import { playGameAudio, getDeviceAudioInfo, playBackgroundMusic, stopBackgroundMusic } from '../utils/gameAudio';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -189,24 +189,34 @@ useEffect(() => {
 // Listen for global volume changes from FloatingMenu
 useEffect(() => {
   const handleGlobalVolumeChange = (e: CustomEvent) => {
-    const newVolume = e.detail.volume;
-    console.log(`🎵 Activity 5: Received global volume change: ${newVolume}`);
-    setCurrentVolume(newVolume);
+    const { volume, isIPhone, isIPad } = e.detail;
+    console.log(`🎵 Activity5: Received global volume change: ${volume} (iPhone: ${isIPhone}, iPad: ${isIPad})`);
+    setCurrentVolume(volume);
 
-    // Apply volume to video element for iPhone compatibility
-    if (deviceInfo.isIOS && videoRef.current) {
-      console.log(`🍎 Activity5 iPhone: Applying volume ${newVolume} to video element`);
+    // Apply volume to video element
+    const video = videoRef.current;
+    if (video && video.readyState > 0) {
+      if (isIPhone) {
+        // iPhone: Use Web Audio API gain node
+        video.muted = false;
+        video.volume = 1.0; // Keep at max, gain node controls volume
 
-      // Use shared gain node (controlled by FloatingMenu volume buttons)
-      const sharedGainNode = window.globalGainNode || window.videoGainNode;
-      if (sharedGainNode && sharedGainNode.gain) {
-        sharedGainNode.gain.value = newVolume;
-        console.log(`🍎 Activity5 iPhone: Volume applied via shared gainNode: ${newVolume}`);
+        const sharedGainNode = window.globalGainNode || window.videoGainNode;
+        if (sharedGainNode && sharedGainNode.gain) {
+          sharedGainNode.gain.value = volume;
+          console.log(`📱 Activity5 iPhone: Volume applied via shared gainNode: ${volume}`);
+        }
+      } else if (isIPad) {
+        // iPad: Direct volume control
+        video.volume = volume;
+        video.muted = volume === 0;
+        console.log(`🔲 Activity5 iPad: Applied volume ${volume} directly (muted: ${volume === 0})`);
+      } else {
+        // Desktop/Android: Direct video volume
+        video.muted = false;
+        video.volume = volume;
+        console.log(`🖥️ Activity5 Desktop/Android: Applied volume ${volume} directly`);
       }
-
-      // Also apply to video element as fallback
-      videoRef.current.volume = newVolume;
-      console.log(`🍎 Activity5 iPhone: Volume applied to video element: ${newVolume}`);
     }
   };
 
@@ -216,6 +226,8 @@ useEffect(() => {
 
   const handleVideoEnd = () => {
     cleanupAudio();
+    // Stop background music when video ends
+    stopBackgroundMusic('actividad-5-bg');
     setVideoEnded(true);
     setTimeout(() => setShowArdilla(true), 100);
     setTimeout(() => setShowAlex(true), 1800);
@@ -243,6 +255,8 @@ useEffect(() => {
     }
 
     cleanupAudio();
+    // Stop background music when leaving activity
+    stopBackgroundMusic('actividad-5-bg');
     setIsExiting(true);
 
     // Navigate to first scene of the section
@@ -285,8 +299,9 @@ useEffect(() => {
       console.warn('Activity5: Audio initialization failed:', e);
     }
 
-    // Start background music using iOS-compatible audio
-    playGameAudio('/audio/Softy.mp3', 0.4, 'Background-Music');
+    // Start background music using new background music system
+    // This will respond to volume changes from FloatingMenu
+    playBackgroundMusic('/audio/Softy.mp3', 0.4, 'actividad-5-bg');
 
     setCanPlayVideo(true);
   };
@@ -352,6 +367,8 @@ useEffect(() => {
         onNavigate={(url) => {
           setShowContinueButton(false);
           cleanupAudio();
+          // Stop background music when leaving activity
+          stopBackgroundMusic('actividad-5-bg');
           setIsExiting(true);
           setPendingNavigation(url);
         }}
@@ -384,26 +401,79 @@ useEffect(() => {
                 console.log('Skipping video and showing activity menu directly');
                 handleVideoEnd();
               }}
-              onLoadedMetadata={() => {
+              onLoadedMetadata={async () => {
                 console.log(`🎬 Activity5: Video metadata loaded`);
-                if (deviceInfo.isIOS && videoRef.current) {
-                  console.log(`🍎 Activity5 iPhone: Setting up Web Audio API for volume control`);
+                const video = videoRef.current;
+                if (!video) return;
+
+                // Determine device type
+                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                const isIPad = /iPad/.test(navigator?.userAgent || '') ||
+                             (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+                // Initialize audio for all devices
+                try {
+                  await initAudio();
+                  console.log('🍎 Activity5: Audio initialized');
+                } catch (e) {
+                  console.warn('Activity5: Audio init failed:', e);
+                }
+
+                if (isIPhone) {
+                  console.log(`📱 Activity5 iPhone: Setting up Web Audio API for volume control`);
 
                   // Get or create AudioContext for iPhone volume control
                   if (!window.globalAudioContext) {
                     window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    console.log(`🍎 Activity5 iPhone: AudioContext created`);
+                    console.log(`📱 Activity5 iPhone: AudioContext created`);
+                  }
+
+                  if (window.globalAudioContext.state === 'suspended') {
+                    await window.globalAudioContext.resume();
                   }
 
                   // Connect video to Web Audio API for volume control
-                  connectVideoToWebAudio(videoRef.current, window.globalAudioContext);
+                  connectVideoToWebAudio(video, window.globalAudioContext);
+                } else if (isIPad) {
+                  // For iPad, initialize audio context for playGameAudio to work
+                  try {
+                    let sharedAudioContext = window.sharedAudioContext;
+                    if (!sharedAudioContext) {
+                      sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                      window.sharedAudioContext = sharedAudioContext;
+                    }
+
+                    if (sharedAudioContext.state === 'suspended') {
+                      await sharedAudioContext.resume();
+                    }
+                    console.log(`🔲 Activity5 iPad: Audio context initialized for playGameAudio`);
+                  } catch (error) {
+                    console.error('🔲 Activity5 iPad: Error setting up audio context:', error);
+                  }
                 }
               }}
               onCanPlay={() => {
                 console.log(`🎬 Activity5: Video can play`);
-                if (deviceInfo.isIOS && videoRef.current) {
-                  videoRef.current.volume = currentVolume;
-                  console.log(`🍎 Activity5 iPhone: Set initial video volume to ${currentVolume}`);
+                const video = videoRef.current;
+                if (!video) return;
+
+                // Determine device type and apply volume
+                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                const isIPad = /iPad/.test(navigator?.userAgent || '') ||
+                             (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+                if (isIPhone) {
+                  video.muted = false;
+                  video.volume = 1.0; // iPhone uses Web Audio for volume control
+                  console.log(`📱 Activity5 iPhone: Video ready, using Web Audio volume control`);
+                } else if (isIPad) {
+                  video.volume = currentVolume;
+                  video.muted = currentVolume === 0;
+                  console.log(`🔲 Activity5 iPad: Video ready, direct volume: ${currentVolume} (muted: ${currentVolume === 0})`);
+                } else {
+                  video.muted = false;
+                  video.volume = currentVolume;
+                  console.log(`🖥️ Activity5 Desktop/Android: Video ready, volume: ${currentVolume}`);
                 }
               }}
             />

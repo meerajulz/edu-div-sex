@@ -7,7 +7,7 @@ import Image from "next/image";
 
 // import { signOut } from "@/auth";
 import { signOut } from "next-auth/react";
-import { initializeAudioForUserInteraction, getDeviceAudioInfo } from "../../utils/gameAudio";
+import { initializeAudioForUserInteraction, getDeviceAudioInfo, isIPhone, isIPad, playGameAudio, updateBackgroundMusicVolume } from "../../utils/gameAudio";
 
 interface MenuItem {
 	id: string;
@@ -32,6 +32,8 @@ const FloatingMenu = () => {
 	const [hasVideos, setHasVideos] = useState(false);
 	const [deviceAudioInfo, setDeviceAudioInfo] = useState<{
 		isIOS: boolean;
+		isIPhone: boolean;
+		isIPad: boolean;
 		isSafari: boolean;
 		hasWebAudio: boolean;
 		hasGainNode: boolean;
@@ -90,11 +92,17 @@ const FloatingMenu = () => {
 				console.log(`🎵 On activity main page - showing volume button for background music`);
 			}
 
-			// Apply current volume level to all video elements
+			// Apply current volume level to all video elements with device-specific handling
+			const deviceIsIPhone = isIPhone();
+			const deviceIsIPad = isIPad();
+
 			videos.forEach((video: HTMLVideoElement) => {
 				if (video.volume !== volumeLevel) {
 					video.volume = volumeLevel;
-					console.log(`🎵 Applied saved volume ${volumeLevel} to video element`);
+					if (deviceIsIPad && volumeLevel === 0) {
+						video.muted = true;
+					}
+					console.log(`🎵 Applied saved volume ${volumeLevel} to video element (${deviceIsIPhone ? 'iPhone' : deviceIsIPad ? 'iPad' : 'standard'})`);
 				}
 			});
 
@@ -102,15 +110,22 @@ const FloatingMenu = () => {
 			audios.forEach((audio: HTMLAudioElement) => {
 				if (audio.volume !== volumeLevel) {
 					audio.volume = volumeLevel;
-					console.log(`🎵 Applied saved volume ${volumeLevel} to audio element`);
+					console.log(`🎵 Applied saved volume ${volumeLevel} to audio element (${deviceIsIPhone ? 'iPhone' : deviceIsIPad ? 'iPad' : 'standard'})`);
 				}
 			});
 
 			// Also dispatch event for programmatically created audio when page loads
 			if (isOnActivityMainPage()) {
 				window.dispatchEvent(new CustomEvent('globalVolumeChange', {
-					detail: { volume: volumeLevel }
+					detail: {
+						volume: volumeLevel,
+						isIPhone: deviceIsIPhone,
+						isIPad: deviceIsIPad
+					}
 				}));
+
+				// Update background music volume
+				updateBackgroundMusicVolume(volumeLevel);
 			}
 		};
 
@@ -224,9 +239,24 @@ const FloatingMenu = () => {
 
 	const playSound = async () => {
 		try {
-			if (audio) {
-				audio.currentTime = 0;
-				await audio.play();
+			const deviceIsIPad = isIPad();
+			const deviceIsIPhone = isIPhone();
+
+			if (deviceIsIPad) {
+				// iPad: Use playGameAudio for proper volume control and audio initialization
+				console.log('🔲 iPad: Playing button sound via playGameAudio');
+				await playGameAudio('/ui-sound/click.mp3', 0.7, 'FloatingMenu-Button');
+			} else if (deviceIsIPhone) {
+				// iPhone: Use playGameAudio for proper volume control
+				console.log('📱 iPhone: Playing button sound via playGameAudio');
+				await playGameAudio('/ui-sound/click.mp3', 0.7, 'FloatingMenu-Button');
+			} else {
+				// Desktop/Android: Use simple audio element
+				if (audio) {
+					audio.currentTime = 0;
+					await audio.play();
+					console.log('🖥️ Desktop/Android: Playing button sound via audio element');
+				}
 			}
 		} catch (error) {
 			console.error("Error playing sound:", error);
@@ -288,16 +318,19 @@ const FloatingMenu = () => {
 			console.log('🔊 VOLUME button clicked - adjusting volume');
 			console.log('🎵 Device info:', deviceAudioInfo);
 
-			// Initialize audio for user interaction on first click (iPhone requirement only)
-			const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-			if (!audioInitialized && isIPhone) {
-				console.log('📱 Initializing iPhone audio for user interaction');
+			// Get device types
+			const deviceIsIPhone = isIPhone();
+			const deviceIsIPad = isIPad();
+
+			// Initialize audio for user interaction on first click (iOS requirement)
+			if (!audioInitialized && (deviceIsIPhone || deviceIsIPad)) {
+				console.log(`📱 Initializing ${deviceIsIPhone ? 'iPhone' : 'iPad'} audio for user interaction`);
 				await initializeAudioForUserInteraction();
 				setAudioInitialized(true);
 				// Update device info after initialization
 				const updatedDeviceInfo = getDeviceAudioInfo();
 				setDeviceAudioInfo(updatedDeviceInfo);
-				console.log('📱 Updated device info after iPhone initialization:', updatedDeviceInfo);
+				console.log(`📱 Updated device info after ${deviceIsIPhone ? 'iPhone' : 'iPad'} initialization:`, updatedDeviceInfo);
 			}
 
 			// Cycle through 5 volume levels: 90% -> 70% -> 50% -> 30% -> 0% -> 90%
@@ -331,28 +364,56 @@ const FloatingMenu = () => {
 			const videos = document.querySelectorAll('video');
 			const audios = document.querySelectorAll('audio');
 
-			// Apply volume - same simple approach that works on desktop/Mac/tablets
-			console.log('🖥️ Applying volume control');
-
-			videos.forEach((video: HTMLVideoElement) => {
-				video.volume = newVolume;
-				console.log(`🎬 Applied volume ${newVolume} to video element`);
-			});
-
-			audios.forEach((audio: HTMLAudioElement) => {
-				audio.volume = newVolume;
-				console.log(`🎵 Applied volume ${newVolume} to audio element`);
-			});
+			if (deviceIsIPhone) {
+				// iPhone: Use Web Audio API if available, otherwise direct volume
+				console.log('📱 Applying iPhone volume control');
+				videos.forEach((video: HTMLVideoElement) => {
+					video.volume = newVolume;
+					console.log(`🎬 Applied iPhone volume ${newVolume} to video element`);
+				});
+				audios.forEach((audio: HTMLAudioElement) => {
+					audio.volume = newVolume;
+					console.log(`🎵 Applied iPhone volume ${newVolume} to audio element`);
+				});
+			} else if (deviceIsIPad) {
+				// iPad: Direct volume control (works better than iPhone Web Audio approach)
+				console.log('🔲 Applying iPad direct volume control');
+				videos.forEach((video: HTMLVideoElement) => {
+					video.volume = newVolume;
+					video.muted = newVolume === 0;
+					console.log(`🎬 Applied iPad volume ${newVolume} to video element (muted: ${newVolume === 0})`);
+				});
+				audios.forEach((audio: HTMLAudioElement) => {
+					audio.volume = newVolume;
+					console.log(`🎵 Applied iPad volume ${newVolume} to audio element`);
+				});
+			} else {
+				// Desktop/Android: Standard volume control
+				console.log('🖥️ Applying standard volume control');
+				videos.forEach((video: HTMLVideoElement) => {
+					video.volume = newVolume;
+					console.log(`🎬 Applied standard volume ${newVolume} to video element`);
+				});
+				audios.forEach((audio: HTMLAudioElement) => {
+					audio.volume = newVolume;
+					console.log(`🎵 Applied standard volume ${newVolume} to audio element`);
+				});
+			}
 
 			// Dispatch custom event for programmatically created audio (background music)
 			window.dispatchEvent(new CustomEvent('globalVolumeChange', {
 				detail: {
 					volume: newVolume,
-					isIOS: isIPhone,
+					isIPhone: deviceIsIPhone,
+					isIPad: deviceIsIPad,
 					hasWebAudio: deviceAudioInfo?.hasWebAudio || false
 				}
 			}));
-			console.log(`📡 Dispatched global volume change event: ${newVolume} (iPhone: ${isIPhone})`);
+
+			// Update background music volume
+			updateBackgroundMusicVolume(newVolume);
+
+			console.log(`📡 Dispatched global volume change event: ${newVolume} (iPhone: ${deviceIsIPhone}, iPad: ${deviceIsIPad})`);
 
 			// Reset icon state quickly for volume, no navigation
 			setTimeout(() => {
@@ -494,7 +555,7 @@ const FloatingMenu = () => {
 						>
 							{item.id === "map" ? "Actividad" :
 							 item.id === "volumen" ?
-								`Volumen ${Math.round(volumeLevel * 100)}%${/iPhone/.test(navigator?.userAgent || '') ? ' (iPhone)' : ''}` :
+								`Volumen ${Math.round(volumeLevel * 100)}%${isIPhone() ? ' (iPhone)' : isIPad() ? ' (iPad)' : ''}` :
 							 item.id.charAt(0).toUpperCase() + item.id.slice(1)}
 						</motion.div>
 					)}
@@ -509,7 +570,7 @@ const FloatingMenu = () => {
 						>
 							{item.id === "map" ? "actividad" :
 							 item.id === "volumen" ?
-								`vol ${Math.round(volumeLevel * 100)}%${/iPhone/.test(navigator?.userAgent || '') ? ' iPhone' : ''}` :
+								`vol ${Math.round(volumeLevel * 100)}%${isIPhone() ? ' iPhone' : isIPad() ? ' iPad' : ''}` :
 							 item.id}
 						</motion.div>
 					)}
