@@ -186,7 +186,7 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
     
     // If clicking on the already active item, go to the activity
     if (index === activeIndex) {
-      await playSound(clickAudio);
+      await playSound(clickAudio, '/ui-sound/click.mp3');
       const item = items[index];
       if (onSelectActivity) {
         onSelectActivity(item.url);
@@ -199,8 +199,8 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
     }
     
     // Otherwise, just rotate to that position
-    await playSound(clickAudio);
-    await playSound(moveAudio);
+    await playSound(clickAudio, '/ui-sound/click.mp3');
+    await playSound(moveAudio, '/ui-sound/whoosh.mp3');
     setActiveIndex(index);
     console.log(`Rotated carousel to position ${index}`);
   };
@@ -215,13 +215,13 @@ const OrbitalCarousel: React.FC<OrbitalCarouselProps> = ({
     // Only allow navigation if this item is in the active (front) position
     if (index !== activeIndex) {
       console.log('Item must be in front position to navigate. Rotating to front...');
-      await playSound(moveAudio);
+      await playSound(moveAudio, '/ui-sound/whoosh.mp3');
       setActiveIndex(index);
       return;
     }
     
     // Item is in front position, navigate to activity
-    await playSound(clickAudio);
+    await playSound(clickAudio, '/ui-sound/click.mp3');
     
     if (onSelectActivity) {
       onSelectActivity(url);

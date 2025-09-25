@@ -83,14 +83,12 @@ export default function Scene2Page() {
   // Listen for global volume changes from FloatingMenu
   useEffect(() => {
     const handleVolumeChange = (event: CustomEvent) => {
-      const { volume } = event.detail;
-      console.log(`🎵 Scene2: Received global volume change: ${volume}`);
+      const { volume, isIPhone, isIPad } = event.detail;
+      console.log(`🎵 Scene2: Received global volume change: ${volume} (iPhone: ${isIPhone}, iPad: ${isIPad})`);
 
       // Apply volume to video element if it exists
       const video = videoRef.current;
       if (video && video.readyState > 0) {
-        const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-
         if (isIPhone) {
           video.muted = false;
           video.volume = 1.0;
@@ -98,10 +96,14 @@ export default function Scene2Page() {
             window.videoGainNode.gain.value = volume;
             console.log(`📱 Scene2 iPhone: Applied volume ${volume} via Web Audio`);
           }
+        } else if (isIPad) {
+          video.volume = volume;
+          video.muted = volume === 0;
+          console.log(`🔲 Scene2 iPad: Applied volume ${volume} directly (muted: ${volume === 0})`);
         } else {
           video.muted = false;
           video.volume = volume;
-          console.log(`🖥️ Scene2 Desktop/Android/iPad: Applied volume ${volume} directly`);
+          console.log(`🖥️ Scene2 Desktop/Android: Applied volume ${volume} directly`);
         }
       }
 
@@ -250,9 +252,24 @@ export default function Scene2Page() {
               const video = videoRef.current;
               if (!video) return;
 
-              video.muted = false;
-              video.volume = currentVolume;
-              console.log(`🎬 Scene2: Video playing, volume: ${currentVolume}`);
+              // Determine device type
+              const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+              const isIPad = /iPad/.test(navigator?.userAgent || '') ||
+                           (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+              if (isIPhone) {
+                video.muted = false;
+                video.volume = 1.0; // iPhone uses Web Audio for volume control
+                console.log(`📱 Scene2 iPhone: Video playing, using Web Audio volume control`);
+              } else if (isIPad) {
+                video.volume = currentVolume;
+                video.muted = currentVolume === 0;
+                console.log(`🔲 Scene2 iPad: Video playing, direct volume: ${currentVolume} (muted: ${currentVolume === 0})`);
+              } else {
+                video.muted = false;
+                video.volume = currentVolume;
+                console.log(`🖥️ Scene2 Desktop/Android: Video playing, volume: ${currentVolume}`);
+              }
 
               // Initialize audio for volume control
               try {
@@ -263,7 +280,6 @@ export default function Scene2Page() {
               }
 
               // For iPhone, connect to Web Audio API
-              const isIPhone = /iPhone/.test(navigator?.userAgent || '');
               if (isIPhone) {
                 try {
                   let sharedAudioContext = window.sharedAudioContext;

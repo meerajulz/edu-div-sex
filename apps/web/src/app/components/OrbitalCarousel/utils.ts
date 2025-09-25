@@ -1,4 +1,5 @@
 import { ContainerSize, Position } from './types';
+import { playGameAudio, isIPad, isIPhone } from '../../utils/gameAudio';
 
 /**
  * Calculate the position of an item in the carousel
@@ -46,13 +47,25 @@ export const calculatePosition = (
 };
 
 /**
- * Play audio with error handling
+ * Play audio with error handling and iPad/iPhone support
  */
-export const playSound = async (audio: HTMLAudioElement | null): Promise<void> => {
+export const playSound = async (audio: HTMLAudioElement | null, soundPath?: string): Promise<void> => {
   try {
-    if (audio) {
-      audio.currentTime = 0;
-      await audio.play();
+    const deviceIsIPad = isIPad();
+    const deviceIsIPhone = isIPhone();
+
+    if (deviceIsIPad || deviceIsIPhone) {
+      // iPad/iPhone: Use playGameAudio for proper audio initialization
+      const audioPath = soundPath || '/ui-sound/whoosh.mp3';
+      console.log(`${deviceIsIPad ? '🔲 iPad' : '📱 iPhone'}: Playing OrbitalCarousel sound via playGameAudio`);
+      await playGameAudio(audioPath, 0.3, 'OrbitalCarousel');
+    } else {
+      // Desktop/Android: Use direct audio element
+      if (audio) {
+        audio.currentTime = 0;
+        await audio.play();
+        console.log('🖥️ Desktop/Android: Playing OrbitalCarousel sound via audio element');
+      }
     }
   } catch (error) {
     console.error('Error playing sound:', error);

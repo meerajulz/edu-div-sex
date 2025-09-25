@@ -167,7 +167,11 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     const video = videoRef.current;
     if (!video) return;
 
-    console.log(`🎬 VideoBackground: Applying volume ${currentVolume} to home video (iOS: ${deviceInfo.isIOS})`);
+    const deviceIsIPhone = /iPhone/.test(navigator?.userAgent || '');
+    const deviceIsIPad = /iPad/.test(navigator?.userAgent || '') ||
+      (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+    console.log(`🎬 VideoBackground: Applying volume ${currentVolume} to home video (iPhone: ${deviceIsIPhone}, iPad: ${deviceIsIPad})`);
 
     // Don't change volume if video is not loaded yet
     if (video.readyState === 0) {
@@ -177,31 +181,31 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
 
     console.log(`🎬 VideoBackground: Video ready (readyState: ${video.readyState}), applying volume`);
 
-    // Only iPhone uses Web Audio API, everything else uses direct video volume
-    const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-
-    if (isIPhone) {
+    if (deviceIsIPhone) {
       // iPhone: Use Web Audio API
       video.volume = 1.0;
       console.log(`📱 iPhone: Video set to max volume (1.0), Web Audio API will control actual volume`);
-    } else {
-      // Desktop/Android/iPad: Direct video volume (original behavior)
+    } else if (deviceIsIPad) {
+      // iPad: Direct volume control with muting
       video.volume = currentVolume;
-      console.log(`🖥️ Desktop/Android/iPad: Applied volume ${currentVolume} directly to video`);
+      video.muted = currentVolume === 0;
+      console.log(`🔲 iPad: Applied volume ${currentVolume} directly (muted: ${currentVolume === 0})`);
+    } else {
+      // Desktop/Android: Direct video volume
+      video.volume = currentVolume;
+      console.log(`🖥️ Desktop/Android: Applied volume ${currentVolume} directly to video`);
     }
   }, [currentVolume, deviceInfo.isIOS]);
 
   // Listen for global volume changes from FloatingMenu
   useEffect(() => {
     const handleVolumeChange = (event: CustomEvent) => {
-      const { volume, isIOS } = event.detail;
-      console.log(`🎵 VideoBackground: Received global volume change: ${volume} (iOS: ${isIOS}, deviceInfo.isIOS: ${deviceInfo.isIOS})`);
+      const { volume, isIPhone, isIPad } = event.detail;
+      console.log(`🎵 VideoBackground: Received global volume change: ${volume} (iPhone: ${isIPhone}, iPad: ${isIPad})`);
 
       // Apply volume immediately to video element if it exists and is loaded
       const video = videoRef.current;
       if (video && video.readyState > 0) {
-        const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-
         if (isIPhone) {
           // iPhone: Use Web Audio API gain node
           video.muted = false; // Ensure not muted
@@ -213,11 +217,16 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
           } else {
             console.warn(`📱 iPhone: videoGainNode not available for volume ${volume}`);
           }
+        } else if (isIPad) {
+          // iPad: Direct video volume with proper muting
+          video.volume = volume;
+          video.muted = volume === 0;
+          console.log(`🔲 iPad: Applied volume ${volume} directly (muted: ${volume === 0})`);
         } else {
-          // Desktop/Android/iPad: Direct video volume (original behavior)
+          // Desktop/Android: Direct video volume
           video.muted = false;
           video.volume = volume;
-          console.log(`🖥️ Desktop/Android/iPad: Applied volume ${volume} directly to video`);
+          console.log(`🖥️ Desktop/Android: Applied volume ${volume} directly to video`);
         }
       } else {
         console.log(`🎬 VideoBackground: Video not ready (readyState: ${video?.readyState}), setting volume for later`);
@@ -238,25 +247,39 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
 
     const handleLoadedData = () => {
       setIsLoaded(true);
-      // Apply volume when video loads - same approach that works on desktop/Mac/tablets
-      video.volume = currentVolume;
-      console.log(`🎬 VideoBackground: Video loaded, volume applied: ${currentVolume}`);
+
+      const deviceIsIPhone = /iPhone/.test(navigator?.userAgent || '');
+      const deviceIsIPad = /iPad/.test(navigator?.userAgent || '') ||
+        (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+      if (deviceIsIPhone) {
+        // iPhone: Set to max, Web Audio will control
+        video.volume = 1.0;
+        console.log(`📱 VideoBackground iPhone: Video loaded, set to max volume for Web Audio`);
+      } else if (deviceIsIPad) {
+        // iPad: Direct volume control
+        video.volume = currentVolume;
+        video.muted = currentVolume === 0;
+        console.log(`🔲 VideoBackground iPad: Video loaded, volume applied: ${currentVolume} (muted: ${currentVolume === 0})`);
+      } else {
+        // Desktop/Android: Direct volume
+        video.volume = currentVolume;
+        console.log(`🖥️ VideoBackground Desktop/Android: Video loaded, volume applied: ${currentVolume}`);
+      }
     };
 
     const handlePlay = () => {
       setIsPlaying(true);
-      // When video starts playing, ensure it's unmuted and volume is applied (important for iOS)
-      video.muted = false;
-      video.volume = currentVolume;
 
-      // Check if video actually has audio tracks
-      console.log(`🎬 Video started playing, unmuted: ${!video.muted}, volume set to: ${currentVolume}`);
+      const deviceIsIPhone = /iPhone/.test(navigator?.userAgent || '');
+      const deviceIsIPad = /iPad/.test(navigator?.userAgent || '') ||
+        (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
 
-      // Only for iPhone: Initialize Web Audio API
-      const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-
-      if (isIPhone) {
-        console.log(`📱 iPhone detected - initializing Web Audio API`);
+      if (deviceIsIPhone) {
+        // iPhone: Web Audio API setup
+        video.muted = false;
+        video.volume = 1.0;
+        console.log(`📱 iPhone: Video playing, using Web Audio API for volume control`);
 
         try {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -271,50 +294,73 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
         } catch (e) {
           console.log('📱 iPhone: AudioContext initialization failed:', e);
         }
-      } else {
-        console.log(`🖥️ Desktop/Android/iPad: Using direct video volume (original behavior)`);
-      }
 
-      // Only for iPhone: Connect video to Web Audio API
-      if (isIPhone) {
+        // Connect to Web Audio API for iPhone
         try {
-          // CRITICAL: Initialize the SAME AudioContext that FloatingMenu will use
-          // This ensures volume controls and video audio use the same gain node
           let sharedAudioContext = window.globalAudioContext;
 
           if (!sharedAudioContext) {
-            console.log('🍎 iPad/iPhone: Initializing shared AudioContext for video (FloatingMenu will use same one)');
+            console.log('📱 iPhone: Initializing shared AudioContext for video');
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (AudioContext) {
               sharedAudioContext = new AudioContext();
               window.globalAudioContext = sharedAudioContext;
 
-              // ALSO initialize the gain node here so FloatingMenu can use it
               if (!(window.globalGainNode)) {
                 const initialGainNode = sharedAudioContext.createGain();
                 initialGainNode.gain.value = currentVolume;
                 window.globalGainNode = initialGainNode;
-                console.log('🍎 iPad/iPhone: Pre-created globalGainNode for FloatingMenu to use');
+                console.log('📱 iPhone: Pre-created globalGainNode');
               }
             }
           } else {
-            console.log('🍎 iPad/iPhone: Using existing shared AudioContext');
+            console.log('📱 iPhone: Using existing shared AudioContext');
           }
 
           if (sharedAudioContext) {
             if (sharedAudioContext.state === 'suspended') {
               sharedAudioContext.resume().then(() => {
-                console.log('🍎 iPad/iPhone: Shared AudioContext resumed');
+                console.log('📱 iPhone: Shared AudioContext resumed');
                 connectVideoToWebAudio(video, sharedAudioContext);
               });
             } else {
-              console.log('🍎 iPad/iPhone: Shared AudioContext already running');
+              console.log('📱 iPhone: Shared AudioContext already running');
               connectVideoToWebAudio(video, sharedAudioContext);
             }
           }
         } catch (e) {
-          console.error('🍎 iPad/iPhone: AudioContext setup failed:', e);
+          console.error('📱 iPhone: AudioContext setup failed:', e);
         }
+      } else if (deviceIsIPad) {
+        // iPad: Direct volume control + audio context initialization
+        video.volume = currentVolume;
+        video.muted = currentVolume === 0;
+        console.log(`🔲 iPad: Video playing, direct volume: ${currentVolume} (muted: ${currentVolume === 0})`);
+
+        // iPad ALSO needs audio context initialization for any audio to work
+        try {
+          console.log('🔲 iPad: Initializing audio context for video playback');
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            let audioContext = window.globalAudioContext;
+            if (!audioContext) {
+              audioContext = new AudioContext();
+              window.globalAudioContext = audioContext;
+            }
+            if (audioContext.state === 'suspended') {
+              audioContext.resume().then(() => {
+                console.log('🔲 iPad: AudioContext resumed successfully');
+              });
+            }
+          }
+        } catch (e) {
+          console.error('🔲 iPad: AudioContext setup failed:', e);
+        }
+      } else {
+        // Desktop/Android: Direct volume control
+        video.muted = false;
+        video.volume = currentVolume;
+        console.log(`🖥️ Desktop/Android: Video playing, volume: ${currentVolume}`);
       }
     };
     const handlePause = () => setIsPlaying(false);
@@ -338,8 +384,8 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     video.addEventListener('error', handleError);
 
     // iPhone-specific video setup (only on initial load)
-    const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-    if (isIPhone) {
+    const deviceIsIPhone = /iPhone/.test(navigator?.userAgent || '');
+    if (deviceIsIPhone) {
       video.setAttribute('playsinline', 'true');
       video.preload = 'auto';
       console.log(`📱 iPhone: Video attributes applied`);
