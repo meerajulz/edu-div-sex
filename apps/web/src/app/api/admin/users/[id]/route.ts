@@ -138,6 +138,19 @@ export async function PUT(
     const body = await request.json();
     const { name, email, role, is_active, new_password, notes } = body;
 
+    // If changing email, check if it's already in use by another active user
+    if (email !== undefined) {
+      const existingEmail = await query(
+        'SELECT id FROM users WHERE email = $1 AND id != $2 AND deleted_at IS NULL',
+        [email, userId]
+      );
+      if (existingEmail.rows.length > 0) {
+        return NextResponse.json({
+          error: 'Email already exists'
+        }, { status: 400 });
+      }
+    }
+
     // Build dynamic update query
     const updates = [];
     const values = [];
@@ -199,11 +212,6 @@ export async function PUT(
 
   } catch (error) {
     console.error('Error updating user:', error);
-    if ((error as { code?: string }).code === '23505') {
-      return NextResponse.json({ 
-        error: 'Email already exists' 
-      }, { status: 400 });
-    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

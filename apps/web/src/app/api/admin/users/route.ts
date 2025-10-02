@@ -157,21 +157,35 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     try {
+      // Check if email is already in use by an active (non-deleted) user
+      const existingEmail = await query(
+        'SELECT id FROM users WHERE email = $1 AND deleted_at IS NULL',
+        [email]
+      );
+      if (existingEmail.rows.length > 0) {
+        return NextResponse.json({
+          error: 'Email already exists'
+        }, { status: 400 });
+      }
+
       // Determine username based on role
       let finalUsername = null;
       if (role === 'student') {
         // For students, use the provided username
         finalUsername = username;
-        
-        // Check if username already exists
-        const existingUsername = await query('SELECT id FROM users WHERE username = $1', [username]);
+
+        // Check if username already exists (excluding deleted users)
+        const existingUsername = await query(
+          'SELECT id FROM users WHERE username = $1 AND deleted_at IS NULL',
+          [username]
+        );
         if (existingUsername.rows.length > 0) {
-          return NextResponse.json({ 
-            error: 'Username already exists' 
+          return NextResponse.json({
+            error: 'Username already exists'
           }, { status: 400 });
         }
       }
-      
+
       // Create user
       const result = await query(`
         INSERT INTO users (email, password_hash, name, role, created_by, is_active, username, first_name, last_name, sex)
