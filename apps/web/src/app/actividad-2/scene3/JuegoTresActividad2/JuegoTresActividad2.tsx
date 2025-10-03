@@ -79,26 +79,31 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
       const situationsOrder = shuffledSituations.map(s => s.id);
       startSession(userId, situationsOrder);
       
-      // Play title audio first, then start game
+      // Play title audio first, then subtitle audio, then start game
       setTimeout(async () => {
         await playTitleAudio();
-        
-        // Start game
-        setTimeout(() => {
-          setGamePhase('playing');
-        }, 1000);
+
+        // Play subtitle audio after title
+        setTimeout(async () => {
+          await playSubtitleAudio();
+
+          // Start game after subtitle completes
+          setTimeout(() => {
+            setGamePhase('playing');
+          }, 1000);
+        }, 1000); // Delay between title and subtitle
       }, GAME_CONFIG.timing.titleAudioDelay);
     } else if (!isVisible) {
       stopAudio();
     }
-  }, [isVisible, gameInitialized, shuffledSituations.length, userId, startSession, playTitleAudio, setGamePhase, stopAudio]);
+  }, [isVisible, gameInitialized, shuffledSituations.length, userId, startSession, playTitleAudio, playSubtitleAudio, setGamePhase, stopAudio]);
 
   // Handle drag start
   const handleDragStart = async (situationId: string) => {
     if (gamePhase !== 'playing') return;
-    
+
     setDraggedItem(situationId);
-    
+
     // Find the situation and play its drag audio
     const situation = shuffledSituations.find(s => s.id === situationId);
     if (situation) {
@@ -112,12 +117,12 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
   // Handle drop on zone
   const handleDrop = async (zoneId: 'PRIVATE' | 'PUBLIC', situationId: string) => {
     if (gamePhase !== 'playing') return;
-    
+
     const situation = shuffledSituations.find(s => s.id === situationId);
     if (!situation) return;
 
     console.log(`🎮 Dropped ${situation.name} on ${zoneId} zone`);
-    
+
     const correct = zoneId === situation.correctAnswer;
 
     // Record attempt
@@ -131,43 +136,50 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
     );
 
     if (correct) {
-      // Correct answer - add to dropped items and complete situation
+      // Correct answer - add to dropped items and complete situation immediately
       addDroppedItem(zoneId, situation);
       completeSituation(situationId);
       setScore(prev => prev + 1);
-      
-      // Play audio feedback sequence
-      await playCorrectAudio();
-      
-      // Wait 1 second, then play feedback audio and wait for it to complete
+
+      // Wait for drag audio to finish, then play correct audio and feedback
       setTimeout(async () => {
-        await playFeedbackAudio(situation.feedback.audio);
-        
-        // Check if game is complete after feedback audio finishes
-        // Use the current completedSituations size + 1 for the new completion
-        const currentCompletedCount = completedSituations.size;
-        console.log(`🎮 Current completed: ${currentCompletedCount}, Total situations: ${GAME_CONFIG.situations.length}`);
-        
-        if (currentCompletedCount + 1 >= GAME_CONFIG.situations.length) {
-          console.log('🎮 All situations completed! Showing celebration...');
-          setTimeout(() => {
-            setShowCongrats(true);
-          }, 1000); // Small delay after feedback completes
-        }
-      }, 1000);
-    } else {
-      // Incorrect answer - play feedback but don't add to zone
-      await playIncorrectAudio();
-      
-      // Wait 1 second, then play feedback audio
-      setTimeout(async () => {
-        await playFeedbackAudio(situation.feedback.audio);
-        
-        // After feedback audio completes, play try again audio
+        await playCorrectAudio();
+
+        // Wait 1 second, then play feedback audio and wait for it to complete
         setTimeout(async () => {
-          await playTryAgainAudio();
-        }, 500); // Small delay between feedback and try again
-      }, 1000);
+          // Check if game is complete before playing feedback
+          const currentCompletedCount = completedSituations.size;
+          const isLastSituation = currentCompletedCount + 1 >= GAME_CONFIG.situations.length;
+
+          console.log(`🎮 Current completed: ${currentCompletedCount}, Total situations: ${GAME_CONFIG.situations.length}`);
+
+          // Play feedback audio and wait for it to finish
+          await playFeedbackAudio(situation.feedback.audio);
+
+          // If this was the last situation, show congrats after feedback completes
+          if (isLastSituation) {
+            console.log('🎮 All situations completed! Showing celebration after feedback...');
+            setTimeout(() => {
+              setShowCongrats(true);
+            }, 500); // Small delay after feedback completes
+          }
+        }, 1000);
+      }, 2000); // Wait 2 seconds for drag audio to finish
+    } else {
+      // Incorrect answer - wait for drag audio, then play feedback
+      setTimeout(async () => {
+        await playIncorrectAudio();
+
+        // Wait 1 second, then play feedback audio
+        setTimeout(async () => {
+          await playFeedbackAudio(situation.feedback.audio);
+
+          // After feedback audio completes, play try again audio
+          setTimeout(async () => {
+            await playTryAgainAudio();
+          }, 500); // Small delay between feedback and try again
+        }, 1000);
+      }, 2000); // Wait 2 seconds for drag audio to finish
     }
 
     // Reset dragged item
@@ -221,13 +233,13 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4" style={{ backgroundColor: 'transparent' }}>
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" style={{ backgroundColor: 'transparent' }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="relative w-full h-full max-w-[1024px] max-h-[720px] rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
+        className="relative w-full h-full max-w-[1024px] max-h-[95vh] rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
         style={{
           background: 'linear-gradient(to right, #fdfad6, #d4fff7)'
         }}
@@ -274,44 +286,45 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
           </div>
         )}
 
-        {/* Main Game Area */}
+        {/* Progress Badge - Centered at top of modal */}
         {gamePhase === 'playing' && (
-          <div className="relative h-full p-8 pb-32">
-            {/* Game Title */}
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                ¿Qué es privado y qué es público?
-              </h2>
-              <p className="text-lg text-gray-600">
-                Arrastra las situaciones a la categoría correcta
-              </p>
-            </div>
-
-            {/* Drop Zones */}
-            <DropZones
-              onDrop={handleDrop}
-              disabled={gamePhase !== 'playing'}
-              droppedItems={droppedItems}
-              situations={shuffledSituations}
-            />
-
-            {/* Instructions */}
-            <div className="text-center mb-4" style={{display: 'none' }}>
-              <p className="text-md text-gray-700 bg-white/70 px-4 py-2 rounded-full inline-block">
-                🔒 Privado: cosas que hacemos en espacios privados | 🌍 Público: cosas que hacemos en espacios públicos
-              </p>
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm whitespace-nowrap">
+              Completado {completedSituations.size}/{GAME_CONFIG.situations.length}
             </div>
           </div>
         )}
 
-        {/* Situation Items - Always visible during playing phase */}
+        {/* Main Game Area */}
         {gamePhase === 'playing' && (
-          <SituationItems
-            situations={shuffledSituations}
-            completedSituations={completedSituations}
-            onDragStart={handleDragStart}
-            disabled={gamePhase !== 'playing'}
-          />
+          <div className="relative h-full flex flex-col pt-4">
+            {/* Grid Layout: Drop Zones Left (30%), Situation Items Right (70%) */}
+            <div className="grid grid-cols-[30%_70%] gap-4 flex-1 overflow-hidden">
+              {/* Left Column - Drop Zones (stacked vertically) */}
+              <div className="flex items-center justify-center pl-12">
+                <div className="w-full h-full">
+                  <DropZones
+                    onDrop={handleDrop}
+                    disabled={gamePhase !== 'playing'}
+                    droppedItems={droppedItems}
+                    situations={shuffledSituations}
+                  />
+                </div>
+              </div>
+
+              {/* Right Column - Situation Items (3-column grid) */}
+              <div className="flex items-center justify-center">
+                <div className="w-full h-full">
+                  <SituationItems
+                    situations={shuffledSituations}
+                    completedSituations={completedSituations}
+                    onDragStart={handleDragStart}
+                    disabled={gamePhase !== 'playing'}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Enhanced Congratulations Overlay */}

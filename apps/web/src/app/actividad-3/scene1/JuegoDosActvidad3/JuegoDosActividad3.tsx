@@ -288,18 +288,27 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
     playAudio(gameConfig.title.audio);
   }, [playAudio, gameConfig.title.audio]);
 
+  // Handle image click to replay situation audio
+  const handleImageClick = useCallback(() => {
+    const situationData = gameConfig.situations[currentSituation];
+    if (gamePhase === 'question' && situationData) {
+      console.log('🔊 Replaying situation audio from image click');
+      playAudio(situationData.audio.description);
+    }
+  }, [gamePhase, currentSituation, gameConfig.situations, playAudio]);
+
   if (!isVisible) return null;
 
   const currentSituationData = gameConfig.situations[currentSituation];
   const showSituation = gamePhase === 'situation' || gamePhase === 'question';
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-4">
-      {/* Modal with gradient background - 800x500 responsive */}
-      <div 
-        className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600"
-        style={{ 
-          aspectRatio: '800/500'
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+      {/* Modal with gradient background - 30% bigger and responsive */}
+      <div
+        className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600"
+        style={{
+          aspectRatio: '1200/750'
         }}
       >
 
@@ -317,12 +326,14 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
           Salir juego
         </button>
 
-        {/* Progress Indicator */}
-        <div className="absolute top-4 left-4 z-10 bg-white/20 rounded-full px-4 py-2">
-          <span className="text-white font-bold">
-            {currentSituation + 1} / {gameConfig.situations.length}
-          </span>
-        </div>
+        {/* Progress Badge - Top left */}
+        {(gamePhase === 'situation' || gamePhase === 'question' || gamePhase === 'feedback') && (
+          <div className="absolute top-4 left-4 z-10">
+            <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+              Situación {currentSituation + 1}/{gameConfig.situations.length}
+            </div>
+          </div>
+        )}
 
         {/* Debug Info (development only) */}
         {process.env.NODE_ENV === 'development' && (
@@ -377,6 +388,8 @@ const JuegoDosActividad3: React.FC<JuegoDosActividad3Props> = ({
             image={currentSituationData.image}
             alt={currentSituationData.title}
             isVisible={true}
+            onClick={handleImageClick}
+            clickable={gamePhase === 'question'}
           />
         )}
 

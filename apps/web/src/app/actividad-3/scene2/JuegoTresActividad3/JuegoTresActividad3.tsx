@@ -351,18 +351,54 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
     playAudio(gameConfig.title.audio);
   }, [playAudio, gameConfig.title.audio]);
 
+  // Handle replay situation button
+  const handleReplaySituation = useCallback(() => {
+    const situation = gameConfig.situations[currentSituation];
+    console.log('🔊 Replaying situation audio sequence');
+
+    // Stop any current audio
+    stopAudio();
+
+    // Play situation description first, then options
+    playAudioWithCallback(
+      situation.description.audio,
+      () => {
+        console.log('🎵 Situation audio finished, playing options...');
+        // Recursively play each option audio
+        const playNextOption = (index: number) => {
+          if (index >= situation.options.length) {
+            console.log('🎵 All replay audios finished');
+            return;
+          }
+
+          setTimeout(() => {
+            playAudioWithCallback(
+              situation.options[index].audio,
+              () => {
+                console.log(`🎵 Option ${index + 1} audio finished`);
+                playNextOption(index + 1);
+              }
+            );
+          }, 500);
+        };
+
+        playNextOption(0);
+      }
+    );
+  }, [currentSituation, gameConfig.situations, playAudioWithCallback, stopAudio]);
+
   if (!isVisible) return null;
 
   const currentSituationData = gameConfig.situations[currentSituation];
   const showSituation = gamePhase === 'situation' || gamePhase === 'options' || gamePhase === 'waiting_for_click';
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-4">
-      {/* Modal with gradient background - 800x500 responsive */}
-      <div 
-        className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-500"
-        style={{ 
-          aspectRatio: '800/500'
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+      {/* Modal with gradient background - 30% bigger and responsive */}
+      <div
+        className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-500"
+        style={{
+          aspectRatio: '1200/750'
         }}
       >
 
@@ -380,12 +416,22 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
           Salir juego
         </button>
 
-        {/* Progress Indicator */}
-        <div className="absolute top-4 left-4 z-10 bg-white/20 rounded-full px-4 py-2">
-          <span className="text-white font-bold">
-            {currentSituation + 1} / {gameConfig.situations.length}
-          </span>
-        </div>
+        {/* Progress Badge and Replay Button - Top left */}
+        {(gamePhase === 'situation' || gamePhase === 'options' || gamePhase === 'waiting_for_click') && (
+          <div className="absolute top-4 left-4 z-30 flex flex-row items-center gap-3">
+            <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+              Situación {currentSituation + 1}/{gameConfig.situations.length}
+            </div>
+            {gamePhase === 'waiting_for_click' && (
+              <button
+                onClick={handleReplaySituation}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-lg font-semibold transition-all duration-200 hover:scale-105"
+              >
+                🔊 Escuchar de nuevo
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Debug Info (development only) */}
         {process.env.NODE_ENV === 'development' && (
@@ -454,6 +500,7 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
             gamePhase={gamePhase}
             onOptionSelect={handleOptionSelect}
             selectedOption={selectedOption}
+            situationId={currentSituationData.id}
           />
         )}
 

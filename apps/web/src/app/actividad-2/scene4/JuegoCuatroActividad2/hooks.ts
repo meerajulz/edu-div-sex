@@ -3,7 +3,7 @@ import { GAME_CONFIG } from './config';
 import type { GameSession } from './config';
 import { createGameAudio } from '../../../utils/gameAudio';
 
-type GamePhase = 'intro' | 'situation' | 'options' | 'feedback' | 'completed';
+type GamePhase = 'intro' | 'situation' | 'showingCorrectImage' | 'showingIncorrectImage' | 'options' | 'feedback' | 'completed';
 type AnswerType = 'correct' | 'incorrect';
 
 interface GameState {
@@ -14,6 +14,8 @@ interface GameState {
   attempts: number;
   showFeedbackImage: boolean;
   gameCompleted: boolean;
+  showCorrectImage: boolean;
+  showIncorrectImage: boolean;
 }
 
 export const useJuegoCuatroGame = () => {
@@ -24,7 +26,9 @@ export const useJuegoCuatroGame = () => {
     isCorrect: null,
     attempts: 0,
     showFeedbackImage: false,
-    gameCompleted: false
+    gameCompleted: false,
+    showCorrectImage: false,
+    showIncorrectImage: false
   });
 
   const [sessionData, setSessionData] = useState<GameSession>({
@@ -96,18 +100,32 @@ export const useJuegoCuatroGame = () => {
 
   const showSituation = useCallback(async () => {
     const currentSituation = GAME_CONFIG.situations[gameState.currentSituationIndex];
-    
+
     // Play animation sound
     playSound(GAME_CONFIG.globalAudio.animationSound);
-    
+
     // Play situation audio
     await playAudio(currentSituation.audio.situation);
-    
-    // Show options after audio finishes
-    const timeout = setTimeout(() => {
-      setGameState(prev => ({ ...prev, phase: 'options' }));
-    }, GAME_CONFIG.timing.optionsDelay);
-    timeoutRefs.current.push(timeout);
+
+    // After situation audio, show correct image and play its audio
+    const timeout1 = setTimeout(async () => {
+      setGameState(prev => ({ ...prev, phase: 'showingCorrectImage', showCorrectImage: true }));
+      await playAudio(currentSituation.audio.imageCorrect);
+
+      // After correct image audio, show incorrect image and play its audio
+      const timeout2 = setTimeout(async () => {
+        setGameState(prev => ({ ...prev, phase: 'showingIncorrectImage', showIncorrectImage: true }));
+        await playAudio(currentSituation.audio.imageIncorrect);
+
+        // After both images are shown with audio, enable options
+        const timeout3 = setTimeout(() => {
+          setGameState(prev => ({ ...prev, phase: 'options' }));
+        }, GAME_CONFIG.timing.optionsDelay);
+        timeoutRefs.current.push(timeout3);
+      }, GAME_CONFIG.timing.imageIncorrectDelay);
+      timeoutRefs.current.push(timeout2);
+    }, GAME_CONFIG.timing.imageCorrectDelay);
+    timeoutRefs.current.push(timeout1);
   }, [gameState.currentSituationIndex, playAudio, playSound]);
 
   const handleAnswerClick = useCallback(async (answerType: AnswerType) => {
@@ -162,14 +180,16 @@ export const useJuegoCuatroGame = () => {
               isCorrect: null,
               attempts: 0,
               showFeedbackImage: false,
-              gameCompleted: false
+              gameCompleted: false,
+              showCorrectImage: false,
+              showIncorrectImage: false
             }));
           } else {
             // Game completed
             setGameState(prev => ({ ...prev, gameCompleted: true, phase: 'completed' }));
-            setSessionData(prev => ({ 
-              ...prev, 
-              completed: true, 
+            setSessionData(prev => ({
+              ...prev,
+              completed: true,
               endTime: new Date(),
               finalScore: Math.round((prev.correctAnswersFirstTry / prev.totalSituations) * 100)
             }));
@@ -179,8 +199,8 @@ export const useJuegoCuatroGame = () => {
       } else {
         // Allow retry
         const timeout3 = setTimeout(() => {
-          setGameState(prev => ({ 
-            ...prev, 
+          setGameState(prev => ({
+            ...prev,
             phase: 'options',
             selectedAnswer: null,
             isCorrect: null,
@@ -231,7 +251,9 @@ export const useJuegoCuatroGame = () => {
       isCorrect: null,
       attempts: 0,
       showFeedbackImage: false,
-      gameCompleted: false
+      gameCompleted: false,
+      showCorrectImage: false,
+      showIncorrectImage: false
     });
 
     setSessionData({
@@ -246,6 +268,20 @@ export const useJuegoCuatroGame = () => {
     });
   }, []);
 
+  // Function to replay situation audio with image explanations
+  const replaySituation = useCallback(async () => {
+    const currentSituation = GAME_CONFIG.situations[gameState.currentSituationIndex];
+
+    // Play situation audio
+    await playAudio(currentSituation.audio.situation);
+
+    // Play correct image audio
+    await playAudio(currentSituation.audio.imageCorrect);
+
+    // Play incorrect image audio
+    await playAudio(currentSituation.audio.imageIncorrect);
+  }, [gameState.currentSituationIndex, playAudio]);
+
   return {
     gameState,
     sessionData,
@@ -253,6 +289,7 @@ export const useJuegoCuatroGame = () => {
     startGame,
     handleAnswerClick,
     resetGame,
+    replaySituation,
     playAudio,
     config: GAME_CONFIG
   };

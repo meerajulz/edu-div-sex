@@ -47,6 +47,8 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
   const { recordAttempt } = useGameTracking();
   const { playButtonSound, playTitleAudio, playSubtitleAudio, playFeedbackAudio, playCorrectAudio, playIncorrectAudio, stopAudio } = useAudioManager();
 
+  const [feedbackDuration, setFeedbackDuration] = useState(4000);
+
   const currentBodyPart = shuffledBodyParts[currentBodyPartIndex] || null;
 
   useEffect(() => {
@@ -106,7 +108,11 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
     if (correct) setScore(prev => prev + 1);
 
     setTimeout(async () => {
-      await playFeedbackAudio(currentBodyPart.feedback.audio);
+      const audioDuration = await playFeedbackAudio(currentBodyPart.feedback.audio);
+      // Set feedback duration to audio duration + 1 second buffer + initial delay
+      const totalDuration = audioDuration + 1000 + 1500; // audio + 1s buffer + 1.5s initial delay
+      setFeedbackDuration(totalDuration);
+      console.log('🎵 Feedback duration set to:', totalDuration, 'ms');
     }, 1500);
   };
 
@@ -172,11 +178,11 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden"
-        style={{ 
+        className="relative w-full h-full max-w-[1120px] max-h-[700px] rounded-xl shadow-xl pointer-events-auto overflow-hidden"
+        style={{
           backgroundColor: '#fffad4',
           border: '4px solid #4dcff6',
-          aspectRatio: '800/500',
+          aspectRatio: '1120/700',
           backgroundImage: `url('${GAME_CONFIG.backgroundImage}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
@@ -187,6 +193,13 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
           onPlayInstructions={handleListenInstructions}
           position="top-right"
         />
+
+        {/* Progress Badge - Always visible */}
+        <div className="absolute top-4 left-4 z-10">
+          <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+            Parte {currentBodyPartIndex + 1}/{shuffledBodyParts.length}
+          </div>
+        </div>
 
         <button
           onClick={handleClose}
@@ -238,7 +251,7 @@ const JuegoDosActividad2: React.FC<JuegoDosActividad2Props> = ({
             isCorrect={isCorrect}
             message={isCorrect ? currentBodyPart.feedback.correctText : currentBodyPart.feedback.incorrectText}
             onComplete={handleFeedbackComplete}
-            duration={GAME_CONFIG.timing.feedbackDuration}
+            duration={feedbackDuration}
           />
         )}
 

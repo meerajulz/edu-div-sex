@@ -11,6 +11,7 @@ interface ItemState {
   hasBeenTried: boolean;
   isDisabled: boolean;
   position: { x: number; y: number };
+  shouldMoveAway: boolean;
 }
 
 interface GameState {
@@ -44,7 +45,8 @@ export const useJuegoCincoGame = () => {
       isInChest: false,
       hasBeenTried: false,
       isDisabled: false,
-      position: { x: 0, y: 0 }
+      position: { x: 0, y: 0 },
+      shouldMoveAway: false
     }))
   });
 
@@ -191,7 +193,7 @@ export const useJuegoCincoGame = () => {
       await playAudio(item.audio.feedback);
 
     } else {
-      // Incorrect item - return to position with red layer
+      // Incorrect item - return to position with red layer, then move away
       setGameState(prev => ({
         ...prev,
         itemStates: prev.itemStates.map(state =>
@@ -210,6 +212,16 @@ export const useJuegoCincoGame = () => {
       // Play incorrect feedback
       playSound(GAME_CONFIG.globalAudio.incorrectSound);
       await playAudio(item.audio.feedback);
+
+      // After audio finishes, mark item to move away
+      setGameState(prev => ({
+        ...prev,
+        itemStates: prev.itemStates.map(state =>
+          state.id === itemId
+            ? { ...state, shouldMoveAway: true }
+            : state
+        )
+      }));
 
       // Reset background after feedback
       const timeout = setTimeout(() => {
@@ -306,7 +318,8 @@ export const useJuegoCincoGame = () => {
         isInChest: false,
         hasBeenTried: false,
         isDisabled: false,
-        position: { x: 0, y: 0 }
+        position: { x: 0, y: 0 },
+        shouldMoveAway: false
       }))
     });
 

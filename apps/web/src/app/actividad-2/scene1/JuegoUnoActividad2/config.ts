@@ -11,8 +11,10 @@ export const GAME_CONFIG = {
 
   // Feedback audio files
   feedbackAudio: {
-    yesNotPrivate: '/audio/actividad-2/juego1/si-no-es-privado.mp3', // "Sí, porque no es privado"
-    noIsPrivate: '/audio/actividad-2/juego1/no-es-privado.mp3' // "No, porque es privado"
+    correctPrivate: '/audio/actividad-2/juego1/c-si-privado.mp3', // Correct: Situation IS private, answered NO
+    incorrectPrivate: '/audio/actividad-2/juego1/i-si-privado.mp3', // Incorrect: Situation IS private, answered YES
+    correctNotPrivate: '/audio/actividad-2/juego1/c-no-privado.mp3', // Correct: Situation NOT private, answered YES
+    incorrectNotPrivate: '/audio/actividad-2/juego1/i-no-privado.mp3' // Incorrect: Situation NOT private, answered NO
   },
 
   // Button images
@@ -41,13 +43,13 @@ export const GAME_CONFIG = {
       // Privacy and answer configuration
       isPrivate: true, // This situation IS private
       correctAnswer: 'NO' as const, // Correct answer is NO (shouldn't tell everyone)
-      
+
       // Feedback configuration
       feedback: {
-        correctAudio: 'noIsPrivate', // Plays "No, porque es privado"
-        incorrectAudio: 'noIsPrivate', // Also plays "No, porque es privado" when wrong
-        correctText: 'No, porque es privado.',
-        incorrectText: 'La respuesta correcta es NO, porque es privado.'
+        correctAudio: 'correctPrivate', // User answered NO correctly - it IS private
+        incorrectAudio: 'incorrectPrivate', // User answered YES incorrectly - it IS private
+        correctText: '¡Correcto! Porque es privado',
+        incorrectText: 'Incorrecto. Porque es privado'
       }
     },
     {
@@ -68,13 +70,13 @@ export const GAME_CONFIG = {
       // Privacy and answer configuration
       isPrivate: false, // This situation is NOT private
       correctAnswer: 'YES' as const, // Correct answer is YES (okay to tell everyone)
-      
+
       // Feedback configuration
       feedback: {
-        correctAudio: 'yesNotPrivate', // Plays "Sí, porque no es privado"
-        incorrectAudio: 'yesNotPrivate', // Also plays "Sí, porque no es privado" when wrong
-        correctText: 'Sí, porque no es privado.',
-        incorrectText: 'La respuesta correcta es SÍ, porque no es privado.'
+        correctAudio: 'correctNotPrivate', // User answered YES correctly - it's NOT private
+        incorrectAudio: 'incorrectNotPrivate', // User answered NO incorrectly - it's NOT private
+        correctText: '¡Correcto! No es privado',
+        incorrectText: 'Incorrecto. Porque No es privado'
       }
     },
     {
@@ -93,15 +95,15 @@ export const GAME_CONFIG = {
       },
       
       // Privacy and answer configuration
-      isPrivate: true, // This situation is NOT private
+      isPrivate: true, // This situation IS private
       correctAnswer: 'NO' as const, // Correct answer is NO (not okay to tell everyone)
-      
+
       // Feedback configuration
       feedback: {
-        correctAudio: 'noIsPrivate', // Plays "No, porque es privado"
-        incorrectAudio: 'noIsPrivate', // Also plays "No, porque es privado" when wrong
-        correctText: 'No, porque es privado.',
-        incorrectText: 'La respuesta correcta es NO, porque es privado.'
+        correctAudio: 'correctPrivate', // User answered NO correctly - it IS private
+        incorrectAudio: 'incorrectPrivate', // User answered YES incorrectly - it IS private
+        correctText: '¡Correcto! Porque es privado',
+        incorrectText: 'Incorrecto. Porque es privado'
       }
     },
     {
@@ -121,14 +123,14 @@ export const GAME_CONFIG = {
       
       // Privacy and answer configuration
       isPrivate: false, // This situation is NOT private
-      correctAnswer: 'YES' as const, // Correct answer is NO (not okay to tell everyone)
-      
+      correctAnswer: 'YES' as const, // Correct answer is YES (okay to tell everyone)
+
       // Feedback configuration
       feedback: {
-        correctAudio: 'yesNotPrivate', // Plays "Sí, porque no es privado"
-        incorrectAudio: 'yesNotPrivate', // Also plays "Sí, porque no es privado" when wrong
-        correctText: 'Sí, porque no es privado.',
-        incorrectText: 'La respuesta correcta es SÍ, porque no es privado.'
+        correctAudio: 'correctNotPrivate', // User answered YES correctly - it's NOT private
+        incorrectAudio: 'incorrectNotPrivate', // User answered NO incorrectly - it's NOT private
+        correctText: '¡Correcto! No es privado',
+        incorrectText: 'Incorrecto. Porque No es privado'
       }
     }
   ],

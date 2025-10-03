@@ -366,7 +366,7 @@ export default function Actividad3Scene1_1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='El orgasmo masculino: la eyaculación' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : showFinalVideo ? (
@@ -549,7 +549,7 @@ export default function Actividad3Scene1_1Page() {
                 >
                   {!gameCompleted ? (
                     <JugarButton
-                      text={userGender === 'male' ? 'JUEGO: El orgasmo masculino' : 'JUEGO: El orgasmo femenino'}
+                      text={userGender === 'male' ? 'Jugar' : 'Jugar'}
                       onClick={handleOpenGame}
                       disabled={isAnimating}
                     />

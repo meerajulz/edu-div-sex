@@ -206,7 +206,7 @@ export default function Actividad2Scene2Page() {
 
   const handleCloseGame = () => {
     setShowGameModal(false);
-    // Stay on current page
+    setShowGameButton(true);
   };
 
   return (

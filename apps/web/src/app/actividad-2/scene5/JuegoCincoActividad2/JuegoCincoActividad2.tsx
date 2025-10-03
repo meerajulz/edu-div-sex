@@ -158,6 +158,15 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
           position="top-right"
         />
 
+        {/* Progress Badge - Top left */}
+        {gameState.phase !== 'intro' && gameState.phase !== 'completed' && (
+          <div className="absolute top-4 left-4 z-10">
+            <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+              Objetos guardados: {gameState.itemStates.filter(s => s.isInChest).length}/{privateItemsCount}
+            </div>
+          </div>
+        )}
+
         {/* Close Button */}
         <button
           onClick={handleClose}
@@ -191,7 +200,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                 <img
                   src={config.globalImages.cofreClosed}
                   alt="Cofre cerrado"
-                  className="mx-auto max-h-[300px] object-contain"
+                  className="mx-auto max-h-[400px] object-contain"
                 />
               </div>
             </div>
@@ -210,14 +219,14 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                       src={config.globalImages.cofreClosed}
                       alt="Cofre cerrado"
                       data-chest="true"
-                      className="max-h-[300px] object-contain"
+                      className="max-h-[400px] object-contain"
                       initial={{ scale: 1.1, rotateY: 0 }}
-                      animate={{ 
-                        scale: [1.1, 0.95, 1], 
+                      animate={{
+                        scale: [1.1, 0.95, 1],
                         rotateY: [0, -5, 5, 0],
                       }}
-                      transition={{ 
-                        duration: 0.8, 
+                      transition={{
+                        duration: 0.8,
                         ease: 'easeInOut',
                         times: [0, 0.5, 1]
                       }}
@@ -229,11 +238,11 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                       src={config.globalImages.cofreOpen}
                       alt="Cofre abierto"
                       data-chest="true"
-                      className="max-h-[300px] object-contain"
+                      className="max-h-[400px] object-contain"
                       initial={{ scale: 1 }}
                       animate={{ scale: [1, 1.1, 1] }}
                       transition={{ duration: 0.6, ease: 'easeOut' }}
-                      exit={{ 
+                      exit={{
                         scale: 0.9,
                         rotateY: 10,
                         transition: { duration: 0.4 }
@@ -268,19 +277,19 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                               key={`chest-${state.id}`}
                               src={item.image}
                               alt={`${item.name} in chest`}
-                              className="w-16 h-16 object-contain m-1"
+                              className="w-24 h-24 object-contain m-1"
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
-                              exit={{ 
-                                scale: 0, 
+                              exit={{
+                                scale: 0,
                                 opacity: 0,
-                                transition: { 
-                                  duration: 0.4, 
+                                transition: {
+                                  duration: 0.4,
                                   ease: 'easeInOut',
                                   delay: index * 0.1
                                 }
                               }}
-                              transition={{ 
+                              transition={{
                                 delay: index * 0.05,
                                 duration: 0.3,
                                 ease: 'easeOut'
@@ -306,29 +315,40 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
 
                   const isDraggable = canDragItem(item.id);
 
+                  // Calculate move away position based on item's original position
+                  const hasLeft = 'left' in item.position;
+                  const hasTop = 'top' in item.position;
+                  const moveAwayAnimation = itemState.shouldMoveAway ? {
+                    x: hasLeft && parseFloat(item.position.left as string) < 50 ? -400 : 400,
+                    y: hasTop && parseFloat(item.position.top as string) < 50 ? -200 : 200,
+                    opacity: 0,
+                    scale: 0.5
+                  } : {};
+
                   return (
                     <motion.div
                       key={`draggable-${item.id}`} // Unique key for draggable items
                       className={`absolute ${isDraggable ? 'cursor-grab' : 'cursor-not-allowed'}`}
                       style={item.position}
                       initial={config.animations.itemAppear.initial}
-                      animate={config.animations.itemAppear.animate}
-                      exit={{ 
-                        opacity: 0, 
+                      animate={itemState.shouldMoveAway ? moveAwayAnimation : config.animations.itemAppear.animate}
+                      exit={{
+                        opacity: 0,
                         scale: 0,
                         transition: { duration: 0.2 }
                       }}
                       transition={{
                         ...config.animations.itemAppear.transition,
-                        delay: index * 0.2
+                        delay: itemState.shouldMoveAway ? 0 : index * 0.2,
+                        duration: itemState.shouldMoveAway ? 0.6 : config.animations.itemAppear.transition.duration
                       }}
                       drag={isDraggable}
                       dragMomentum={false}
-                      dragConstraints={{ 
-                        left: -window.innerWidth/4, 
-                        right: window.innerWidth/4, 
-                        top: -window.innerHeight/4, 
-                        bottom: window.innerHeight/4 
+                      dragConstraints={{
+                        left: -window.innerWidth/4,
+                        right: window.innerWidth/4,
+                        top: -window.innerHeight/4,
+                        bottom: window.innerHeight/4
                       }}
                       onDragStart={() => {
                         console.log('Started dragging:', item.id);
@@ -343,7 +363,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                         ...config.animations.itemDrag.whileDrag,
                         cursor: 'grabbing'
                       }}
-                      whileHover={{ 
+                      whileHover={{
                         scale: isDraggable ? 1.05 : 1,
                         cursor: isDraggable ? 'grab' : 'not-allowed'
                       }}
@@ -351,12 +371,12 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                       <img
                         src={item.image}
                         alt={item.name}
-                        className={`max-h-[80px] object-contain transition-all duration-200 ${
+                        className={`max-h-[120px] object-contain transition-all duration-200 ${
                           itemState.isDisabled ? 'opacity-50' : 'opacity-100'
                         } select-none pointer-events-none`}
                         draggable={false}
                       />
-                      
+
                       {/* Red layer for disabled/tried items - but only if NOT in chest */}
                       {itemState.isDisabled && !itemState.isInChest && (
                         <div className="absolute inset-0 bg-red-500 bg-opacity-40 rounded-lg pointer-events-none" />
@@ -387,26 +407,6 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
             </div>
           )}
 
-          {/* Progress Indicator - only when playing */}
-          {gameState.phase !== 'intro' && gameState.phase !== 'completed' && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <div className="flex space-x-2">
-                {config.items.filter(item => item.isPrivate).map((item) => {
-                  const itemState = getItemStateById(item.id);
-                  return (
-                    <div
-                      key={item.id}
-                      className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                        itemState?.isInChest
-                          ? 'bg-green-500'
-                          : 'bg-gray-300'
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Enhanced Congratulations Overlay */}

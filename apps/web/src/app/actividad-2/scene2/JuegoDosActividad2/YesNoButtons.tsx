@@ -32,13 +32,13 @@ const YesNoButtons: React.FC<YesNoButtonsProps> = ({
 
   return (
     <motion.div
-      className="absolute bottom-8 left-60 transform -translate-x-2/4 z-30"
+      className="absolute bottom-8 w-full flex justify-center z-30"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
     >
       {/* Question text */}
-      <div className="flex space-x-16 items-center justify-center">
+      <div className="flex space-x-24 items-center justify-center">
         {/* YES Button */}
         <motion.button
           onClick={() => handleButtonClick('YES')}

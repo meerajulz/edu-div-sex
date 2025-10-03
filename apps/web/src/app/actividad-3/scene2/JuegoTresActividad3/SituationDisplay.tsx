@@ -19,12 +19,12 @@ const SituationDisplay: React.FC<SituationDisplayProps> = ({
 
   return (
     <motion.div
-      className="absolute left-0 top-0 w-1/2 h-full flex items-center justify-center z-20 p-4"
+      className="absolute left-0 top-0 w-1/2 h-full flex items-center justify-center z-20 p-6 sm:p-8"
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <div className="relative w-full h-full max-w-full max-h-full">
+      <div className="relative w-full h-[80%] max-w-full">
         <Image
           src={image}
           alt={alt}

@@ -20,6 +20,7 @@ interface OptionsListProps {
   gamePhase: 'title' | 'situation' | 'options' | 'waiting_for_click' | 'feedback' | 'complete';
   onOptionSelect: (optionId: string) => void;
   selectedOption: string | null;
+  situationId?: string;
 }
 
 const OptionsList: React.FC<OptionsListProps> = ({
@@ -27,7 +28,8 @@ const OptionsList: React.FC<OptionsListProps> = ({
   currentOptionIndex,
   gamePhase,
   onOptionSelect,
-  selectedOption
+  selectedOption,
+  situationId
 }) => {
   const canClick = gamePhase === 'waiting_for_click';
   // Only show options during 'options' and 'waiting_for_click' phases
@@ -35,13 +37,16 @@ const OptionsList: React.FC<OptionsListProps> = ({
 
   if (!showOptions) return null;
 
-  // Calculate spacing and height based on number of options (40% bigger)
-  const spacing = options.length === 3 ? 'space-y-3' : 'space-y-6';
-  const optionHeight = options.length === 3 ? 'h-32' : 'h-44'; // 40% bigger
+  // Special handling for situation3 (3 GIFs) - make them much bigger
+  const isSituation3 = situationId?.includes('situation_3');
+
+  // Calculate spacing and height based on number of options
+  const spacing = options.length === 3 ? (isSituation3 ? 'space-y-0' : 'space-y-2') : 'space-y-4';
+  const optionHeight = options.length === 3 ? (isSituation3 ? 'h-60' : 'h-48') : 'h-64';
 
   return (
-    <div className="absolute right-0 top-0 w-1/2 h-full flex items-center justify-center z-0 mt-10">
-      <div className={`flex flex-col ${spacing} w-full justify-center max-h-[85%]`}>
+    <div className="absolute right-0 top-0 w-1/2 h-full flex items-center justify-center z-0 mt-8">
+      <div className={`flex flex-col ${spacing} w-full justify-center max-h-[90%] px-4`}>
         {options.map((option, index) => {
           const isCurrentlyPlaying = gamePhase === 'options' && index === currentOptionIndex;
           const isClickable = canClick;
@@ -68,17 +73,18 @@ const OptionsList: React.FC<OptionsListProps> = ({
                 onClick={() => isClickable && onOptionSelect(option.id)}
                 disabled={!isClickable}
                 className={`
-                  relative ${optionHeight} rounded-lg overflow-hidden 
-                  transition-all duration-200 
-                  ${isClickable 
-                    ? 'hover:scale-105  cursor-pointer' 
+                  relative ${optionHeight} rounded-lg overflow-hidden
+                  transition-all duration-200
+                  ${isClickable
+                    ? 'hover:scale-105  cursor-pointer'
                     : 'cursor-not-allowed opacity-70'
                   }
                 `}
-                style={{ 
-                  aspectRatio: '306/280', // Preserve original aspect ratio
+                style={{
+                  aspectRatio: isSituation3 ? '500/380' : '306/280',
                   width: 'auto',
-                  maxWidth: '100%'
+                  maxWidth: '100%',
+                  transform: isSituation3 ? 'none' : undefined
                 }}
                 whileHover={isClickable ? { scale: 1.05 } : {}}
                 whileTap={isClickable ? { scale: 0.95 } : {}}

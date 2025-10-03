@@ -20,6 +20,7 @@ export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete 
     startGame,
     handleAnswerClick,
     resetGame,
+    replaySituation,
     playAudio,
     config
   } = useJuegoCuatroGame();
@@ -143,42 +144,63 @@ export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete 
             </div>
           )}
 
-          {/* Options Phase */}
-          {gameState.phase === 'options' && currentSituation && (
+          {/* Progress Badge and Listen Again Button - Top left */}
+          {gameState.phase !== 'intro' && gameState.phase !== 'completed' && (
+            <div className="absolute top-4 left-4 z-10 flex flex-row items-center gap-3">
+              <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                Situación {gameState.currentSituationIndex + 1}/{config.situations.length}
+              </div>
+              {gameState.phase === 'options' && (
+                <button
+                  onClick={replaySituation}
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 font-semibold"
+                >
+                  🔊 Escuchar situación
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Image Showing Phases - Show images progressively */}
+          {(gameState.phase === 'showingCorrectImage' || gameState.phase === 'showingIncorrectImage' || gameState.phase === 'options') && currentSituation && (
             <div className="flex-1 flex items-center justify-center">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
                 <AnimatePresence>
-                  <motion.div
-                    key={`correct-${gameState.currentSituationIndex}`}
-                    className="cursor-pointer"
-                    {...config.animations.optionImages}
-                    transition={{ ...config.animations.optionImages.transition, delay: 0.1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleAnswerClick('correct')}
-                  >
-                    <img
-                      src={currentSituation.images.correct}
-                      alt="Opción correcta"
-                      className="w-full max-h-[300px] object-contain duration-200"
-                    />
-                  </motion.div>
+                  {gameState.showCorrectImage && (
+                    <motion.div
+                      key={`correct-${gameState.currentSituationIndex}`}
+                      className={gameState.phase === 'options' ? "cursor-pointer" : ""}
+                      {...config.animations.optionImages}
+                      transition={{ ...config.animations.optionImages.transition, delay: 0.1 }}
+                      whileHover={gameState.phase === 'options' ? { scale: 1.05 } : {}}
+                      whileTap={gameState.phase === 'options' ? { scale: 0.95 } : {}}
+                      onClick={gameState.phase === 'options' ? () => handleAnswerClick('correct') : undefined}
+                    >
+                      <img
+                        src={currentSituation.images.correct}
+                        alt="Opción correcta"
+                        className="w-full max-h-[300px] object-contain duration-200"
+                      />
+                    </motion.div>
+                  )}
 
-                  <motion.div
-                    key={`incorrect-${gameState.currentSituationIndex}`}
-                    className="cursor-pointer"
-                    {...config.animations.optionImages}
-                    transition={{ ...config.animations.optionImages.transition, delay: 0.2 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleAnswerClick('incorrect')}
-                  >
-                    <img
-                      src={currentSituation.images.incorrect}
-                      alt="Opción incorrecta"
-                      className="w-full max-h-[300px] object-contain duration-200"
-                    />
-                  </motion.div>
+                  {gameState.showIncorrectImage && (
+                    <motion.div
+                      key={`incorrect-${gameState.currentSituationIndex}`}
+                      className={gameState.phase === 'options' ? "cursor-pointer" : ""}
+                      {...config.animations.optionImages}
+                      transition={{ ...config.animations.optionImages.transition, delay: 0.2 }}
+                      whileHover={gameState.phase === 'options' ? { scale: 1.05 } : {}}
+                      whileTap={gameState.phase === 'options' ? { scale: 0.95 } : {}}
+                      onClick={gameState.phase === 'options' ? () => handleAnswerClick('incorrect') : undefined}
+                    >
+                      <img
+                        src={currentSituation.images.incorrect}
+                        alt="Opción incorrecta"
+                        className="w-full max-h-[300px] object-contain duration-200"
+                      />
+                    </motion.div>
+                  )}
                 </AnimatePresence>
               </div>
             </div>
@@ -227,25 +249,6 @@ export default function JuegoCuatroActividad2({ isOpen, onClose, onGameComplete 
             </div>
           )}
 
-          {/* Progress Indicator */}
-          {gameState.phase !== 'intro' && gameState.phase !== 'completed' && (
-            <div className="mt-4 flex justify-center">
-              <div className="flex space-x-2">
-                {config.situations.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                      index < gameState.currentSituationIndex
-                        ? 'bg-green-500'
-                        : index === gameState.currentSituationIndex
-                        ? 'bg-blue-500'
-                        : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Enhanced Congratulations Overlay */}

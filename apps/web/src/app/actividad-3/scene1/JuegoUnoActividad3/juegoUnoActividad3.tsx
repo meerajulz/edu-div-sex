@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { GAME_CONFIG } from './config';
 import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks';
-import BodyPartDisplay from './BodyPartDisplay';
 import YesNoButtons from './YesNoButtons';
 import FeedbackOverlay from './FeedbackOverlay';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
@@ -232,12 +231,12 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-4">
-      {/* Modal with gradient background - 800x500 responsive */}
-      <div 
-        className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600"
-        style={{ 
-          aspectRatio: '800/500'
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+      {/* Modal with gradient background - 30% bigger and responsive */}
+      <div
+        className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600"
+        style={{
+          aspectRatio: '1200/750'
         }}
       >
 
@@ -246,6 +245,16 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
           onPlayInstructions={handleListenInstructions}
           position="side-by-side"
         />
+
+        {/* Progress Badge and Listen Button - Top left */}
+        {(gamePhase === 'situation' || gamePhase === 'question' || gamePhase === 'feedback') && (
+          <div className="absolute top-4 left-4 z-10 flex flex-row items-center gap-3">
+            <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+              Situación {currentSituation + 1}/{GAME_CONFIG.situations.length}
+            </div>
+      
+          </div>
+        )}
 
         {/* Close Button */}
         <button
@@ -257,10 +266,10 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
 
         {/* Debug Info (development only) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-4 left-4 z-10 text-xs text-white bg-black/50 p-2 rounded">
-            Situación: {currentSituation + 1}/{GAME_CONFIG.situations.length} | 
-            Fase: {gamePhase} | 
-            Score: {score} | 
+          <div className="absolute top-16 left-4 z-10 text-xs text-white bg-black/50 p-2 rounded">
+            Situación: {currentSituation + 1}/{GAME_CONFIG.situations.length} |
+            Fase: {gamePhase} |
+            Score: {score} |
             Answer: {selectedAnswer || 'None'} |
             Correct: {situationsCorrect.filter(Boolean).length}/{situationsCorrect.length} |
             SituationId: {currentSituationData?.id || 'None'}
@@ -298,12 +307,12 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
         {/* Scene Phase - Show love scene */}
         {gamePhase === 'scene' && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute left-8 top-[200px] transform -translate-y-1/2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="relative w-96 h-72">
+            <div className="relative w-[600px] h-[450px]">
               <Image
                 src={GAME_CONFIG.sceneImage}
                 alt="Escena de caricias"
@@ -317,26 +326,33 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
 
         {/* Situation and Question Phases */}
         {currentSituationData && (gamePhase === 'situation' || gamePhase === 'question') && (
-          <>
-            {/* Scene image in background */}
-            <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
-              <div className="relative w-96 h-72">
-                <Image
-                  src={GAME_CONFIG.sceneImage}
-                  alt="Escena de fondo"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+          <div className="absolute inset-0 flex items-center justify-center px-8 gap-4">
+            {/* Scene image on left */}
+            <div className="relative w-[480px] h-[360px]">
+              <Image
+                src={GAME_CONFIG.sceneImage}
+                alt="Escena de fondo"
+                fill
+                className="object-contain"
+              />
             </div>
 
-            {/* Body part display */}
-            <BodyPartDisplay
-              image={currentSituationData.image}
-              alt={currentSituationData.title}
-              isVisible={true}
-            />
-          </>
+            {/* Body part image on right */}
+            <motion.div
+              className="relative w-[480px] h-[360px]"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+              <Image
+                src={currentSituationData.image}
+                alt={currentSituationData.title}
+                fill
+                className="object-contain"
+                priority
+              />
+            </motion.div>
+          </div>
         )}
 
         {/* Yes/No Buttons */}

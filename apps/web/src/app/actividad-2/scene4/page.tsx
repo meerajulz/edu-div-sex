@@ -330,7 +330,7 @@ export default function Scene4Page() {
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
                   {!gameCompleted ? (
-                    <JugarButton text='Jugar ¿Qué hacer si alguien no respeta tu intimidad?' onClick={handleOpenJuegoCuatro} disabled={isAnimating} />
+                    <JugarButton text='Jugar' onClick={handleOpenJuegoCuatro} disabled={isAnimating} />
                   ) : !showCongratulations ? (
                     <div className="flex flex-col items-center space-y-4">
                       <JugarButton

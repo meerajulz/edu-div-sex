@@ -147,7 +147,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
   // Handle feedback completion
   const handleFeedbackComplete = () => {
     console.log('🎮 Feedback completed. isCorrect:', isCorrect, 'currentSituation:', currentSituation);
-    
+
     if (isCorrect) {
       // Correct answer - check if there are more situations
       if (currentSituation < GAME_CONFIG.situations.length - 1) {
@@ -164,11 +164,11 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         // All situations completed - show congrats before ending game
         console.log('🎮 Game completed! Showing congrats overlay');
         setShowCongrats(true);
-        
+
         // Automatically end game after congrats duration
         setTimeout(async () => {
           endSession(true, score);
-          
+
           // Save progress before completing
           await saveProgress('actividad-2', 'scene1', 'completed', 100, {
             game: 'JuegoUnoActividad2',
@@ -176,7 +176,7 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
             total_situations: score,
             completed_at: new Date().toISOString()
           });
-          
+
           setShowCongrats(false);
           onClose();
           if (onGameComplete) {
@@ -185,11 +185,15 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
         }, GAME_CONFIG.timing.congratsDuration || 3000);
       }
     } else {
-      // Wrong answer - retry same situation
-      console.log('🎮 Wrong answer, retrying same situation...');
+      // Wrong answer - restart the same situation from the beginning
+      console.log('🎮 Wrong answer, restarting situation from the beginning...');
       setTimeout(() => {
-        setGamePhase('question');
+        setGamePhase('loading');
         setSelectedAnswer(null);
+        // Restart the audio sequence for the same situation
+        setTimeout(() => {
+          startGameSequence(currentSituation);
+        }, GAME_CONFIG.timing.situationDelay);
       }, 500);
     }
   };
@@ -231,12 +235,12 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-4">
-      {/* Modal with background image - 800x500 responsive */}
-      <div 
-        className="relative w-full h-full max-w-[800px] max-h-[500px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-cover bg-center"
-        style={{ 
+      {/* Modal with background image - 1120x700 responsive */}
+      <div
+        className="relative w-full h-full max-w-[1120px] max-h-[700px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-cover bg-center"
+        style={{
           backgroundImage: "url('/image/actividad_2/juego_1/bg.png')",
-          aspectRatio: '800/500'
+          aspectRatio: '1120/700'
         }}
       >
 
@@ -246,15 +250,21 @@ const JuegoUnoActividad2: React.FC<JuegoUnoActividad2Props> = ({
           position="top-right"
         />
 
-        {/* Listen Situation Button - Only show during question phase */}
-        {gamePhase === 'question' && (
-          <button
-            onClick={handleListenSituation}
-            className="absolute top-4 left-4 z-10 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 font-semibold"
-          >
-            🔊 Escuchar situación {currentSituation + 1}
-          </button>
-        )}
+        {/* Situation Progress Badge - Always visible */}
+        <div className="absolute top-4 left-4 z-10 flex flex-row items-center gap-3">
+          <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+            Situación {currentSituation + 1}/{GAME_CONFIG.situations.length}
+          </div>
+          {/* Listen Situation Button - Only show during question phase */}
+          {gamePhase === 'question' && (
+            <button
+              onClick={handleListenSituation}
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 font-semibold"
+            >
+              🔊 Escuchar situación {currentSituation + 1}
+            </button>
+          )}
+        </div>
 
         {/* Close Button */}
         <button

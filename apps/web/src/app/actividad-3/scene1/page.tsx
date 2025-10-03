@@ -289,7 +289,7 @@ export default function Actividad3Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='¿Qué pasa cuando me excito?' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (

@@ -142,23 +142,39 @@ export const useGameTracking = () => {
 
 export const useAudioManager = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [currentAudioDuration, setCurrentAudioDuration] = useState(0);
 
-  const playAudio = useCallback(async (audioPath: string, volume = 0.7): Promise<void> => {
+  const playAudio = useCallback(async (audioPath: string, volume = 0.7): Promise<number> => {
     try {
       console.log('🎵 Playing audio:', audioPath);
-      
+
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
-      
+
       const audio = createGameAudio(audioPath, volume, 'Game Audio');
       audioRef.current = audio;
-      
-      await audio.play();
-      console.log('🎵 Audio playing successfully:', audioPath);
+
+      // Wait for metadata to load to get duration
+      return new Promise((resolve) => {
+        audio.addEventListener('loadedmetadata', () => {
+          const duration = audio.duration * 1000; // Convert to milliseconds
+          setCurrentAudioDuration(duration);
+          console.log('🎵 Audio duration:', duration, 'ms');
+          resolve(duration);
+        });
+
+        audio.play().then(() => {
+          console.log('🎵 Audio playing successfully:', audioPath);
+        }).catch((err) => {
+          console.warn('❌ Error playing audio:', audioPath, err);
+          resolve(0);
+        });
+      });
     } catch (err) {
       console.warn('❌ Error playing audio:', audioPath, err);
+      return 0;
     }
   }, []);
 
@@ -183,14 +199,14 @@ export const useAudioManager = () => {
     await playAudio(GAME_CONFIG.globalAudio.incorrect);
   }, [playAudio]);
 
-  const playFeedbackAudio = useCallback(async (audioPath: string) => {
-    await playAudio(audioPath);
+  const playFeedbackAudio = useCallback(async (audioPath: string): Promise<number> => {
+    return await playAudio(audioPath);
   }, [playAudio]);
 
   const playIncorrectSequence = useCallback(async (bodyPartAudioPath: string) => {
     // First play the general "incorrect" audio
     await playIncorrectAudio();
-    
+
     // Wait for the delay, then play the specific body part feedback
     return new Promise<void>((resolve) => {
       setTimeout(async () => {
@@ -217,6 +233,7 @@ export const useAudioManager = () => {
     playCorrectAudio,
     playIncorrectAudio,
     playIncorrectSequence,
-    stopAudio
+    stopAudio,
+    currentAudioDuration
   };
 };

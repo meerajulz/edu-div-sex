@@ -179,7 +179,7 @@ export default function Scene5Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Jugar Tu Cofre de la Intimidad' onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : null}

@@ -41,15 +41,15 @@ const DropZones: React.FC<DropZonesProps> = ({
 
 
   return (
-    <div className="flex justify-center gap-8 mb-8">
-      {/* Private Zone - Left */}
+    <div className="flex flex-col gap-2 sm:gap-4 h-full max-h-full">
+      {/* Private Zone - Top */}
       <motion.div
         className={`
-          relative flex-1 max-w-[50%] h-80 rounded-xl border-4 border-dashed
+          relative flex-1 min-h-[180px] sm:min-h-[220px] rounded-xl border-4 border-dashed
           flex flex-col items-center justify-center cursor-pointer
           transition-all duration-300
-          ${dragOverZone === 'PRIVATE' 
-            ? 'border-orange-400 bg-orange-100 scale-105' 
+          ${dragOverZone === 'PRIVATE'
+            ? 'border-orange-400 bg-orange-100 scale-105'
             : 'border-orange-300 bg-orange-50'
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -60,9 +60,9 @@ const DropZones: React.FC<DropZonesProps> = ({
         onDrop={(e) => handleDrop(e, 'PRIVATE')}
         whileHover={!disabled ? GAME_CONFIG.animations.dropZoneHover : {}}
       >
-        {/* Decorative Lock Image - Top Left */}
-        <div 
-          className="absolute -top-28 -left-10 w-[180px] h-[180px] pointer-events-none z-10"
+        {/* Decorative Lock Image - Left of zone */}
+        <div
+          className="absolute -left-16 top-1/2 -translate-y-1/2 w-[120px] h-[120px] pointer-events-none z-10"
           style={{
             backgroundImage: "url('/image/actividad_2/juego_3/Candado_.png')",
             backgroundSize: 'contain',
@@ -144,14 +144,14 @@ const DropZones: React.FC<DropZonesProps> = ({
         )}
       </motion.div>
 
-      {/* Public Zone - Right */}
+      {/* Public Zone - Bottom */}
       <motion.div
         className={`
-           relative flex-1 max-w-[50%] h-80 rounded-xl border-4 border-dashed
+          relative flex-1 min-h-[180px] sm:min-h-[220px] rounded-xl border-4 border-dashed
           flex flex-col items-center justify-center cursor-pointer
           transition-all duration-300
-          ${dragOverZone === 'PUBLIC' 
-            ? 'border-blue-400 bg-blue-100 scale-105' 
+          ${dragOverZone === 'PUBLIC'
+            ? 'border-blue-400 bg-blue-100 scale-105'
             : 'border-blue-300 bg-blue-50'
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -162,9 +162,9 @@ const DropZones: React.FC<DropZonesProps> = ({
         onDrop={(e) => handleDrop(e, 'PUBLIC')}
         whileHover={!disabled ? GAME_CONFIG.animations.dropZoneHover : {}}
       >
-        {/* Decorative OK Image - Top Right */}
-        <div 
-          className="absolute -top-28 -right-0 w-[180px] h-[180px] pointer-events-none z-10"
+        {/* Decorative OK Image - Left of zone */}
+        <div
+          className="absolute -left-16 top-1/2 -translate-y-1/2 w-[120px] h-[120px] pointer-events-none z-10"
           style={{
             backgroundImage: "url('/image/actividad_2/juego_3/ok_.png')",
             backgroundSize: 'contain',

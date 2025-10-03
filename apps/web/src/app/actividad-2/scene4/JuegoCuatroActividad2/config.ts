@@ -33,6 +33,8 @@ export const GAME_CONFIG = {
       // Audio sequence
       audio: {
         situation: '/audio/actividad-2/juego4/situation1.mp3',
+        imageCorrect: '/audio/actividad-2/juego4/s1-image-c.mp3', // Audio for correct image
+        imageIncorrect: '/audio/actividad-2/juego4/s1-image-i.mp3.mp3', // Audio for incorrect image
         correct: '/audio/actividad-2/juego4/s_1_c_1_correct.mp3',
         correctFeedback: '/audio/actividad-2/juego4/s_1_c_1_correct_feedback.mp3',
         incorrect: '/audio/actividad-2/juego4/s_1_c_1_incorrect.mp3',
@@ -66,6 +68,8 @@ export const GAME_CONFIG = {
       // Audio sequence
       audio: {
         situation: '/audio/actividad-2/juego4/situation2.mp3',
+        imageCorrect: '/audio/actividad-2/juego4/s2-image-c.mp3.mp3', // Audio for correct image
+        imageIncorrect: '/audio/actividad-2/juego4/s2-image-1.mp3.mp3', // Audio for incorrect image
         correct: '/audio/actividad-2/juego4/s_2_c_2_correct.mp3',
         correctFeedback: '/audio/actividad-2/juego4/s_2_c_2_correct_feedback.mp3',
         incorrect: '/audio/actividad-2/juego4/s_2_c_2_incorrect.mp3',
@@ -99,6 +103,8 @@ export const GAME_CONFIG = {
       // Audio sequence
       audio: {
         situation: '/audio/actividad-2/juego4/situation3.mp3',
+        imageCorrect: '/audio/actividad-2/juego4/s3-image-c.mp3.mp3', // Audio for correct image
+        imageIncorrect: '/audio/actividad-2/juego4/s3-image-i.mp3.mp3', // Audio for incorrect image
         correct: '/audio/actividad-2/juego4/s_3_c_3_correct.mp3',
         correctFeedback: '/audio/actividad-2/juego4/s_3_c_3_correct_feedback.mp3',
         incorrect: '/audio/actividad-2/juego4/s_3_c_3_incorrect.mp3',
@@ -123,7 +129,9 @@ export const GAME_CONFIG = {
   timing: {
     titleAudioDelay: 5000, // 5 seconds total for title (audio + delay)
     situationImageDelay: 100, // Delay before showing situation image
-    optionsDelay: 800, // Delay after situation audio before showing options
+    imageCorrectDelay: 800, // Delay before showing correct image
+    imageIncorrectDelay: 800, // Delay before showing incorrect image
+    optionsDelay: 800, // Delay after image audios before enabling interaction
     feedbackImageDelay: 200, // Delay before showing ok/no feedback image
     feedbackAudioDelay: 800, // Delay before playing feedback audio
     nextSituationDelay: 4000, // 6 seconds for feedback + 500ms buffer

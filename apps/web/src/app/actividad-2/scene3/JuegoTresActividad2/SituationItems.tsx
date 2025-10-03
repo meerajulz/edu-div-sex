@@ -30,36 +30,29 @@ const SituationItems: React.FC<SituationItemsProps> = ({
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-      <div className="rounded-2xl p-1 shadow-lg border-4 border-blue-300">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-bold text-gray-800">
-            Arrastra las situaciones a las categorías
-          </h3>
-        </div>
+    <div className="w-full h-full pt-4 sm:pt-8 pb-2 pr-2">
+      <div className="w-full h-full grid grid-cols-3 gap-0 content-start">
+        {situations.map((situation) => {
+          const isCompleted = completedSituations.has(situation.id);
+          const isDragging = draggedItem === situation.id;
 
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {situations.map((situation) => {
-            const isCompleted = completedSituations.has(situation.id);
-            const isDragging = draggedItem === situation.id;
-
-            return (
-              <motion.div
-                key={situation.id}
-                className={`
-                  relative flex-shrink-0 w-32 h-32 overflow-hidden
-                  transition-all duration-300
-                  ${isCompleted 
-                    ? 'opacity-75 cursor-not-allowed' 
-                    : 'cursor-grab'
-                  }
-                  ${isDragging ? 'opacity-50 scale-110' : ''}
-                  ${disabled ? 'cursor-not-allowed opacity-50' : ''}
-                `}
-                style={{ 
-                  pointerEvents: isCompleted ? 'none' : 'auto',
-                  zIndex: isCompleted ? 1 : 10 
-                }}
+          return (
+            <motion.div
+              key={situation.id}
+              className={`
+                relative aspect-square overflow-hidden rounded-lg max-h-[160px] sm:max-h-[200px]
+                transition-all duration-300
+                ${isCompleted
+                  ? 'opacity-75 cursor-not-allowed'
+                  : 'cursor-grab'
+                }
+                ${isDragging ? 'opacity-50 scale-110' : ''}
+                ${disabled ? 'cursor-not-allowed opacity-50' : ''}
+              `}
+              style={{
+                pointerEvents: isCompleted ? 'none' : 'auto',
+                zIndex: isCompleted ? 1 : 10
+              }}
                 initial={GAME_CONFIG.animations.situationEntry.initial}
                 animate={GAME_CONFIG.animations.situationEntry.animate}
                 transition={{
@@ -98,18 +91,10 @@ const SituationItems: React.FC<SituationItemsProps> = ({
                       {situation.name}
                     </div>
                   )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Progress indicator */}
-        <div className="flex justify-center">
-          <div className="text-sm text-gray-600">
-            Completado: {completedSituations.size} / {situations.length}
-          </div>
-        </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

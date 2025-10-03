@@ -22,12 +22,16 @@ const BodyPartDisplay: React.FC<BodyPartDisplayProps> = ({
       animate={GAME_CONFIG.animations.imageEntry.animate}
       transition={GAME_CONFIG.animations.imageEntry.transition}
     >
-      <div className=" rounded-xl flex items-center justify-center">
+      <div className="rounded-xl flex items-center justify-center">
         <img
           src={image}
           alt={name}
-          className="w-64 h-64 object-contain rounded-lg"
-          style={{ maxWidth: '280px', maxHeight: '280px' }}
+          className="w-80 h-80 object-contain rounded-lg"
+          style={{
+            maxWidth: '350px',
+            maxHeight: '350px',
+            filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15))'
+          }}
         />
       </div>
     </motion.div>
