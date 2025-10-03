@@ -22,6 +22,9 @@ interface User {
     teacher_name?: string;
     reading_level?: number;
     comprehension_level?: number;
+    attention_span?: number;
+    motor_skills?: number;
+    supervision_level?: number;
     notes?: string;
   };
   managed_teachers?: number;
@@ -480,6 +483,29 @@ function ViewUserDetails() {
                   <label className="block text-sm font-medium text-gray-700">Nivel de Comprensión</label>
                   <p className="mt-1 text-gray-900">{user.student_profile.comprehension_level}/5</p>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Atención</label>
+                  <p className="mt-1 text-gray-900">{user.student_profile.attention_span}/5</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Habilidades Motoras</label>
+                  <p className="mt-1 text-gray-900">{user.student_profile.motor_skills}/5</p>
+                </div>
+                {user.student_profile.supervision_level && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nivel de Supervisión</label>
+                    <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                      user.student_profile.supervision_level === 3 ? 'bg-green-100 text-green-800 border-2 border-green-300' :
+                      user.student_profile.supervision_level === 2 ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' :
+                      'bg-red-100 text-red-800 border-2 border-red-300'
+                    }`}>
+                      Nivel {user.student_profile.supervision_level}
+                      {user.student_profile.supervision_level === 3 && ' - Independiente'}
+                      {user.student_profile.supervision_level === 2 && ' - Necesita 50% supervisión'}
+                      {user.student_profile.supervision_level === 1 && ' - Necesita 100% supervisión'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
