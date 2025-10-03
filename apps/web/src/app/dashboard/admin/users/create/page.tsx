@@ -14,6 +14,7 @@ interface UserFormData {
   password: string;
   confirmPassword: string;
   sex: 'male' | 'female' | '';
+  age: string;
 }
 
 function CreateUserForm() {
@@ -29,7 +30,8 @@ function CreateUserForm() {
     username: '',
     password: '',
     confirmPassword: '',
-    sex: ''
+    sex: '',
+    age: ''
   });
 
   const [error, setError] = useState('');
@@ -50,6 +52,28 @@ function CreateUserForm() {
   }>({ checking: false, available: null, message: '' });
   const [emailTimeout, setEmailTimeout] = useState<NodeJS.Timeout | null>(null);
   const [questions, setQuestions] = useState<Question[]>(questionsData);
+  const [teachers, setTeachers] = useState<Array<{ id: number; name: string; email: string }>>([]);
+  const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
+
+  // Fetch teachers list when role is student and user is admin
+  useEffect(() => {
+    const userRole = (session?.user as { role?: string })?.role;
+    if (formData.role === 'student' && session?.user && userRole === 'admin') {
+      fetchTeachers();
+    }
+  }, [formData.role, session]);
+
+  const fetchTeachers = async () => {
+    try {
+      const response = await fetch('/api/admin/users?role=teacher');
+      if (response.ok) {
+        const data = await response.json();
+        setTeachers(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
 
   // Form validation
   const isFormValid = () => {
@@ -59,8 +83,15 @@ function CreateUserForm() {
     }
 
     // Username and sex required for students
-    if (formData.role === 'student' && (!formData.username.trim() || !formData.sex)) {
-      return false;
+    if (formData.role === 'student') {
+      if (!formData.username.trim() || !formData.sex) {
+        return false;
+      }
+      // Teacher selection required only for admins creating students
+      const userRole = (session?.user as { role?: string })?.role;
+      if (userRole === 'admin' && !selectedTeacherId) {
+        return false;
+      }
     }
 
     // Password validation
@@ -219,36 +250,55 @@ function CreateUserForm() {
   // Calculate ability levels from evaluation responses
   const calculateAbilityLevels = () => {
     const responses = questions.filter(q => q.supportType !== null);
-    
+
     if (responses.length === 0) {
       return {
         reading_level: 1,
         comprehension_level: 1,
         attention_span: 1,
-        motor_skills: 1
+        motor_skills: 1,
+        supervision_level: 1
       };
     }
 
-    // Simple scoring algorithm based on evaluation responses
+    // Scoring algorithm:
+    // Ninguno (1) = 2 points (no supervision needed)
+    // Supervisión + Siempre (0,1) = 1 point (sometimes supervision)
+    // Supervisión + A veces (0,0) = 0 points (always supervision)
     const totalScore = responses.reduce((sum, q) => {
       let score = 0;
-      if (q.supportType === "1") score = 2; // No support needed
-      else if (q.supportType === "0" && q.frequency === "1") score = 1; // Sometimes support
-      else if (q.supportType === "0" && q.frequency === "0") score = 0; // Always support
+      if (q.supportType === "1") score = 2; // Ninguno - independent
+      else if (q.supportType === "0" && q.frequency === "1") score = 1; // Supervisión - Siempre
+      else if (q.supportType === "0" && q.frequency === "0") score = 0; // Supervisión - A veces (needs most support)
       return sum + score;
     }, 0);
 
     const maxScore = responses.length * 2;
     const percentage = totalScore / maxScore;
-    
-    // Convert to 1-5 scale
-    const level = Math.ceil(percentage * 5) || 1;
-    
+
+    // Calculate supervision level (1-3 scale, INVERSE of independence)
+    // Higher score (more independent) = Higher supervision level
+    // 100% independent (all Ninguno) = Nivel 3
+    // ~50% independent = Nivel 2
+    // 0% independent (all need supervision) = Nivel 1
+    let supervisionLevel;
+    if (percentage >= 0.67) {
+      supervisionLevel = 3; // Independent (Ninguno)
+    } else if (percentage >= 0.34) {
+      supervisionLevel = 2; // Needs 50% supervision
+    } else {
+      supervisionLevel = 1; // Needs 100% supervision
+    }
+
+    // Keep old 1-5 scale for backward compatibility
+    const oldLevel = Math.ceil(percentage * 5) || 1;
+
     return {
-      reading_level: Math.max(1, Math.min(5, level)),
-      comprehension_level: Math.max(1, Math.min(5, level)),
-      attention_span: Math.max(1, Math.min(5, level)),
-      motor_skills: Math.max(1, Math.min(5, level))
+      reading_level: Math.max(1, Math.min(5, oldLevel)),
+      comprehension_level: Math.max(1, Math.min(5, oldLevel)),
+      attention_span: Math.max(1, Math.min(5, oldLevel)),
+      motor_skills: Math.max(1, Math.min(5, oldLevel)),
+      supervision_level: supervisionLevel
     };
   };
 
@@ -296,13 +346,14 @@ function CreateUserForm() {
         const studentData = {
           first_name: firstName,
           last_name: lastName,
-          age: null, // We don't collect age in this form
+          age: formData.age ? parseInt(formData.age) : null,
           sex: formData.sex,
           create_login: true,
           email: formData.email,
           username: formData.username,
           use_generated_password: useGeneratedPassword,
           custom_password: useGeneratedPassword ? undefined : formData.password,
+          teacher_id: selectedTeacherId, // Required for admins creating students
           ...abilities,
           additional_abilities: {
             evaluation_responses: questions.filter(q => q.supportType !== null),
@@ -325,10 +376,12 @@ function CreateUserForm() {
           email: formData.email,
           role: formData.role,
           username: formData.role === 'student' ? formData.username : undefined,
-          password: formData.password
+          password: formData.password,
+          sex: formData.sex,
+          age: formData.age ? parseInt(formData.age) : undefined
         };
 
-        // Add evaluation data for students
+        // Add evaluation data and teacher_id for students
         if (formData.role === 'student') {
           const abilities = calculateAbilityLevels();
           userData.evaluation = {
@@ -337,6 +390,7 @@ function CreateUserForm() {
             evaluation_date: new Date().toISOString(),
             notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`
           };
+          userData.teacher_id = selectedTeacherId; // Add teacher_id for admin creating student
         }
 
         response = await fetch('/api/admin/users', {
@@ -607,6 +661,57 @@ function CreateUserForm() {
               </div>
             )}
 
+            {/* Age field - only for students */}
+            {formData.role === 'student' && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Edad (opcional)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.age}
+                  onChange={(e) => setFormData({...formData, age: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  placeholder="Edad del estudiante"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  La edad ayuda a personalizar el contenido educativo.
+                </p>
+              </div>
+            )}
+
+            {/* Teacher selection - only for students when admin is creating them */}
+            {formData.role === 'student' && (session?.user as { role?: string })?.role === 'admin' && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Profesor Asignado *
+                </label>
+                <select
+                  value={selectedTeacherId || ''}
+                  onChange={(e) => setSelectedTeacherId(e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  required
+                >
+                  <option value="">Seleccionar profesor...</option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} ({teacher.email})
+                    </option>
+                  ))}
+                </select>
+                {teachers.length === 0 && (
+                  <p className="text-sm text-amber-600 mt-1">
+                    No hay profesores disponibles. Por favor, cree un profesor primero.
+                  </p>
+                )}
+                <p className="text-sm text-gray-600 mt-1">
+                  El estudiante será asignado a este profesor y automáticamente bajo tu supervisión.
+                </p>
+              </div>
+            )}
+
             {/* Password Section */}
             <div className="border-t pt-6">
               <h3 className="text-lg font-medium mb-4">Configuración de Contraseña</h3>
@@ -781,6 +886,7 @@ function CreateUserForm() {
                   {formData.role === 'student' && !formData.username.trim() && <li>• Nombre de usuario</li>}
                   {formData.role === 'student' && usernameStatus.available === false && <li>• Nombre de usuario válido y disponible</li>}
                   {formData.role === 'student' && !formData.sex && <li>• Sexo</li>}
+                  {formData.role === 'student' && (session?.user as { role?: string })?.role === 'admin' && !selectedTeacherId && <li>• Profesor asignado</li>}
                   {!useGeneratedPassword && !formData.password && <li>• Contraseña</li>}
                   {!useGeneratedPassword && formData.password && formData.password !== formData.confirmPassword && <li>• Las contraseñas deben coincidir</li>}
                   {!useGeneratedPassword && formData.password && formData.password.length < 8 && <li>• Contraseña de al menos 8 caracteres</li>}

@@ -63,7 +63,9 @@ interface Student {
   comprehension_level: number;
   attention_span: number;
   motor_skills: number;
+  supervision_level?: number;
   created_at: string;
+  teacher_name?: string;
 }
 
 export default function StudentDetailsPage() {
@@ -184,13 +186,34 @@ export default function StudentDetailsPage() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <button
-              onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-800 mb-4 flex items-center gap-2"
-            >
-              ← Volver
-            </button>
-            <h1 className="text-2xl font-bold">Detalles del Estudiante</h1>
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+              <h1 className="text-2xl font-bold">Detalles del Estudiante</h1>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => router.push(`/dashboard/students/${studentId}/edit`)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Editar Estudiante
+                </button>
+                <button
+                  onClick={() => router.back()}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors"
+                >
+                  Volver a la Lista
+                </button>
+              </div>
+            </div>
+            {student.teacher_name && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-100 border-2 border-green-300 rounded-lg inline-flex">
+                <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <div>
+                  <div className="text-xs text-green-600 font-medium">Profesor Asignado</div>
+                  <div className="text-sm font-bold text-green-900">{student.teacher_name}</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Student Info Card */}
@@ -223,6 +246,10 @@ export default function StudentDetailsPage() {
                       {student.sex === 'male' ? 'Masculino' : student.sex === 'female' ? 'Femenino' : 'N/A'}
                     </span>
                   </div>
+                  <div>
+                    <span className="text-gray-600">Profesor:</span>
+                    <span className="ml-2 font-medium">{student.teacher_name || 'Sin asignar'}</span>
+                  </div>
                 </div>
               </div>
 
@@ -253,6 +280,18 @@ export default function StudentDetailsPage() {
                       {getAbilityLevelText(student.motor_skills)}
                     </span>
                   </div>
+                  {student.supervision_level && (
+                    <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
+                      <span className="text-gray-600 font-semibold">Nivel de Supervisión:</span>
+                      <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                        student.supervision_level === 3 ? 'bg-green-100 text-green-800 border-2 border-green-300' :
+                        student.supervision_level === 2 ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' :
+                        'bg-red-100 text-red-800 border-2 border-red-300'
+                      }`}>
+                        Nivel {student.supervision_level}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -342,21 +381,6 @@ export default function StudentDetailsPage() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="mt-6 flex gap-4">
-            <button
-              onClick={() => router.push(`/dashboard/students/${studentId}/edit`)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              Editar Estudiante
-            </button>
-            <button
-              onClick={() => router.back()}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors"
-            >
-              Volver a la Lista
-            </button>
-          </div>
         </div>
       </div>
     </DashboardWrapper>

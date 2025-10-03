@@ -34,13 +34,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if email exists in database
-    const existingEmail = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    
+    // Check if email exists in database (excluding deleted users)
+    const existingEmail = await query(
+      'SELECT id FROM users WHERE email = $1 AND deleted_at IS NULL',
+      [email.toLowerCase()]
+    );
+
     if (existingEmail.rows.length > 0) {
-      return NextResponse.json({ 
-        available: false, 
-        message: 'Este email ya está registrado' 
+      return NextResponse.json({
+        available: false,
+        message: 'Este email ya está registrado'
       });
     }
 

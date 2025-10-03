@@ -25,6 +25,8 @@ export default function AdminReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const [avgStudentsPerTeacher, setAvgStudentsPerTeacher] = useState(0);
+  const [activeTeachersCount, setActiveTeachersCount] = useState(0);
 
   useEffect(() => {
     fetchReportData();
@@ -33,24 +35,53 @@ export default function AdminReportsPage() {
   const fetchReportData = async () => {
     try {
       setIsLoading(true);
-      // Mock data for now - replace with actual API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      // Fetch teachers assigned to this admin
+      const teachersResponse = await fetch('/api/admin/users?role=teacher');
+      const teachersData = await teachersResponse.ok ? await teachersResponse.json() : { users: [] };
+      const teachers = teachersData.users || [];
+
+      // Fetch students from assigned teachers
+      const studentsResponse = await fetch('/api/admin/users?role=student');
+      const studentsData = await studentsResponse.ok ? await studentsResponse.json() : { users: [] };
+      const students = studentsData.users || [];
+
+      // Calculate statistics
+      const activeStudents = students.filter((s: { is_active: boolean }) => s.is_active).length;
+      const activeTeachers = teachers.filter((t: { is_active: boolean }) => t.is_active).length;
+
+      // Calculate students per teacher average
+      const avgStudents = activeTeachers > 0
+        ? Math.round((students.length / activeTeachers) * 10) / 10
+        : 0;
+
+      // Calculate recent activity (students created in last week)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const recentStudents = students.filter((s: { created_at: string }) =>
+        new Date(s.created_at) > weekAgo
+      ).length;
+
+      setAvgStudentsPerTeacher(avgStudents);
+      setActiveTeachersCount(activeTeachers);
+
       setReportData({
-        totalStudents: 45,
-        totalTeachers: 8,
-        activeStudents: 38,
-        completedActivities: 127,
-        averageProgress: 67,
-        lastWeekActivity: 89
+        totalStudents: students.length,
+        totalTeachers: teachers.length,
+        activeStudents: activeStudents,
+        completedActivities: 0, // Not tracking this yet
+        averageProgress: 0, // Not tracking this yet
+        lastWeekActivity: recentStudents
       });
 
+      // Activity progress - placeholder for now
       setActivityProgress([
-        { activityName: 'Actividad 1: Conocer mi cuerpo', totalStudents: 45, completedStudents: 32, progressPercentage: 71 },
-        { activityName: 'Actividad 2: Emociones y sentimientos', totalStudents: 45, completedStudents: 28, progressPercentage: 62 },
-        { activityName: 'Actividad 3: Relaciones saludables', totalStudents: 45, completedStudents: 15, progressPercentage: 33 }
+        { activityName: 'Actividad 1: Conocer mi cuerpo', totalStudents: students.length, completedStudents: 0, progressPercentage: 0 },
+        { activityName: 'Actividad 2: Emociones y sentimientos', totalStudents: students.length, completedStudents: 0, progressPercentage: 0 },
+        { activityName: 'Actividad 3: Relaciones saludables', totalStudents: students.length, completedStudents: 0, progressPercentage: 0 }
       ]);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching report data:', err);
       setError('Error al cargar los datos del reporte');
     } finally {
       setIsLoading(false);
@@ -113,9 +144,6 @@ export default function AdminReportsPage() {
                 <option value="quarter">Último trimestre</option>
                 <option value="year">Último año</option>
               </select>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Exportar PDF
-              </button>
             </div>
           </div>
 
@@ -195,24 +223,24 @@ export default function AdminReportsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                     <div>
-                      <div className="font-medium text-green-900">Estudiantes activos hoy</div>
-                      <div className="text-sm text-green-700">Última actividad registrada</div>
+                      <div className="font-medium text-green-900">Estudiantes activos</div>
+                      <div className="text-sm text-green-700">Total de estudiantes activos</div>
                     </div>
-                    <div className="text-2xl font-bold text-green-600">23</div>
+                    <div className="text-2xl font-bold text-green-600">{reportData?.activeStudents || 0}</div>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                     <div>
                       <div className="font-medium text-blue-900">Nuevos registros</div>
-                      <div className="text-sm text-blue-700">Esta semana</div>
+                      <div className="text-sm text-blue-700">Última semana</div>
                     </div>
-                    <div className="text-2xl font-bold text-blue-600">5</div>
+                    <div className="text-2xl font-bold text-blue-600">{reportData?.lastWeekActivity || 0}</div>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
                     <div>
-                      <div className="font-medium text-purple-900">Actividades completadas</div>
-                      <div className="text-sm text-purple-700">Últimas 24 horas</div>
+                      <div className="font-medium text-purple-900">Total estudiantes</div>
+                      <div className="text-sm text-purple-700">Todos los estudiantes</div>
                     </div>
-                    <div className="text-2xl font-bold text-purple-600">12</div>
+                    <div className="text-2xl font-bold text-purple-600">{reportData?.totalStudents || 0}</div>
                   </div>
                 </div>
               </div>
@@ -229,23 +257,23 @@ export default function AdminReportsPage() {
                   <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
                     <div>
                       <div className="font-medium text-emerald-900">Profesores activos</div>
-                      <div className="text-sm text-emerald-700">Con estudiantes asignados</div>
+                      <div className="text-sm text-emerald-700">Asignados a este admin</div>
                     </div>
-                    <div className="text-2xl font-bold text-emerald-600">8</div>
+                    <div className="text-2xl font-bold text-emerald-600">{activeTeachersCount}</div>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
                     <div>
-                      <div className="font-medium text-orange-900">Evaluaciones pendientes</div>
-                      <div className="text-sm text-orange-700">Requieren revisión</div>
+                      <div className="font-medium text-orange-900">Total profesores</div>
+                      <div className="text-sm text-orange-700">Todos los profesores</div>
                     </div>
-                    <div className="text-2xl font-bold text-orange-600">3</div>
+                    <div className="text-2xl font-bold text-orange-600">{reportData?.totalTeachers || 0}</div>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-teal-50 rounded-lg">
                     <div>
                       <div className="font-medium text-teal-900">Estudiantes por profesor</div>
                       <div className="text-sm text-teal-700">Promedio actual</div>
                     </div>
-                    <div className="text-2xl font-bold text-teal-600">5.6</div>
+                    <div className="text-2xl font-bold text-teal-600">{avgStudentsPerTeacher}</div>
                   </div>
                 </div>
               </div>

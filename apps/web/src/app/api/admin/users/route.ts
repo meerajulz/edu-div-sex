@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
-import { getUserRole, checkPermission } from '@/lib/permissions';
+import { getUserRole } from '@/lib/permissions';
 
 // GET /api/admin/users - Get all users (admins and owners only)
 export async function GET(request: NextRequest) {
@@ -55,19 +55,75 @@ export async function GET(request: NextRequest) {
           u.is_active,
           u.created_at,
           u.last_password_change,
-          creator.name as created_by_name
+          u.first_name,
+          u.last_name,
+          u.username,
+          u.sex,
+          creator.name as created_by_name,
+          CASE
+            WHEN u.role = 'teacher' THEN (
+              SELECT COUNT(*) FROM students
+              WHERE teacher_id = u.id::integer AND is_active = true
+            )
+            ELSE 0
+          END as student_count,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT t.name FROM students s
+              JOIN users t ON s.teacher_id = t.id
+              WHERE s.user_id = u.id
+              LIMIT 1
+            )
+            ELSE NULL
+          END as teacher_name,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT s.reading_level FROM students s WHERE s.user_id = u.id LIMIT 1
+            )
+            ELSE NULL
+          END as reading_level,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT s.comprehension_level FROM students s WHERE s.user_id = u.id LIMIT 1
+            )
+            ELSE NULL
+          END as comprehension_level,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT s.attention_span FROM students s WHERE s.user_id = u.id LIMIT 1
+            )
+            ELSE NULL
+          END as attention_span,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT s.motor_skills FROM students s WHERE s.user_id = u.id LIMIT 1
+            )
+            ELSE NULL
+          END as motor_skills,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT s.age FROM students s WHERE s.user_id = u.id LIMIT 1
+            )
+            ELSE NULL
+          END as age,
+          CASE
+            WHEN u.role = 'student' THEN (
+              SELECT s.id FROM students s WHERE s.user_id = u.id LIMIT 1
+            )
+            ELSE NULL
+          END as student_profile_id
         FROM users u
         LEFT JOIN users creator ON u.created_by = creator.id
         WHERE u.deleted_at IS NULL AND (
           -- Teachers assigned to this admin
           (u.role = 'teacher' AND EXISTS (
-            SELECT 1 FROM teacher_admin_assignments 
+            SELECT 1 FROM teacher_admin_assignments
             WHERE teacher_id = u.id AND admin_id = $1
           ))
           OR
           -- Students of teachers assigned to this admin
           (u.role = 'student' AND EXISTS (
-            SELECT 1 FROM students s 
+            SELECT 1 FROM students s
             JOIN teacher_admin_assignments taa ON s.teacher_id = taa.teacher_id
             WHERE s.user_id = u.id AND taa.admin_id = $1
           ))
@@ -105,25 +161,26 @@ export async function POST(request: NextRequest) {
     }
 
     const userRole = await getUserRole(session.user.id);
-    
-    if (!userRole || !await checkPermission(session.user.id, 'canManageUsers')) {
+
+    // Only owners and admins can create users
+    if (!userRole || (userRole !== 'owner' && userRole !== 'admin')) {
       return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
     }
 
     const body = await request.json();
-    const { email, password, name, role, username, evaluation, sex } = body;
+    const { email, password, name, role, username, evaluation, sex, age, teacher_id } = body;
 
     // Validate required fields
     if (!email || !password || !name || !role) {
-      return NextResponse.json({ 
-        error: 'email, password, name, and role are required' 
+      return NextResponse.json({
+        error: 'email, password, name, and role are required'
       }, { status: 400 });
     }
 
     // Validate username for students
     if (role === 'student' && !username) {
-      return NextResponse.json({ 
-        error: 'username is required for student accounts' 
+      return NextResponse.json({
+        error: 'username is required for student accounts'
       }, { status: 400 });
     }
 
@@ -137,8 +194,8 @@ export async function POST(request: NextRequest) {
     if (userRole === 'admin') {
       // Admins can only create teachers and students
       if (!['teacher', 'student'].includes(role)) {
-        return NextResponse.json({ 
-          error: 'Admins can only create teacher and student accounts' 
+        return NextResponse.json({
+          error: 'Admins can only create teacher and student accounts'
         }, { status: 403 });
       }
     } else if (userRole === 'owner') {
@@ -207,34 +264,37 @@ export async function POST(request: NextRequest) {
       if (role === 'student') {
         let studentParams;
         let studentQuery;
-        
+
         if (evaluation) {
           // Use evaluation data if provided
-          const { reading_level = 1, comprehension_level = 1, attention_span = 1, motor_skills = 1, notes = '', evaluation_responses = [], evaluation_date = new Date().toISOString() } = evaluation;
-          
+          const { reading_level = 1, comprehension_level = 1, attention_span = 1, motor_skills = 1, supervision_level = 1, notes = '', evaluation_responses = [], evaluation_date = new Date().toISOString() } = evaluation;
+
           studentQuery = `
-            INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, is_active, notes, additional_abilities)
-            VALUES ($1, $2, $3, $4, $5, $6, true, $7, $8)
+            INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, supervision_level, is_active, notes, additional_abilities, teacher_id, age)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, true, $8, $9, $10, $11)
           `;
           studentParams = [
-            name, 
-            newUser.id, 
-            reading_level, 
-            comprehension_level, 
-            attention_span, 
-            motor_skills, 
+            name,
+            newUser.id,
+            reading_level,
+            comprehension_level,
+            attention_span,
+            motor_skills,
+            supervision_level,
             notes,
-            JSON.stringify({ evaluation_responses, evaluation_date })
+            JSON.stringify({ evaluation_responses, evaluation_date }),
+            teacher_id || null,
+            age || null
           ];
         } else {
           // Default values if no evaluation
           studentQuery = `
-            INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, is_active)
-            VALUES ($1, $2, 1, 1, 1, 1, true)
+            INSERT INTO students (name, user_id, reading_level, comprehension_level, attention_span, motor_skills, supervision_level, is_active, teacher_id, age)
+            VALUES ($1, $2, 1, 1, 1, 1, 1, true, $3, $4)
           `;
-          studentParams = [name, newUser.id];
+          studentParams = [name, newUser.id, teacher_id || null, age || null];
         }
-        
+
         await query(studentQuery, studentParams);
       }
 

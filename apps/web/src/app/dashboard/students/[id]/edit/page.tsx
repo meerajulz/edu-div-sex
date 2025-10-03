@@ -19,6 +19,7 @@ interface Student {
   motor_skills: number;
   notes?: string;
   created_at: string;
+  teacher_name?: string;
 }
 
 export default function EditStudentPage() {
@@ -176,7 +177,20 @@ export default function EditStudentPage() {
             >
               ← Volver
             </button>
-            <h1 className="text-2xl font-bold">Editar Estudiante</h1>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <h1 className="text-2xl font-bold">Editar Estudiante</h1>
+              {student?.teacher_name && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 border-2 border-green-300 rounded-lg">
+                  <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <div>
+                    <div className="text-xs text-green-600 font-medium">Profesor Asignado</div>
+                    <div className="text-sm font-bold text-green-900">{student.teacher_name}</div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Success/Error Messages */}

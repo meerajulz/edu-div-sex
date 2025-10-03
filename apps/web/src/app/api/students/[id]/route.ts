@@ -104,9 +104,41 @@ export async function PUT(
     const abilities = { reading_level, comprehension_level, attention_span, motor_skills };
     for (const [key, value] of Object.entries(abilities)) {
       if (value !== undefined && (value < 1 || value > 5)) {
-        return NextResponse.json({ 
-          error: `${key} must be between 1 and 5` 
+        return NextResponse.json({
+          error: `${key} must be between 1 and 5`
         }, { status: 400 });
+      }
+    }
+
+    // Calculate supervision_level if any ability fields are being updated
+    let supervision_level;
+    if (reading_level !== undefined || comprehension_level !== undefined ||
+        attention_span !== undefined || motor_skills !== undefined) {
+
+      // Get current student data to fill in missing fields
+      const currentStudent = await query('SELECT * FROM students WHERE id = $1', [studentId]);
+      if (currentStudent.rows.length === 0) {
+        return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+      }
+
+      const current = currentStudent.rows[0];
+      const finalReadingLevel = reading_level ?? current.reading_level;
+      const finalComprehensionLevel = comprehension_level ?? current.comprehension_level;
+      const finalAttentionSpan = attention_span ?? current.attention_span;
+      const finalMotorSkills = motor_skills ?? current.motor_skills;
+
+      // Calculate average of all 4 abilities (1-5 scale)
+      const avgAbility = (finalReadingLevel + finalComprehensionLevel + finalAttentionSpan + finalMotorSkills) / 4;
+      const percentage = (avgAbility - 1) / 4; // Normalize to 0-1 scale
+
+      // Convert to supervision level (1-3 scale)
+      // Higher abilities = Higher supervision level (more independent)
+      if (percentage >= 0.67) {
+        supervision_level = 3; // Independent (abilities 3.68-5)
+      } else if (percentage >= 0.34) {
+        supervision_level = 2; // Needs 50% supervision (abilities 2.36-3.67)
+      } else {
+        supervision_level = 1; // Needs 100% supervision (abilities 1-2.35)
       }
     }
 
@@ -146,6 +178,10 @@ export async function PUT(
     if (notes !== undefined) {
       updates.push(`notes = $${paramCount++}`);
       values.push(notes);
+    }
+    if (supervision_level !== undefined) {
+      updates.push(`supervision_level = $${paramCount++}`);
+      values.push(supervision_level);
     }
 
     if (updates.length === 0) {

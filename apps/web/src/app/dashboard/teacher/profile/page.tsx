@@ -13,31 +13,69 @@ interface TeacherStats {
   completedActivities: number;
 }
 
+interface Admin {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export default function TeacherProfilePage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [stats, setStats] = useState<TeacherStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [isLoadingAdmins, setIsLoadingAdmins] = useState(true);
 
   useEffect(() => {
     fetchTeacherStats();
-  }, []);
+    if (session?.user?.id) {
+      fetchAssignedAdmins();
+    }
+  }, [session?.user?.id]);
 
   const fetchTeacherStats = async () => {
     try {
       setIsLoadingStats(true);
-      // Mock data for now - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStats({
-        totalStudents: 12,
-        activeStudents: 10,
-        pendingEvaluations: 3,
-        completedActivities: 28
-      });
+      // Fetch actual student data
+      const response = await fetch('/api/students');
+      if (response.ok) {
+        const data = await response.json();
+        const students = data.students || [];
+
+        // Calculate stats from real data
+        const totalStudents = students.length;
+        const activeStudents = students.filter((s: { is_active: boolean }) => s.is_active).length;
+        const completedScenes = students.reduce((sum: number, s: { scenes_completed: number }) =>
+          sum + (parseInt(s.scenes_completed?.toString() || '0')), 0
+        );
+
+        setStats({
+          totalStudents,
+          activeStudents,
+          pendingEvaluations: 0, // Can be calculated later if needed
+          completedActivities: completedScenes
+        });
+      }
     } catch (error) {
       console.error('Error fetching teacher stats:', error);
     } finally {
       setIsLoadingStats(false);
+    }
+  };
+
+  const fetchAssignedAdmins = async () => {
+    try {
+      setIsLoadingAdmins(true);
+      const response = await fetch(`/api/admin/teacher-assignments?teacher_id=${session?.user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAdmins(data.admins || []);
+      }
+    } catch (error) {
+      console.error('Error fetching assigned admins:', error);
+    } finally {
+      setIsLoadingAdmins(false);
     }
   };
 
@@ -53,14 +91,31 @@ export default function TeacherProfilePage() {
     <DashboardWrapper>
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="mb-6">
             <button
               onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-800"
+              className="text-gray-600 hover:text-gray-800 mb-4 flex items-center gap-2"
             >
               ← Volver
             </button>
-            <h1 className="text-2xl font-bold">Mi Perfil de Profesor</h1>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <h1 className="text-2xl font-bold">Mi Perfil de Profesor</h1>
+              {!isLoadingAdmins && admins.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {admins.map((admin) => (
+                    <div key={admin.id} className="flex items-center gap-2 px-4 py-2 bg-blue-100 border-2 border-blue-300 rounded-lg">
+                      <svg className="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <div>
+                        <div className="text-xs text-blue-600 font-medium">Administrador</div>
+                        <div className="text-sm font-bold text-blue-900">{admin.name}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Profile Information */}

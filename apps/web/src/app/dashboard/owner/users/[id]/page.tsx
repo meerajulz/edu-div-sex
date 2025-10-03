@@ -76,6 +76,7 @@ function ViewUserDetails() {
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [admins, setAdmins] = useState<Array<{ id: number; name: string }>>([]);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -100,6 +101,19 @@ function ViewUserDetails() {
           }
         } catch (progressErr) {
           console.error('Error fetching progress:', progressErr);
+        }
+      }
+
+      // Fetch admin assignments if user is a teacher
+      if (data.user.role === 'teacher') {
+        try {
+          const adminsResponse = await fetch(`/api/admin/teacher-assignments?teacher_id=${userId}`);
+          if (adminsResponse.ok) {
+            const adminsData = await adminsResponse.json();
+            setAdmins(adminsData.admins || []);
+          }
+        } catch (adminsErr) {
+          console.error('Error fetching admins:', adminsErr);
         }
       }
     } catch (err) {
@@ -294,29 +308,46 @@ function ViewUserDetails() {
     <DashboardWrapper>
       <div className="p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              ← Volver
-            </button>
-            <h1 className="text-2xl font-bold">Detalles del Usuario</h1>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => router.push(`/dashboard/owner/users/${userId}/edit`)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Editar Usuario
-            </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Eliminar Usuario
-            </button>
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="text-gray-600 hover:text-gray-800 mb-4 flex items-center gap-2"
+          >
+            ← Volver
+          </button>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <h1 className="text-2xl font-bold">Detalles del Usuario</h1>
+              {user.role === 'teacher' && admins.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {admins.map((admin) => (
+                    <div key={admin.id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 border-2 border-blue-300 rounded-lg">
+                      <svg className="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <div>
+                        <div className="text-xs text-blue-600 font-medium">Admin</div>
+                        <div className="text-xs font-bold text-blue-900">{admin.name}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push(`/dashboard/owner/users/${userId}/edit`)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Editar Usuario
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Eliminar Usuario
+              </button>
+            </div>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import DashboardWrapper from '../DashboardWrapper';
 
 interface Student {
   id: string;
+  user_id: string;
   username: string;
   email: string;
   first_name: string;
@@ -16,6 +17,7 @@ interface Student {
   comprehension_level: number;
   attention_span: number;
   motor_skills: number;
+  supervision_level?: number;
   created_at: string;
   additional_abilities?: {
     evaluation_responses?: unknown[];
@@ -99,8 +101,8 @@ export default function StudentsPage() {
 
   return (
     <DashboardWrapper>
-      <div className="p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="h-full">
+      <div className="h-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Lista de Estudiantes</h1>
           <button
@@ -134,6 +136,7 @@ export default function StudentsPage() {
                     <th className="text-left p-4 font-medium text-gray-700">Sexo</th>
                     <th className="text-left p-4 font-medium text-gray-700">Nivel de Lectura</th>
                     <th className="text-left p-4 font-medium text-gray-700">Comprensión</th>
+                    <th className="text-left p-4 font-medium text-gray-700">Nivel Supervisión</th>
                     <th className="text-left p-4 font-medium text-gray-700">Fecha de Registro</th>
                     <th className="text-left p-4 font-medium text-gray-700">Acciones</th>
                   </tr>
@@ -168,6 +171,19 @@ export default function StudentsPage() {
                           {getAbilityLevelText(student.comprehension_level)}
                         </span>
                       </td>
+                      <td className="p-4">
+                        {student.supervision_level ? (
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                            student.supervision_level === 3 ? 'bg-green-100 text-green-800 border border-green-300' :
+                            student.supervision_level === 2 ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                            'bg-red-100 text-red-800 border border-red-300'
+                          }`}>
+                            Nivel {student.supervision_level}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">N/A</span>
+                        )}
+                      </td>
                       <td className="p-4 text-gray-600">
                         {formatDate(student.created_at)}
                       </td>
@@ -180,7 +196,7 @@ export default function StudentsPage() {
                             Ver Detalles
                           </button>
                           <button
-                            onClick={() => router.push(`/dashboard/students/${student.id}/edit`)}
+                            onClick={() => router.push(`/dashboard/owner/users/${student.user_id}/edit`)}
                             className="text-gray-600 hover:text-gray-800 text-sm"
                           >
                             Editar

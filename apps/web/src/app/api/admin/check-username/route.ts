@@ -40,13 +40,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if username exists in database
-    const existingUsername = await query('SELECT id FROM users WHERE username = $1', [username]);
-    
+    // Check if username exists in database (excluding deleted users)
+    const existingUsername = await query(
+      'SELECT id FROM users WHERE username = $1 AND deleted_at IS NULL',
+      [username]
+    );
+
     if (existingUsername.rows.length > 0) {
-      return NextResponse.json({ 
-        available: false, 
-        message: 'Este nombre de usuario ya está en uso' 
+      return NextResponse.json({
+        available: false,
+        message: 'Este nombre de usuario ya está en uso'
       });
     }
 

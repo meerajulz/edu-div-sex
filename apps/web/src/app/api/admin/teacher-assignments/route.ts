@@ -4,17 +4,44 @@ import { query } from '@/lib/db';
 import { getUserRole } from '@/lib/permissions';
 
 // GET /api/admin/teacher-assignments - Get teacher-admin assignments
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userRole = await getUserRole(session.user.id);
-    
-    // Only owners and admins can view assignments
+    const { searchParams } = new URL(request.url);
+    const teacherId = searchParams.get('teacher_id');
+
+    // Teachers can only query their own assignments
+    if (userRole === 'teacher') {
+      if (teacherId && teacherId !== session.user.id) {
+        return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
+      }
+
+      // Return admins assigned to this teacher
+      const adminsQuery = `
+        SELECT
+          admin.id,
+          admin.name,
+          admin.email
+        FROM teacher_admin_assignments taa
+        JOIN users admin ON taa.admin_id = admin.id
+        WHERE taa.teacher_id = $1 AND admin.is_active = true
+        ORDER BY admin.name
+      `;
+      const admins = await query(adminsQuery, [session.user.id]);
+
+      return NextResponse.json({
+        admins: admins.rows,
+        total: admins.rows.length
+      });
+    }
+
+    // Only owners and admins can view full assignments
     if (userRole !== 'owner' && userRole !== 'admin') {
       return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
     }

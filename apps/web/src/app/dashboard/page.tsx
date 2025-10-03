@@ -52,7 +52,7 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold mb-6">Panel de Control</h1>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-pink-100 rounded-lg">
@@ -68,7 +68,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -81,20 +81,6 @@ export default function DashboardPage() {
                 <p className="text-2xl font-bold text-gray-900">
                   {isLoading ? '...' : stats.totalStudents}
                 </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Progreso Promedio</p>
-                <p className="text-2xl font-bold text-gray-900">85%</p>
               </div>
             </div>
           </div>

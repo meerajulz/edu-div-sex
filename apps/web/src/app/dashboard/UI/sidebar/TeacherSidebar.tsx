@@ -36,13 +36,6 @@ const TeacherSidebar: React.FC = () => {
           <Link href='/dashboard/students' className='text-gray-600 text-sm block mb-2'>
             Ver Lista de Alumnos
           </Link>
-          
-          <div className='text-pink-600 font-medium text-sm uppercase block mb-2 mt-4'>
-            Herramientas
-          </div>
-          <Link href='/dashboard/evaluation-form' className='text-gray-600 text-sm block mb-2'>
-            Formulario de Evaluación
-          </Link>
 
           {/* Activity Tree */}
           <ActivityTree />

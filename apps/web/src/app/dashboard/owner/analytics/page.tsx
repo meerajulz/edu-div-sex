@@ -381,7 +381,7 @@ export default function OwnerAnalyticsPage() {
         {/* Quick Actions */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Acciones Rápidas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <button
               onClick={() => router.push('/dashboard/owner/users')}
               className="p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
@@ -402,13 +402,6 @@ export default function OwnerAnalyticsPage() {
             >
               <div className="font-medium text-gray-900">Ver Estudiantes</div>
               <div className="text-sm text-gray-600">Revisar todos los estudiantes</div>
-            </button>
-            <button
-              onClick={() => router.push('/dashboard/owner/data-export')}
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
-            >
-              <div className="font-medium text-gray-900">Exportar Datos</div>
-              <div className="text-sm text-gray-600">Descargar datos del sistema</div>
             </button>
           </div>
         </div>

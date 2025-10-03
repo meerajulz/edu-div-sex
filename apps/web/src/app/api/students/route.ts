@@ -25,9 +25,14 @@ export async function GET() {
     if (userRole === 'student') {
       // Students can only see their own student record
       studentsQuery = `
-        SELECT 
+        SELECT
           s.*,
           u.email as login_email,
+          u.username,
+          u.email,
+          u.first_name,
+          u.last_name,
+          u.sex,
           teacher.name as teacher_name,
           COUNT(sp.id) as total_progress_entries,
           COUNT(CASE WHEN sp.status = 'completed' THEN 1 END) as completed_scenes
@@ -36,7 +41,7 @@ export async function GET() {
         LEFT JOIN users teacher ON s.teacher_id = teacher.id
         LEFT JOIN student_progress sp ON s.id = sp.student_id
         WHERE s.user_id = $1 AND s.is_active = true
-        GROUP BY s.id, u.email, teacher.name
+        GROUP BY s.id, u.email, u.username, u.first_name, u.last_name, u.sex, teacher.name
         ORDER BY s.created_at DESC
       `;
       queryParams = [session.user.id];
@@ -45,9 +50,14 @@ export async function GET() {
     } else if (userRole === 'owner') {
       // Owner can see all students
       studentsQuery = `
-        SELECT 
+        SELECT
           s.*,
           u.email as login_email,
+          u.username,
+          u.email,
+          u.first_name,
+          u.last_name,
+          u.sex,
           teacher.name as teacher_name,
           COUNT(sp.id) as total_progress_entries,
           COUNT(CASE WHEN sp.status = 'completed' THEN 1 END) as completed_scenes
@@ -56,15 +66,20 @@ export async function GET() {
         LEFT JOIN users teacher ON s.teacher_id = teacher.id
         LEFT JOIN student_progress sp ON s.id = sp.student_id
         WHERE s.is_active = true
-        GROUP BY s.id, u.email, teacher.name
+        GROUP BY s.id, u.email, u.username, u.first_name, u.last_name, u.sex, teacher.name
         ORDER BY s.created_at DESC
       `;
     } else if (userRole === 'admin') {
       // Admin can see students from their assigned teachers
       studentsQuery = `
-        SELECT 
+        SELECT
           s.*,
           u.email as login_email,
+          u.username,
+          u.email,
+          u.first_name,
+          u.last_name,
+          u.sex,
           teacher.name as teacher_name,
           COUNT(sp.id) as total_progress_entries,
           COUNT(CASE WHEN sp.status = 'completed' THEN 1 END) as completed_scenes
@@ -74,7 +89,7 @@ export async function GET() {
         LEFT JOIN student_progress sp ON s.id = sp.student_id
         JOIN teacher_admin_assignments taa ON s.teacher_id = taa.teacher_id
         WHERE s.is_active = true AND taa.admin_id = $1
-        GROUP BY s.id, u.email, teacher.name
+        GROUP BY s.id, u.email, u.username, u.first_name, u.last_name, u.sex, teacher.name
         ORDER BY s.created_at DESC
       `;
       queryParams = [session.user.id];
@@ -142,16 +157,17 @@ export async function POST(request: NextRequest) {
       comprehension_level = 1,
       attention_span = 1,
       motor_skills = 1,
+      supervision_level = 1,
       additional_abilities = {},
       notes = '',
-      
+
       // Login creation fields
       create_login = false,
       email,
       username: custom_username, // Optional: custom username instead of auto-generated
       use_generated_password = true,
       custom_password, // Optional: teacher can set custom simple password
-      
+
       // Admin/owner can specify teacher
       teacher_id
     } = body;
@@ -214,12 +230,15 @@ export async function POST(request: NextRequest) {
       if (custom_username) {
         // Use provided custom username
         username = custom_username;
-        
-        // Check if username already exists
-        const existingUsername = await query('SELECT id FROM users WHERE username = $1', [custom_username]);
+
+        // Check if username already exists (excluding deleted users)
+        const existingUsername = await query(
+          'SELECT id FROM users WHERE username = $1 AND deleted_at IS NULL',
+          [custom_username]
+        );
         if (existingUsername.rows.length > 0) {
-          return NextResponse.json({ 
-            error: 'El nombre de usuario ya existe' 
+          return NextResponse.json({
+            error: 'El nombre de usuario ya existe'
           }, { status: 400 });
         }
       } else {
@@ -266,15 +285,15 @@ export async function POST(request: NextRequest) {
     // Create student record
     const result = await query(`
       INSERT INTO students (
-        name, age, reading_level, comprehension_level, 
-        attention_span, motor_skills, additional_abilities, 
+        name, age, reading_level, comprehension_level,
+        attention_span, motor_skills, supervision_level, additional_abilities,
         notes, teacher_id, user_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `, [
       name, age, reading_level, comprehension_level,
-      attention_span, motor_skills, JSON.stringify(additional_abilities),
+      attention_span, motor_skills, supervision_level, JSON.stringify(additional_abilities),
       notes, assignedTeacherId, user_id
     ]);
 

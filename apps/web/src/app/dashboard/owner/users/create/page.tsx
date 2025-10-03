@@ -14,6 +14,7 @@ interface UserFormData {
   password: string;
   confirmPassword: string;
   sex: 'male' | 'female' | '';
+  age: string;
 }
 
 function OwnerCreateUserForm() {
@@ -29,7 +30,8 @@ function OwnerCreateUserForm() {
     username: '',
     password: '',
     confirmPassword: '',
-    sex: ''
+    sex: '',
+    age: ''
   });
 
   const [error, setError] = useState('');
@@ -52,6 +54,27 @@ function OwnerCreateUserForm() {
   }>({ checking: false, available: null, message: '' });
   const [emailTimeout, setEmailTimeout] = useState<NodeJS.Timeout | null>(null);
   const [questions, setQuestions] = useState<Question[]>(questionsData);
+  const [teachers, setTeachers] = useState<Array<{ id: number; name: string; email: string }>>([]);
+  const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
+
+  // Fetch teachers list when role is student and user is admin/owner
+  useEffect(() => {
+    if (formData.role === 'student' && session?.user) {
+      fetchTeachers();
+    }
+  }, [formData.role, session]);
+
+  const fetchTeachers = async () => {
+    try {
+      const response = await fetch('/api/admin/users?role=teacher');
+      if (response.ok) {
+        const data = await response.json();
+        setTeachers(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
 
   // Form validation
   const isFormValid = () => {
@@ -60,9 +83,16 @@ function OwnerCreateUserForm() {
       return false;
     }
 
-    // Username and sex required for students
-    if (formData.role === 'student' && (!formData.username.trim() || !formData.sex)) {
-      return false;
+    // Username, sex, and teacher required for students (when admin/owner)
+    if (formData.role === 'student') {
+      if (!formData.username.trim() || !formData.sex) {
+        return false;
+      }
+      // Check if teacher is required (for admins and owners)
+      const userRole = (session?.user as { role?: string })?.role;
+      if ((userRole === 'admin' || userRole === 'owner') && !selectedTeacherId) {
+        return false;
+      }
     }
 
     // Password validation
@@ -299,13 +329,14 @@ function OwnerCreateUserForm() {
         const studentData = {
           first_name: firstName,
           last_name: lastName,
-          age: null, // We don't collect age in this form
+          age: formData.age ? parseInt(formData.age) : null,
           sex: formData.sex,
           create_login: true,
           email: formData.email,
           username: formData.username,
           use_generated_password: useGeneratedPassword,
           custom_password: useGeneratedPassword ? undefined : formData.password,
+          teacher_id: selectedTeacherId, // Include teacher_id for admin/owner
           ...abilities,
           additional_abilities: {
             evaluation_responses: questions.filter(q => q.supportType !== null),
@@ -649,6 +680,54 @@ function OwnerCreateUserForm() {
               </div>
             )}
 
+            {/* Age field - only for students */}
+            {formData.role === 'student' && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Edad (opcional)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.age}
+                  onChange={(e) => setFormData({...formData, age: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  placeholder="Edad del estudiante"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  La edad ayuda a personalizar el contenido educativo.
+                </p>
+              </div>
+            )}
+
+            {/* Teacher selection - only for students when admin/owner */}
+            {formData.role === 'student' && (session?.user as { role?: string })?.role !== 'teacher' && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Profesor Asignado *
+                </label>
+                <select
+                  value={selectedTeacherId || ''}
+                  onChange={(e) => setSelectedTeacherId(e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  required
+                >
+                  <option value="">Seleccionar profesor...</option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} ({teacher.email})
+                    </option>
+                  ))}
+                </select>
+                {teachers.length === 0 && (
+                  <p className="text-sm text-amber-600 mt-1">
+                    No hay profesores disponibles. Por favor, cree un profesor primero.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Password Section */}
             <div className="border-t pt-6">
               <h3 className="text-lg font-medium mb-4">Configuración de Contraseña</h3>
@@ -878,6 +957,7 @@ function OwnerCreateUserForm() {
                   {formData.role === 'student' && !formData.username.trim() && <li>• Nombre de usuario</li>}
                   {formData.role === 'student' && usernameStatus.available === false && <li>• Nombre de usuario válido y disponible</li>}
                   {formData.role === 'student' && !formData.sex && <li>• Sexo</li>}
+                  {formData.role === 'student' && (session?.user as { role?: string })?.role !== 'teacher' && !selectedTeacherId && <li>• Profesor asignado</li>}
                   {!useGeneratedPassword && !formData.password && <li>• Contraseña</li>}
                   {!useGeneratedPassword && formData.password && formData.password !== formData.confirmPassword && <li>• Las contraseñas deben coincidir</li>}
                   {!useGeneratedPassword && formData.password && formData.password.length < 8 && <li>• Contraseña de al menos 8 caracteres</li>}

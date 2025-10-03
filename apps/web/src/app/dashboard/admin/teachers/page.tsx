@@ -163,13 +163,13 @@ export default function AdminTeachersPage() {
                       <td className="p-4">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => router.push(`/dashboard/admin/users/${teacher.id}`)}
+                            onClick={() => router.push(`/dashboard/owner/users/${teacher.id}`)}
                             className="text-blue-600 hover:text-blue-800 text-sm"
                           >
                             Ver Detalles
                           </button>
                           <button
-                            onClick={() => router.push(`/dashboard/admin/users/${teacher.id}/edit`)}
+                            onClick={() => router.push(`/dashboard/owner/users/${teacher.id}/edit`)}
                             className="text-gray-600 hover:text-gray-800 text-sm"
                           >
                             Editar
