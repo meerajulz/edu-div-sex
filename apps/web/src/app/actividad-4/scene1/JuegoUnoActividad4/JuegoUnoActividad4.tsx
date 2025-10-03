@@ -232,14 +232,14 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
                   <>
                     {/* Character selection title */}
                     <motion.div
-                      className="absolute top-10 left-1/2 -translate-x-1/2 text-xl font-bold bg-white/80 backdrop-blur-sm rounded-lg px-6 py-3 text-blue-800 shadow-md"
+                      className="absolute top-10 left-0 right-0 mx-auto w-fit text-xl font-bold bg-white/80 backdrop-blur-sm rounded-lg px-6 py-3 text-blue-800 shadow-md"
                       initial={{ opacity: 0, y: -20 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
                       Elige tu personaje
                     </motion.div>
-                    
-                    <CharacterSelection 
+
+                    <CharacterSelection
                       onCharacterSelect={handleCharacterSelect}
                       isAnimating={isAnimating}
                     />

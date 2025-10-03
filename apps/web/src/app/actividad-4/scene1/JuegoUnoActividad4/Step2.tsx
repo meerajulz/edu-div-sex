@@ -58,13 +58,13 @@ const ClickableElement: React.FC<ClickableElementProps> = ({
       onClick={handleClick}
       whileHover={!isClicked ? { scale: 1.05 } : {}}
       whileTap={!isClicked ? { scale: 0.95 } : {}}
-      animate={isAnimating ? { 
-        scale: [1, 1.2, 1], 
-        rotate: [0, isCorrect ? 5 : -5, 0] 
+      animate={isAnimating ? {
+        scale: [1, 1.2, 1],
+        rotate: [0, isCorrect ? 5 : -5, 0]
       } : {}}
       transition={{ duration: 0.5, ease: 'easeInOut' }}
     >
-      <div className="relative w-32 h-40 md:w-40 md:h-48">
+      <div className="relative w-48 h-56 md:w-64 md:h-72">
         <Image
           src={currentImage}
           alt={alt}
@@ -92,13 +92,15 @@ const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({ isVisible, isCorrect,
 
   return (
     <motion.div
-      className="absolute top-8 left-1/2 transform -translate-x-1/2 z-50"
+      className={`absolute top-1/2 transform -translate-y-1/2 z-50 ${
+        isCorrect ? 'right-8' : 'left-8'
+      }`}
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.5 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="relative w-16 h-16 md:w-20 md:h-20">
+      <div className="relative w-32 h-32 md:w-40 md:h-40">
         <Image
           src={isCorrect ? HYGIENE_GAME_CONFIG.feedbackImages.correct : HYGIENE_GAME_CONFIG.feedbackImages.incorrect}
           alt={isCorrect ? 'Correcto' : 'Incorrecto'}
@@ -267,7 +269,7 @@ export default function Step2({ character, onStepComplete }: Step2Props) {
       {/* Title display */}
       {!titlePlayed && (
         <motion.div
-          className="text-center text-white text-lg font-bold bg-black/30 backdrop-blur-sm rounded-lg p-4"
+          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-sm rounded-lg px-8 py-6 shadow-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >

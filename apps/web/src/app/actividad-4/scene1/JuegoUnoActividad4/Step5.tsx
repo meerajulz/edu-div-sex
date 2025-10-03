@@ -35,7 +35,7 @@ const DraggableTowel: React.FC<DraggableTowelProps> = ({ id, image, alt, isDragg
       style={style}
       className={`cursor-grab active:cursor-grabbing touch-none z-50 ${isDragging ? 'opacity-50' : ''}`}
     >
-      <div className="relative w-28 h-28 md:w-36 md:h-36">
+      <div className="relative w-40 h-40 md:w-56 md:h-56">
         <Image
           src={image}
           alt={alt}
@@ -148,7 +148,7 @@ export default function Step5({ character, onStepComplete }: Step5Props) {
     <div className="relative w-full h-full flex items-center justify-center p-4">
       {!titlePlayed && (
         <motion.div
-          className="text-center text-white text-lg font-bold bg-black/30 rounded-lg p-4"
+          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-sm rounded-lg px-8 py-6 shadow-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -159,7 +159,7 @@ export default function Step5({ character, onStepComplete }: Step5Props) {
       {showElements && (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex items-center justify-center w-full h-full gap-6">
-            <div className="relative w-52 h-80">
+            <div className="relative w-72 h-96 md:w-80 md:h-[28rem]">
               <Image src={characterImage} alt="Personaje secando" fill className="object-contain" />
             </div>
             <div className="flex gap-4">
@@ -179,11 +179,13 @@ export default function Step5({ character, onStepComplete }: Step5Props) {
 
       {showFeedback && (
         <motion.div
-          className="absolute top-8 left-1/2 transform -translate-x-1/2 z-50"
+          className={`absolute top-1/2 transform -translate-y-1/2 z-50 ${
+            isCorrect ? 'right-8' : 'left-8'
+          }`}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <div className="relative w-16 h-16 md:w-20 md:h-20">
+          <div className="relative w-32 h-32 md:w-40 md:h-40">
             <Image
               src={
                 isCorrect

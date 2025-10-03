@@ -155,7 +155,7 @@ export default function CharacterSelection({ onCharacterSelect, isAnimating }: C
   };
 
   return (
-    <div className="flex items-center justify-center space-x-12 mt-10">
+    <div className="flex items-center justify-center space-x-16 mt-24">
       <AnimatePresence>
         {showCharacters && (
           <>
@@ -170,7 +170,7 @@ export default function CharacterSelection({ onCharacterSelect, isAnimating }: C
               whileHover={isAudioPlaying ? {} : { scale: 1.1 }}
               whileTap={isAudioPlaying ? {} : { scale: 0.95 }}
             >
-              <div className="w-48 h-80 relative">
+              <div className="w-64 h-96 relative">
                 <Image
                   src="/image/actividad_4/juego1/dani.png"
                   alt="Dani"
@@ -198,7 +198,7 @@ export default function CharacterSelection({ onCharacterSelect, isAnimating }: C
               whileHover={isAudioPlaying ? {} : { scale: 1.1 }}
               whileTap={isAudioPlaying ? {} : { scale: 0.95 }}
             >
-              <div className="w-48 h-80 relative">
+              <div className="w-64 h-96 relative">
                 <Image
                   src="/image/actividad_4/juego1/cris.png"
                   alt="Cris"
