@@ -84,6 +84,13 @@ export default function GameContent({ selectedCharacter, onGameComplete }: GameC
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Progress Badge - Top left */}
+      <div className="absolute top-4 left-4 z-10">
+        <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+          Paso {currentStep}/6
+        </div>
+      </div>
+
       <div className="relative w-[85%] h-[85%] bg-yellow-100/30 border-4 border-yellow-600 rounded-xl backdrop-blur-sm shadow-lg flex items-center justify-center overflow-hidden">
         <div className="w-full h-full p-4">
           {renderCurrentStep()}
