@@ -256,7 +256,7 @@ export default function Actividad5Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='¿Qué dice mi cara?' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -312,7 +312,7 @@ export default function Actividad5Scene1Page() {
                 >
                   {!gameCompleted ? (
                     <JugarButton
-                      text='JUEGO: ¿Qué dice mi cara?'
+                      text='Jugar'
                       onClick={handleOpenJuegoUno}
                       disabled={isAnimating}
                     />

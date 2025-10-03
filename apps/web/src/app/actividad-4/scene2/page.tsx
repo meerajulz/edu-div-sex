@@ -250,7 +250,7 @@ export default function Actividad4Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Higiene menstrual' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -306,7 +306,7 @@ export default function Actividad4Scene2Page() {
                     transition={{ duration: 0.8, ease: 'easeInOut' }}
                   >
                     {!gameCompleted ? (
-                      <JugarButton text='Juego Higiene menstrual' onClick={handleOpenJuegoDos} disabled={isAnimating} />
+                      <JugarButton text='Jugar' onClick={handleOpenJuegoDos} disabled={isAnimating} />
                     ) : (
 
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">

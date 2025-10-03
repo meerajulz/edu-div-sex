@@ -364,7 +364,7 @@ export default function Scene4Page() {
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
                   {!gameCompleted ? (
-                    <JugarButton text='Jugar ¿Qué ha cambiado?' onClick={handleOpenJuegoDos} disabled={isAnimating} />
+                    <JugarButton text='Jugar' onClick={handleOpenJuegoDos} disabled={isAnimating} />
                   ) : !showCongratulations ? (
                     <JugarButton
                       onClick={handleGoToActivityMenu}

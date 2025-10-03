@@ -417,7 +417,7 @@ const { data: session } = useSession();
                     <JugarButton
                       onClick={handleOpenJuegoCuatro}
                       disabled={isAnimating}
-                      text="Jugar La masturbación"
+                      text="Jugar"
                     />
                   </motion.div>
 

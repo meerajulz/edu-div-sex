@@ -273,7 +273,7 @@ export default function Actividad2Scene2Page() {
               transition={{ duration: 0.5, ease: 'easeOut' }}
             >
               <JugarButton
-                text='Jugar Mi cuerpo mi espacio'
+                text='Jugar'
                 onClick={handleGameButtonClick}
               />
             </motion.div>

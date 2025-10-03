@@ -343,7 +343,7 @@ export default function Actividad2Scene3Page() {
               transition={{ duration: 0.8, ease: 'easeInOut' }}
             >
               <JugarButton
-                text={gameCompleted ? 'Jugar' : 'Juego ¿Qué es privado y qué es público?'}
+                text={gameCompleted ? 'Jugar' : 'Jugar'}
                 onClick={handleButtonClick}
                 disabled={isAnimating}
               />

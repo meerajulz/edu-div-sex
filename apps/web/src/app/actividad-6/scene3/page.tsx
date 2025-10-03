@@ -215,7 +215,7 @@ export default function Actividad6Scene3Page() {
           <JugarButton
             onClick={handleOpenJuegoTres}
             disabled={isAnimating}
-            text="Jugar Secretos buenos y malos"
+            text="Jugar"
           />
 
           {/* Volver a ver Button - positioned under main button */}

@@ -219,7 +219,7 @@ export default function Actividad5Scene2Page() {
           <JugarButton
             onClick={handleOpenJuegoCuatro}
             disabled={isAnimating}
-            text="JUEGO: ¿Cómo ligamos?"
+            text="Jugar"
           />
 
           {/* Volver a ver Button - positioned under main button */}
@@ -314,7 +314,7 @@ export default function Actividad5Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text="¿Cómo ligamos?" onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text="Jugar" onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (

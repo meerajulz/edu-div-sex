@@ -216,7 +216,7 @@ export default function Actividad6Scene2Page() {
           <JugarButton
             onClick={handleOpenJuegoDos}
             disabled={isAnimating}
-            text="Jugar Me defiendo"
+            text="Jugar"
           />
 
           {/* Volver a ver Button - positioned under main button */}

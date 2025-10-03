@@ -241,7 +241,7 @@ export default function Actividad6Scene4Page() {
           <JugarButton
             onClick={handleOpenJuegoCuatro}
             disabled={isAnimating}
-            text="Juego Respetamos 1"
+            text="Jugar"
           />
 
           {/* Volver a ver Button - positioned under main button */}
@@ -256,7 +256,7 @@ export default function Actividad6Scene4Page() {
           <JugarButton
             onClick={handleOpenJuegoCinco}
             disabled={isAnimating}
-            text="Juego Respetamos 2"
+            text="Jugar"
           />
 
           {/* Volver a ver Button - positioned under main button */}

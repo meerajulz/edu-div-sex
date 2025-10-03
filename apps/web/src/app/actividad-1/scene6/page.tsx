@@ -370,7 +370,7 @@ export default function Scene6Page() {
                   >
                     {!gameCompleted ? (
                       <JugarButton
-                        text="Juego ¿Qué es una erección?"
+                        text="Jugar"
                         onClick={handleOpenJuegoTres}
                         disabled={isAnimating}
                       />

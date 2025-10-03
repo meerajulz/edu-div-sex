@@ -215,7 +215,7 @@ export default function Actividad6Scene1Page() {
           <JugarButton
             onClick={handleOpenJuegoUno}
             disabled={isAnimating}
-            text="Jugar Mis partes privadas"
+            text="Jugar"
           />
 
           {/* Volver a ver Button - positioned under main button */}

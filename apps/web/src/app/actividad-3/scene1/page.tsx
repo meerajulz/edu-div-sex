@@ -345,7 +345,7 @@ export default function Actividad3Scene1Page() {
                 >
                   {!gameCompleted ? (
                     <JugarButton
-                      text='JUEGO: ¿Qué pasa cuando me excito?'
+                      text='Jugar'
                       onClick={handleOpenJuegoUno}
                       disabled={isAnimating}
                     />

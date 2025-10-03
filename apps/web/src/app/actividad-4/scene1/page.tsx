@@ -322,7 +322,7 @@ export default function Actividad4Scene1Page() {
                     transition={{ duration: 0.8, ease: 'easeInOut' }}
                   >
                     {!gameCompleted ? (
-                      <JugarButton text='Juego Ayuda a Cris o Dani en su higiene.' onClick={handleOpenJuegoUno} disabled={isAnimating} />
+                      <JugarButton text='Jugar' onClick={handleOpenJuegoUno} disabled={isAnimating} />
                     ) : !showCongratulations ? (
                       <JugarButton
                         text="Volver al menú"

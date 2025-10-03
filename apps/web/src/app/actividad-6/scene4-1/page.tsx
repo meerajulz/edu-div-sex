@@ -285,7 +285,7 @@ export default function Actividad6Scene4_1Page() {
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton
-              text='Juego ¿Qué hacer si sucede?'
+              text='Jugar'
               onClick={handleOpenJuegoSeis}
               disabled={isAnimating}
             />

@@ -310,7 +310,7 @@ export default function Actividad2Scene1Page() {
                     transition={{ duration: 0.8, ease: 'easeInOut' }}
                   >
                     {!gameCompleted ? (
-                      <JugarButton text='Jugar ¿Es privado?' onClick={handleOpenJuegoUno} disabled={isAnimating} />
+                      <JugarButton text='Jugar' onClick={handleOpenJuegoUno} disabled={isAnimating} />
                     ) : !showCongratulations ? (
                       <div className="flex flex-col items-center space-y-4">
                         <JugarButton

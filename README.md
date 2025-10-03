@@ -31,14 +31,3 @@ npm run lint
 npm run setup-db
 ```
 
-## Database
-
-The application uses Neon PostgreSQL database. Environment variables are configured in `apps/web/.env`.
-
-Test credentials:
-- Email: `test@example.com`
-- Password: `testpass123`
-
-## Deployment
-
-The web app is configured for Vercel deployment. Point Vercel to the `apps/web` directory for builds.
