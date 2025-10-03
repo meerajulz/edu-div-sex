@@ -39,11 +39,11 @@ export default function StudentsPage() {
     try {
       setIsLoading(true);
       const response = await fetch('/api/students');
-      
+
       if (!response.ok) {
         throw new Error('Error al cargar los estudiantes');
       }
-      
+
       const data = await response.json();
       setStudents(data.students || []);
     } catch (err) {
@@ -52,21 +52,6 @@ export default function StudentsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getSexDisplay = (sex: string) => {
-    return sex === 'male' ? 'Masculino' : 'Femenino';
-  };
-
-  const getAbilityLevelText = (level: number) => {
-    const levels = {
-      1: 'Básico',
-      2: 'Principiante',
-      3: 'Intermedio',
-      4: 'Avanzado',
-      5: 'Experto'
-    };
-    return levels[level as keyof typeof levels] || 'Desconocido';
   };
 
   const formatDate = (dateString: string) => {
@@ -101,8 +86,7 @@ export default function StudentsPage() {
 
   return (
     <DashboardWrapper>
-      <div className="h-full">
-      <div className="h-full">
+      <div className="p-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Lista de Estudiantes</h1>
           <button
@@ -124,105 +108,78 @@ export default function StudentsPage() {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left p-4 font-medium text-gray-700">Nombre Completo</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Usuario</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Email</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Edad</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Sexo</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Nivel de Lectura</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Comprensión</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Nivel Supervisión</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Fecha de Registro</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((student) => (
-                    <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="p-4">
-                        <div className="font-medium text-gray-900">
-                          {student.first_name} {student.last_name}
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {student.username}
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {student.email}
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {student.age || 'N/A'}
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {getSexDisplay(student.sex)}
-                      </td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {getAbilityLevelText(student.reading_level)}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {getAbilityLevelText(student.comprehension_level)}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        {student.supervision_level ? (
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                            student.supervision_level === 3 ? 'bg-green-100 text-green-800 border border-green-300' :
-                            student.supervision_level === 2 ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
-                            'bg-red-100 text-red-800 border border-red-300'
-                          }`}>
-                            Nivel {student.supervision_level}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-xs">N/A</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {formatDate(student.created_at)}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => router.push(`/dashboard/students/${student.id}`)}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
-                          >
-                            Ver Detalles
-                          </button>
-                          <button
-                            onClick={() => router.push(`/dashboard/owner/users/${student.user_id}/edit`)}
-                            className="text-gray-600 hover:text-gray-800 text-sm"
-                          >
-                            Editar
-                          </button>
-                        </div>
-                      </td>
+          <div className="w-full overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left p-4 font-medium text-gray-700">Nombre Completo</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Email</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Nivel de Supervisión</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {students.map((student) => (
+                      <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="p-4">
+                          <div className="font-medium text-gray-900">
+                            {student.first_name} {student.last_name}
+                          </div>
+                        </td>
+                        <td className="p-4 text-gray-600">
+                          {student.email}
+                        </td>
+                        <td className="p-4">
+                          {student.supervision_level ? (
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                              student.supervision_level === 3 ? 'bg-green-100 text-green-800 border border-green-300' :
+                              student.supervision_level === 2 ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                              'bg-red-100 text-red-800 border border-red-300'
+                            }`}>
+                              Nivel {student.supervision_level}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs">N/A</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => router.push(`/dashboard/students/${student.id}`)}
+                              className="text-blue-600 hover:text-blue-800 text-sm"
+                            >
+                              Ver Detalles
+                            </button>
+                            <button
+                              onClick={() => router.push(`/dashboard/owner/users/${student.user_id}/edit`)}
+                              className="text-gray-600 hover:text-gray-800 text-sm"
+                            >
+                              Editar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Summary Footer */}
-            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  Total: {students.length} estudiante{students.length !== 1 ? 's' : ''}
-                </div>
-                <div className="text-sm text-gray-600">
-                  Última actualización: {formatDate(new Date().toISOString())}
+              {/* Summary Footer */}
+              <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                <div className="flex justify-between items-center text-xs">
+                  <div className="text-gray-600">
+                    Total: {students.length} estudiante{students.length !== 1 ? 's' : ''}
+                  </div>
+                  <div className="text-gray-600">
+                    Última actualización: {formatDate(new Date().toISOString())}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
-      </div>
       </div>
     </DashboardWrapper>
   );
