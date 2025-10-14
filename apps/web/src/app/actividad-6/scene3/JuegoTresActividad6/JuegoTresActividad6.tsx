@@ -272,6 +272,58 @@ export default function JuegoTresActividad6({
                 </div>
               )}
 
+              {/* Feedback Indicators - Centered on Modal */}
+              <AnimatePresence>
+                {showFeedback && !showIntro && currentScenario && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    className="absolute inset-0 flex items-center justify-center z-[100] pointer-events-none"
+                  >
+                    {/* For bad secrets - show alert */}
+                    {isCorrect && currentScenario.secretType === 'bad' && (
+                      <img
+                        src={GAME_CONFIG.feedbackImages.alert}
+                        alt="Alert"
+                        className="w-56 h-56"
+                      />
+                    )}
+
+                    {/* For good secrets - show fista and gift */}
+                    {isCorrect && currentScenario.secretType === 'good' && (
+                      <div className="relative w-56 h-56">
+                        <motion.img
+                          initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                          src={GAME_CONFIG.feedbackImages.fista}
+                          alt="Fista"
+                          className="absolute -top-16 -left-16 w-32 h-32"
+                        />
+                        <motion.img
+                          initial={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                          src={GAME_CONFIG.feedbackImages.gift}
+                          alt="Gift"
+                          className="absolute -bottom-16 -right-16 w-32 h-32"
+                        />
+                      </div>
+                    )}
+
+                    {/* For incorrect answers - show alert */}
+                    {!isCorrect && (
+                      <img
+                        src={GAME_CONFIG.feedbackImages.alert}
+                        alt="Alert"
+                        className="w-56 h-56"
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Game Content */}
               <div className="relative h-full flex items-center justify-center pt-4 pb-4">
                 {showIntro ? (
@@ -333,59 +385,6 @@ export default function JuegoTresActividad6({
 
                     {/* Scenario Card */}
                     <div className="relative">
-                      {/* Feedback Indicators */}
-                      <AnimatePresence>
-                        {showFeedback && (
-                          <>
-                            {/* For bad secrets - show alert at top */}
-                            {isCorrect && currentScenario.secretType === 'bad' && (
-                              <motion.img
-                                initial={{ opacity: 0, y: 20, scale: 0.5 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -20, scale: 0.5 }}
-                                src={GAME_CONFIG.feedbackImages.alert}
-                                alt="Alert"
-                                className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-16 h-16 z-10"
-                              />
-                            )}
-                            
-                            {/* For good secrets - show fista and gift at corners */}
-                            {isCorrect && currentScenario.secretType === 'good' && (
-                              <>
-                                <motion.img
-                                  initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                  exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
-                                  src={GAME_CONFIG.feedbackImages.fista}
-                                  alt="Fista"
-                                  className="absolute -top-8 -left-8 w-16 h-16 z-10"
-                                />
-                                <motion.img
-                                  initial={{ opacity: 0, scale: 0.5, rotate: 45 }}
-                                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                  exit={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                                  src={GAME_CONFIG.feedbackImages.gift}
-                                  alt="Gift"
-                                  className="absolute -bottom-8 -right-8 w-16 h-16 z-10"
-                                />
-                              </>
-                            )}
-                            
-                            {/* For incorrect answers - always show alert */}
-                            {!isCorrect && (
-                              <motion.img
-                                initial={{ opacity: 0, y: 20, scale: 0.5 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -20, scale: 0.5 }}
-                                src={GAME_CONFIG.feedbackImages.alert}
-                                alt="Alert"
-                                className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-16 h-16 z-10"
-                              />
-                            )}
-                          </>
-                        )}
-                      </AnimatePresence>
-
                       {/* Card */}
                       <motion.div
                         key={currentScenario.id}

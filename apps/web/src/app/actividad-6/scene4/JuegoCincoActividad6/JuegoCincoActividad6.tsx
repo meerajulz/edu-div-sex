@@ -393,31 +393,31 @@ export default function JuegoCincoActividad6({
                           </motion.button>
                         </div>
 
-                        {/* Feedback Indicator (Top Center) */}
+                        {/* Feedback Indicator (Fully Centered) */}
                         <AnimatePresence>
                           {showFeedback && (
                             <motion.div
-                              initial={{ opacity: 0, y: -50, scale: 0.5 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: -50, scale: 0.5 }}
-                              className="absolute top-8 left-1/2 transform -translate-x-1/2"
+                              initial={{ opacity: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.5 }}
+                              className="absolute inset-0 flex items-center justify-center z-[100] pointer-events-none"
                             >
                               <motion.img
-                                animate={{ 
+                                animate={{
                                   scale: [1, 1.2, 1],
                                   rotate: isCorrect ? [0, 10, -10, 0] : [0, -5, 5, 0]
                                 }}
-                                transition={{ 
+                                transition={{
                                   duration: 0.5,
                                   repeat: 2
                                 }}
                                 src={
-                                  isCorrect 
+                                  isCorrect
                                     ? GAME_CONFIG.feedbackImages.correct
                                     : GAME_CONFIG.feedbackImages.incorrect
                                 }
                                 alt={isCorrect ? "Correct" : "Incorrect"}
-                                className="w-24 h-24"
+                                className="w-56 h-56"
                               />
                             </motion.div>
                           )}

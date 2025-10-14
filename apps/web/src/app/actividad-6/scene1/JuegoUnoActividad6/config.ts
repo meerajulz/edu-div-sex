@@ -98,7 +98,7 @@ export const juego1Config = {
     debugMode: true, // Enable coordinate logging
     showClickableAreas: false, // Show visual borders for clickable zones
     feedbackDuration: 2000, // 2 seconds
-    modalMaxWidth: "800px",
+    modalMaxWidth: "1200px",
     dollSpacing: "2rem" // Space between dolls horizontally
   }
 };

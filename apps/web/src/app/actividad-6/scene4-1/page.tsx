@@ -362,9 +362,7 @@ export default function Actividad6Scene4_1Page() {
             <h2 className="text-3xl font-bold text-white mb-4">
               ¡Felicidades!
             </h2>
-            <p className="text-white text-lg mb-6">
-              Has completado todas las aventuras
-            </p>
+       
             <div className="flex flex-col items-center gap-4">
               <motion.button
                 onClick={handleGoToHome}
@@ -373,7 +371,7 @@ export default function Actividad6Scene4_1Page() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Ir a la próxima aventura
+               Has completado todas las aventuras
               </motion.button>
 
               {/* Volver a ver Button - positioned under main button */}

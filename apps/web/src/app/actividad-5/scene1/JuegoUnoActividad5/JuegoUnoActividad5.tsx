@@ -359,7 +359,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
               </div>
               
               {/* Header with buttons */}
-              <div className="relative z-10 flex justify-between items-center p-4">
+              <div className="relative z-[120] flex justify-between items-center p-4">
                 {/* Listen Instructions Button */}
                 <EscucharInstruccionesButton
                   onPlayInstructions={handleListenInstructions}
@@ -379,7 +379,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
 
               {/* Progress Badge - Top left */}
               {gameState === 'playing' && (
-                <div className="absolute top-4 left-4 z-10">
+                <div className="absolute top-4 left-4 z-[120]">
                   <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
                     Paso {gameSession.scenarioIndex + 1}/{FACIAL_EXPRESSION_GAME_CONFIG.scenarios.length}
                   </div>
@@ -387,7 +387,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
               )}
               
               {/* Game Content */}
-              <div className="relative z-10 flex flex-col items-center h-[calc(100%-80px)] w-full p-4">
+              <div className="relative z-[5] flex flex-col items-center h-[calc(100%-80px)] w-full p-4">
                 
                 {/* Intro State */}
                 {gameState === 'intro' && (
@@ -452,10 +452,10 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                     </AnimatePresence>
                     
                     {/* Face section at the top */}
-                    <div className="relative mb-5">
+                    <div className="relative mb-5 mt-16">
                       {/* Face card image */}
                       <motion.div
-                        className="w-36 h-36 md:w-48 md:h-48 relative mx-auto rounded-lg overflow-hidden"
+                        className="w-72 h-72 relative mx-auto rounded-lg overflow-hidden"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}

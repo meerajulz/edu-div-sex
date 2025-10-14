@@ -138,14 +138,19 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
       );
     });
 
+    // If clicked on an already-found part, do nothing (ignore the click)
+    if (clickedPart && foundParts.has(clickedPart.id)) {
+      return;
+    }
+
     if (clickedPart && !foundParts.has(clickedPart.id)) {
       // Correct click on private part
       playAudio(juego1Config.correctFeedback.clickAudio);
-      
+
       setTimeout(() => {
         playAudio(clickedPart.clickAudio);
       }, 500);
-      
+
       setTimeout(() => {
         playAudio(clickedPart.feedbackAudio);
       }, 1000);
@@ -166,7 +171,7 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
     } else {
       // Incorrect click (non-private area)
       playAudio(juego1Config.incorrectFeedback.clickAudio);
-      
+
       setTimeout(() => {
         playAudio(juego1Config.incorrectFeedback.feedbackAudio);
       }, 500);
@@ -192,10 +197,10 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center h-full"
           >
-            <img 
-              src={juego1Config.images.baulClosed} 
+            <img
+              src={juego1Config.images.baulClosed}
               alt="Baúl cerrado"
-              className="w-96 h-auto"
+              className="w-[500px] h-auto"
             />
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -215,10 +220,10 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center h-full"
           >
-            <motion.img 
-              src={juego1Config.images.baulOpen} 
+            <motion.img
+              src={juego1Config.images.baulOpen}
               alt="Baúl abierto"
-              className="w-96 h-auto"
+              className="w-[500px] h-auto"
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -232,10 +237,10 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
           <div className="relative h-full">
             {/* Background baúl with opacity */}
             <div className="absolute inset-0  flex items-center justify-center opacity-30">
-              <img 
-                src={juego1Config.images.baulOpen} 
+              <img
+                src={juego1Config.images.baulOpen}
                 alt="Baúl abierto background"
-                className="w-72 h-auto"
+                className="w-96 h-auto"
               />
             </div>
 
@@ -247,7 +252,7 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
                   <img
                     src={dollImage}
                     alt={`Doll ${index + 1}`}
-                    className="w-40 h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                    className="w-64 h-auto cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={(e) => handleDollClick(e, index)}
                     style={{ imageRendering: 'crisp-edges' }}
                   />
@@ -282,7 +287,7 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute inset-0"
+                      className="absolute inset-0 pointer-events-none"
                     >
                       {currentFeedback.isCorrect ? (
                         // Show highlighted private part
@@ -318,12 +323,12 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
               >
                 <img
                   src={
-                    currentFeedback.isCorrect 
+                    currentFeedback.isCorrect
                       ? juego1Config.images.feedbackIcons.correct
                       : juego1Config.images.feedbackIcons.incorrect
                   }
                   alt={currentFeedback.isCorrect ? "Correct" : "Incorrect"}
-                  className="w-32 h-32"
+                  className="w-48 h-48"
                 />
               </motion.div>
             )}
@@ -367,8 +372,8 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
-            <div 
-              className="bg-gradient-to-br from-orange-200 via-coral-100 to-red-300 rounded-xl shadow-2xl w-full h-[80vh] overflow-y-auto relative border-4 border-orange-300"
+            <div
+              className="bg-gradient-to-br from-orange-200 via-coral-100 to-red-300 rounded-xl shadow-2xl w-full h-[90vh] overflow-y-auto relative border-4 border-orange-300"
               style={{ maxWidth: juego1Config.settings.modalMaxWidth }}
             >
               

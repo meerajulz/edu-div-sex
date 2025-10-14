@@ -275,6 +275,28 @@ export default function JuegoDosActividad6({
                 </div>
               )}
 
+              {/* Feedback Indicator - Centered on Modal */}
+              <AnimatePresence>
+                {showFeedback && !showIntro && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    className="absolute inset-0 flex items-center justify-center z-[100] pointer-events-none"
+                  >
+                    <img
+                      src={
+                        isCorrect
+                          ? GAME_CONFIG.feedbackImages.correct
+                          : GAME_CONFIG.feedbackImages.alert
+                      }
+                      alt={isCorrect ? "Correct" : "Alert"}
+                      className="w-56 h-56"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Game Content */}
               <div className="relative h-full flex items-center justify-center pt-4 pb-4">
                 {showIntro ? (
@@ -336,24 +358,6 @@ export default function JuegoDosActividad6({
 
                     {/* Scenario Card */}
                     <div className="relative">
-                      {/* Feedback Indicator */}
-                      <AnimatePresence>
-                        {showFeedback && (
-                          <motion.img
-                            initial={{ opacity: 0, y: 20, scale: 0.5 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.5 }}
-                            src={
-                              isCorrect 
-                                ? GAME_CONFIG.feedbackImages.correct
-                                : GAME_CONFIG.feedbackImages.alert
-                            }
-                            alt={isCorrect ? "Correct" : "Alert"}
-                            className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-16 h-16 z-10"
-                          />
-                        )}
-                      </AnimatePresence>
-
                       {/* Card */}
                       <motion.div
                         key={currentScenario.id}
@@ -362,7 +366,7 @@ export default function JuegoDosActividad6({
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="overflow-hidden"
                       >
-                        <img 
+                        <img
                           src={currentScenario.imageUrl}
                           alt={currentScenario.text}
                           className="w-[460px] h-[420px] object-fit"

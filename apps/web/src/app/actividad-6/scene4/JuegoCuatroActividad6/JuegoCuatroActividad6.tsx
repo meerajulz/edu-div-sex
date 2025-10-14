@@ -299,6 +299,58 @@ export default function JuegoCuatroActividad6({
                 </div>
               )}
 
+              {/* Feedback Indicators - Centered on Modal */}
+              <AnimatePresence>
+                {showFeedback && !showIntro && currentScenario && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    className="absolute inset-0 flex items-center justify-center z-[100] pointer-events-none"
+                  >
+                    {/* For inappropriate situations - show lock */}
+                    {isCorrect && currentScenario.situationType === 'inappropriate' && (
+                      <img
+                        src={GAME_CONFIG.feedbackImages.lock}
+                        alt="Lock"
+                        className="w-56 h-56"
+                      />
+                    )}
+
+                    {/* For appropriate situations - show party and stars */}
+                    {isCorrect && currentScenario.situationType === 'appropriate' && (
+                      <div className="relative w-56 h-56">
+                        <motion.img
+                          initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                          src={GAME_CONFIG.feedbackImages.party}
+                          alt="Party"
+                          className="absolute -top-16 -left-16 w-32 h-32"
+                        />
+                        <motion.img
+                          initial={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                          src={GAME_CONFIG.feedbackImages.stars}
+                          alt="Stars"
+                          className="absolute -top-16 -right-16 w-32 h-32"
+                        />
+                      </div>
+                    )}
+
+                    {/* For incorrect answers - show lock */}
+                    {!isCorrect && (
+                      <img
+                        src={GAME_CONFIG.feedbackImages.lock}
+                        alt="Lock"
+                        className="w-56 h-56"
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Game Content */}
               <div className="relative h-full flex items-center justify-center pt-4 pb-4">
                 {showIntro ? (
@@ -360,59 +412,6 @@ export default function JuegoCuatroActividad6({
 
                     {/* Scenario Card */}
                     <div className="relative">
-                      {/* Feedback Indicators */}
-                      <AnimatePresence>
-                        {showFeedback && (
-                          <>
-                            {/* For inappropriate situations - show lock when correct */}
-                            {isCorrect && currentScenario.situationType === 'inappropriate' && (
-                              <motion.img
-                                initial={{ opacity: 0, y: 20, scale: 0.5 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -20, scale: 0.5 }}
-                                src={GAME_CONFIG.feedbackImages.lock}
-                                alt="Lock"
-                                className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-16 h-16 z-10"
-                              />
-                            )}
-                            
-                            {/* For appropriate situations - show party and stars at top corners */}
-                            {isCorrect && currentScenario.situationType === 'appropriate' && (
-                              <>
-                                <motion.img
-                                  initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                  exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
-                                  src={GAME_CONFIG.feedbackImages.party}
-                                  alt="Party"
-                                  className="absolute -top-8 -left-8 w-16 h-16 z-10"
-                                />
-                                <motion.img
-                                  initial={{ opacity: 0, scale: 0.5, rotate: 45 }}
-                                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                  exit={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                                  src={GAME_CONFIG.feedbackImages.stars}
-                                  alt="Stars"
-                                  className="absolute -top-8 -right-8 w-16 h-16 z-10"
-                                />
-                              </>
-                            )}
-                            
-                            {/* For incorrect answers - always show lock */}
-                            {!isCorrect && (
-                              <motion.img
-                                initial={{ opacity: 0, y: 20, scale: 0.5 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -20, scale: 0.5 }}
-                                src={GAME_CONFIG.feedbackImages.lock}
-                                alt="Lock"
-                                className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-16 h-16 z-10"
-                              />
-                            )}
-                          </>
-                        )}
-                      </AnimatePresence>
-
                       {/* Card */}
                       <motion.div
                         key={currentScenario.id}
