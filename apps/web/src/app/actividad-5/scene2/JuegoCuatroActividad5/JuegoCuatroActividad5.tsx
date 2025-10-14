@@ -227,6 +227,15 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
               >
                 Salir
               </motion.button>
+
+              {/* Progress Badge - Top left */}
+              {(gamePhase === 'selection' || gamePhase === 'feedback') && (
+                <div className="absolute top-4 left-4 z-50">
+                  <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                    Paso 1/1
+                  </div>
+                </div>
+              )}
               
               {/* Feedback overlay at top */}
               <AnimatePresence>
@@ -237,14 +246,14 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.5 }}
                   >
-                    <div className="w-16 h-16">
+                    <div className="w-32 h-32">
                       <Image
-                        src={getOptionById(selectedOption)?.isCorrect 
-                          ? JUEGO_CUATRO_CONFIG.images.feedback.correct 
+                        src={getOptionById(selectedOption)?.isCorrect
+                          ? JUEGO_CUATRO_CONFIG.images.feedback.correct
                           : JUEGO_CUATRO_CONFIG.images.feedback.incorrect}
                         alt={getOptionById(selectedOption)?.isCorrect ? "Correcto" : "Incorrecto"}
-                        width={64}
-                        height={64}
+                        width={128}
+                        height={128}
                         className="object-contain"
                       />
                     </div>
@@ -264,7 +273,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                     exit={{ opacity: 0 }}
                   >
                     {/* Initial scene image at bottom */}
-                    <div className="h-80 absolute bottom-0 left-0 right-0 overflow-hidden">
+                    <div className="h-[450px] absolute bottom-0 left-0 right-0 overflow-hidden">
                       <Image
                         src={JUEGO_CUATRO_CONFIG.images.introScene}
                         alt="Escena inicial"
@@ -285,9 +294,9 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                   >
                     {/* Spacer to push buttons to bottom */}
                     <div className="flex-1"></div>
-                    
+
                     {/* Three option buttons at bottom */}
-                    <div className="flex h-80 justify-center items-end">
+                    <div className="flex h-[500px] justify-center items-end">
                       {JUEGO_CUATRO_CONFIG.options.map((option) => (
                         <motion.button
                           key={option.id}
@@ -319,7 +328,7 @@ export default function JuegoCuatroActividad5({ isVisible, onClose, onGameComple
                     exit={{ opacity: 0 }}
                   >
                     {/* Sized container for the card */}
-                    <div className="h-64 w-80 flex items-end">
+                    <div className="h-[400px] w-[500px] flex items-end">
                       {/* 80% box anchored to the bottom */}
                       <div className="relative w-[80%] h-[80%]">
                         <Image

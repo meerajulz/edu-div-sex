@@ -350,7 +350,7 @@ useEffect(() => {
 
           <div className="absolute inset-0 z-50 flex items-center justify-center">
             <motion.div animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}} transition={{ duration: 0.8, ease: 'easeInOut' }}>
-            <JugarButton text='Abuso' onClick={handleJugarClick} />
+            <JugarButton text='Jugar' onClick={handleJugarClick} />
             </motion.div>
           </div>
         </>

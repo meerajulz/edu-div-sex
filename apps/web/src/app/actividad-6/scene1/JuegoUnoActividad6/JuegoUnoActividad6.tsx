@@ -417,6 +417,15 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
                 Salir Juego
               </motion.button>
 
+              {/* Progress Badge - Top left */}
+              {(gameState === GameState.PLAYING || gameState === GameState.FEEDBACK) && (
+                <div className="absolute top-4 left-4 z-50">
+                  <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                    Paso {foundParts.size}/5
+                  </div>
+                </div>
+              )}
+
               {/* Game Content */}
               <div className="relative z-10 h-full">
                 {renderGameContent()}

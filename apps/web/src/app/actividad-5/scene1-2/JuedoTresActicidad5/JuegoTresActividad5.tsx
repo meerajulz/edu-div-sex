@@ -335,6 +335,19 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
               >
                 Salir Juego
               </motion.button>
+
+              {/* Progress Badge - Top left */}
+              {(gameSession.gamePhase === 'item_question' ||
+                gameSession.gamePhase === 'speaker_talking' ||
+                gameSession.gamePhase === 'responder_talking' ||
+                gameSession.gamePhase === 'emotion_selection' ||
+                gameSession.gamePhase === 'feedback') && (
+                <div className="absolute top-4 left-4 z-10">
+                  <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                    Paso {gameSession.scenarioIndex + 1}/{EMOTION_GAME_CONFIG.scenarios.length}
+                  </div>
+                </div>
+              )}
               
               {/* Game Content */}
               <div className="relative z-10 flex flex-col items-center h-full w-full p-4">
@@ -367,56 +380,15 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                 )}
                 
                 {/* Game Playing States */}
-                {(gameSession.gamePhase === 'item_question' || 
-                  gameSession.gamePhase === 'speaker_talking' || 
-                  gameSession.gamePhase === 'responder_talking' || 
-                  gameSession.gamePhase === 'emotion_selection' || 
+                {(gameSession.gamePhase === 'item_question' ||
+                  gameSession.gamePhase === 'speaker_talking' ||
+                  gameSession.gamePhase === 'responder_talking' ||
+                  gameSession.gamePhase === 'emotion_selection' ||
                   gameSession.gamePhase === 'feedback') && currentScenario && (
-                  <div className="flex flex-col h-full w-full relative">
-                    
-                    {/* Emotion Selection Buttons at Top */}
-                    {(gameSession.gamePhase === 'emotion_selection' || gameSession.gamePhase === 'feedback') && (
-                      <motion.div
-                        className="flex justify-center space-x-4 mb-4 relative z-20"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        {EMOTION_GAME_CONFIG.emotionOptions.map((emotion) => {
-                          let currentImage = emotion.images.normal;
-                          
-                          if (gameSession.selectedEmotion === emotion.type && showFeedback) {
-                            currentImage = feedbackInfo?.isCorrect 
-                              ? emotion.images.correct 
-                              : emotion.images.error;
-                          }
-                          
-                          return (
-                            <motion.button
-                              key={emotion.id}
-                              onClick={() => handleEmotionSelect(emotion.type)}
-                              className="relative transition-transform duration-200 hover:scale-105 disabled:cursor-not-allowed"
-                              whileHover={gameSession.gamePhase === 'emotion_selection' ? { scale: 1.1 } : {}}
-                              whileTap={gameSession.gamePhase === 'emotion_selection' ? { scale: 0.95 } : {}}
-                              disabled={gameSession.gamePhase !== 'emotion_selection' || isAnimating}
-                            >
-                              <div className="relative w-[120px] h-[80px]">
-                                <Image
-                                  src={currentImage}
-                                  alt={`${emotion.type} emotion`}
-                                  width={120}
-                                  height={80}
-                                  className="object-contain"
-                                />
-                              </div>
-                            </motion.button>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                    
+                  <div className="flex flex-col h-full w-full relative justify-center items-center">
+
                     {/* Main Game Area with Bus Scene */}
-                    <div className="flex items-center justify-center relative h-[400px]">
+                    <div className="flex items-center justify-center relative h-[400px] mb-4">
                       <div className="relative w-[520px] h-[300px] mx-auto">
                         
                         {/* Background Bus Scene */}
@@ -492,10 +464,51 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                             );
                           })()}
                         </motion.div>
-                        
+
                       </div>
                     </div>
-                    
+
+                    {/* Emotion Selection Buttons below the scene */}
+                    {(gameSession.gamePhase === 'emotion_selection' || gameSession.gamePhase === 'feedback') && (
+                      <motion.div
+                        className="flex justify-center space-x-4 relative z-20"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        {EMOTION_GAME_CONFIG.emotionOptions.map((emotion) => {
+                          let currentImage = emotion.images.normal;
+
+                          if (gameSession.selectedEmotion === emotion.type && showFeedback) {
+                            currentImage = feedbackInfo?.isCorrect
+                              ? emotion.images.correct
+                              : emotion.images.error;
+                          }
+
+                          return (
+                            <motion.button
+                              key={emotion.id}
+                              onClick={() => handleEmotionSelect(emotion.type)}
+                              className="relative transition-transform duration-200 hover:scale-105 disabled:cursor-not-allowed"
+                              whileHover={gameSession.gamePhase === 'emotion_selection' ? { scale: 1.1 } : {}}
+                              whileTap={gameSession.gamePhase === 'emotion_selection' ? { scale: 0.95 } : {}}
+                              disabled={gameSession.gamePhase !== 'emotion_selection' || isAnimating}
+                            >
+                              <div className="relative w-[120px] h-[80px]">
+                                <Image
+                                  src={currentImage}
+                                  alt={`${emotion.type} emotion`}
+                                  width={120}
+                                  height={80}
+                                  className="object-contain"
+                                />
+                              </div>
+                            </motion.button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+
                     {/* Feedback overlay */}
                     <AnimatePresence>
                       {showFeedback && feedbackInfo && (
@@ -536,31 +549,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                   onComplete={handleCompleteGame}
                   autoCloseDelay={3000}
                 />
-                
-                {/* Progress indicator */}
-                {(gameSession.gamePhase === 'item_question' || 
-                  gameSession.gamePhase === 'speaker_talking' || 
-                  gameSession.gamePhase === 'responder_talking' || 
-                  gameSession.gamePhase === 'emotion_selection' || 
-                  gameSession.gamePhase === 'feedback') && (
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-orange-800">Progreso</span>
-                      <span className="text-sm font-medium text-orange-800">
-                        {gameSession.scenarioIndex + 1} / {EMOTION_GAME_CONFIG.scenarios.length}
-                      </span>
-                    </div>
-                    <div className="w-full bg-orange-200 rounded-full h-2.5">
-                      <div 
-                        className="bg-orange-600 h-2.5 rounded-full transition-all duration-500"
-                        style={{ 
-                          width: `${((gameSession.scenarioIndex + (gameSession.gamePhase === 'feedback' && feedbackInfo?.isCorrect ? 1 : 0)) / EMOTION_GAME_CONFIG.scenarios.length) * 100}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-                
+
               </div>
             </div>
           </motion.div>

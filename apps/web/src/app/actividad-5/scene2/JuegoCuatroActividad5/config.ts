@@ -31,7 +31,7 @@ export const JUEGO_CUATRO_CONFIG = {
       clickSound: '/audio/actividad-5/juego4/s1.mp3',
       feedbackAudio: '/audio/actividad-5/juego4/fb-st-1.mp3',
       feedbackImage: '/image/actividad_5/juego4/scene-1/feedback/cris-marcha-wrong.png',
-      size: { width: 250, height: 356 }, // Left image - wider and taller
+      size: { width: 350, height: 500 }, // Left image - wider and taller
       isCorrect: false,
       feedback: {
         text: 'Si le das la espalda a una persona, esa persona entenderá que no quieres hablar con ella',
@@ -44,7 +44,7 @@ export const JUEGO_CUATRO_CONFIG = {
       clickSound: '/audio/actividad-5/juego4/s2.mp3',
       feedbackAudio: '/audio/actividad-5/juego4/fb-st-2.mp3',
       feedbackImage: '/image/actividad_5/juego4/scene-1/feedback/cris-espalda.png',
-      size: { width: 150, height: 320 }, // Middle image - taller
+      size: { width: 210, height: 450 }, // Middle image - taller
       isCorrect: false,
       feedback: {
         text: 'Si te acercas mucho a una persona se puede sentir incómoda',
@@ -57,7 +57,7 @@ export const JUEGO_CUATRO_CONFIG = {
       clickSound: '/audio/actividad-5/juego4/s3.mp3',
       feedbackAudio: '/audio/actividad-5/juego4/fb-st-3.mp3',
       feedbackImage: '/image/actividad_5/juego4/scene-1/feedback/noa-cris-ok.png',
-      size: { width: 250, height: 320 }, // Right image - wider and taller
+      size: { width: 350, height: 450 }, // Right image - wider and taller
       isCorrect: true,
       feedback: {
         text: 'Cuando hablamos con otras personas es importante mantener la distancia adecuada y poner el cuerpo en su dirección',
@@ -65,11 +65,11 @@ export const JUEGO_CUATRO_CONFIG = {
       }
     }
   ],
-  
+
   // Modal configuration
   modal: {
-    width: 640,
-    height: 450,
+    width: 900,
+    height: 650,
     maxWidth: '90vw',
     maxHeight: '90vh'
   },

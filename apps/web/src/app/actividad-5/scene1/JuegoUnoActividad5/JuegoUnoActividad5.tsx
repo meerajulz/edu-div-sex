@@ -376,6 +376,15 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                   Salir Juego
                 </motion.button>
               </div>
+
+              {/* Progress Badge - Top left */}
+              {gameState === 'playing' && (
+                <div className="absolute top-4 left-4 z-10">
+                  <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                    Paso {gameSession.scenarioIndex + 1}/{FACIAL_EXPRESSION_GAME_CONFIG.scenarios.length}
+                  </div>
+                </div>
+              )}
               
               {/* Game Content */}
               <div className="relative z-10 flex flex-col items-center h-[calc(100%-80px)] w-full p-4">
@@ -538,25 +547,6 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                             ))}
                           </div>
                         </motion.div>
-                      </div>
-                    </div>
-                    
-                    {/* Progress indicator */}
-                    <div className="w-full max-w-md mt-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-green-800">Progreso</span>
-                        <span className="text-sm font-medium text-green-800">
-                          {gameSession.scenarioIndex + 1} / {FACIAL_EXPRESSION_GAME_CONFIG.scenarios.length}
-                        </span>
-                      </div>
-                      <div className="w-full bg-green-200 rounded-full h-2.5">
-                        <div 
-                          className="bg-green-600 h-2.5 rounded-full"
-                          style={{ 
-                            width: `${((gameSession.scenarioIndex + (isScenarioCompleted(gameSession) ? 1 : 0)) / 
-                                      FACIAL_EXPRESSION_GAME_CONFIG.scenarios.length) * 100}%` 
-                          }}
-                        ></div>
                       </div>
                     </div>
                   </div>

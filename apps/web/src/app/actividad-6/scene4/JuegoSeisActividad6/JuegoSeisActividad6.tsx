@@ -329,6 +329,15 @@ export default function JuegoSeisActividad6({
                 Salir Juego
               </motion.button>
 
+              {/* Progress Badge - Top left */}
+              {!showIntro && currentSituation && (
+                <div className="absolute top-4 left-4 z-50">
+                  <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                    Paso {currentSituationIndex + 1}/{GAME_CONFIG.situations.length}
+                  </div>
+                </div>
+              )}
+
               {/* Game Content */}
               <div className="relative h-full flex items-center justify-center pt-4 pb-4">
                 {showIntro ? (

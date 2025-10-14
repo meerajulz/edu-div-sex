@@ -389,6 +389,19 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                   Salir Juego
                 </motion.button>
               </div>
+
+              {/* Progress Badge - Top left */}
+              {(gameSession.gamePhase === 'robot_speaking' ||
+                gameSession.gamePhase === 'question_asking' ||
+                gameSession.gamePhase === 'noa_listening' ||
+                gameSession.gamePhase === 'noa_selection' ||
+                gameSession.gamePhase === 'feedback') && (
+                <div className="absolute top-4 left-4 z-10">
+                  <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+                    Paso {gameSession.scenarioIndex + 1}/{TONE_GAME_CONFIG.scenarios.length}
+                  </div>
+                </div>
+              )}
               
               {/* Game Content */}
               <div className="relative z-10 flex flex-col items-center h-[calc(100%-80px)] w-full p-4">
@@ -578,32 +591,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                   onComplete={handleCompleteGame}
                   autoCloseDelay={3000}
                 />
-                
-                {/* Progress indicator */}
-                {(gameSession.gamePhase === 'robot_speaking' || 
-                  gameSession.gamePhase === 'question_asking' ||
-                  gameSession.gamePhase === 'noa_listening' || 
-                  gameSession.gamePhase === 'noa_selection' || 
-                  gameSession.gamePhase === 'feedback') && (
-                  <div className="absolute bottom-4 transform -translate-x-1/2 w-full max-w-md px-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-teal-800">Progreso</span>
-                      <span className="text-sm font-medium text-teal-800">
-                        {gameSession.scenarioIndex + 1} / {TONE_GAME_CONFIG.scenarios.length}
-                      </span>
-                    </div>
-                    <div className="w-full bg-teal-200 rounded-full h-2.5">
-                      <div 
-                        className="bg-teal-600 h-2.5 rounded-full transition-all duration-500"
-                        style={{ 
-                          width: `${((gameSession.scenarioIndex + (isScenarioCompleted(gameSession) ? 1 : 0)) / 
-                                    TONE_GAME_CONFIG.scenarios.length) * 100}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-                
+
               </div>
             </div>
           </motion.div>
