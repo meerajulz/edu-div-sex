@@ -245,17 +245,27 @@ export async function DELETE(
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 
-    // Check if user is already deleted
+    // Check if user exists and get their email
     const userCheck = await query(`
-      SELECT deleted_at FROM users WHERE id = $1
+      SELECT email, deleted_at FROM users WHERE id = $1
     `, [userId]);
-    
+
     if (userCheck.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
+    const userEmail = userCheck.rows[0].email;
+
     if (userCheck.rows[0].deleted_at) {
       return NextResponse.json({ error: 'User is already deleted' }, { status: 400 });
+    }
+
+    // Protected developer accounts - cannot be deleted
+    const protectedEmails = ['juleon80@gmail.com', 'hapgilmore23@gmail.com'];
+    if (protectedEmails.includes(userEmail)) {
+      return NextResponse.json({
+        error: 'This account is protected and cannot be deleted'
+      }, { status: 403 });
     }
 
     // Soft delete the user by setting deleted_at timestamp
