@@ -129,7 +129,6 @@ export default function Scene6Page() {
       // Apply to all possible videos in Scene 6
       const videos = [
         videoRef.current,
-        document.querySelector('[src="/video/ACTIVIDAD-1-ESCENA-5.mp4"]'),
         document.querySelector('[src="/video/ACTIVIDAD-1-ESCENA-6.mp4"]')
       ] as HTMLVideoElement[];
 

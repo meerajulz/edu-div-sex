@@ -372,7 +372,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
               </div>
               
               {/* Header with buttons */}
-              <div className="relative z-10 flex justify-between items-center p-4">
+              <div className="relative z-[120] flex justify-between items-center p-4">
                 {/* Listen Instructions Button */}
                 <EscucharInstruccionesButton
                   onPlayInstructions={handleListenInstructions}
@@ -396,15 +396,15 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                 gameSession.gamePhase === 'noa_listening' ||
                 gameSession.gamePhase === 'noa_selection' ||
                 gameSession.gamePhase === 'feedback') && (
-                <div className="absolute top-4 left-4 z-10">
+                <div className="absolute top-4 left-4 z-[120]">
                   <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
                     Paso {gameSession.scenarioIndex + 1}/{TONE_GAME_CONFIG.scenarios.length}
                   </div>
                 </div>
               )}
-              
+
               {/* Game Content */}
-              <div className="relative z-10 flex flex-col items-center h-[calc(100%-80px)] w-full p-4">
+              <div className="relative z-[5] flex flex-col items-center h-[calc(100%-80px)] w-full p-4">
                 
                 {/* Intro State */}
                 {gameSession.gamePhase === 'intro' && (
@@ -421,12 +421,12 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                       <p className="text-lg text-teal-700 mb-4">
                         {TONE_GAME_CONFIG.instruction}
                       </p>
-                      <div className="flex items-center justify-center space-x-2 text-teal-600">
-                        <span>Escuchando instrucciones</span>
+                      <div className="bg-teal-100 border-2 border-teal-300 rounded-lg px-6 py-3 inline-flex items-center space-x-3">
+                        <span className="text-lg font-semibold text-teal-800">Escuchando instrucciones</span>
                         <div className="flex space-x-1">
-                          <span className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
-                          <span className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                          <span className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
+                          <span className="w-3 h-3 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+                          <span className="w-3 h-3 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                          <span className="w-3 h-3 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
                         </div>
                       </div>
                     </div>
@@ -434,54 +434,60 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                 )}
                 
                 {/* Playing States */}
-                {(gameSession.gamePhase === 'robot_speaking' || 
+                {(gameSession.gamePhase === 'robot_speaking' ||
                   gameSession.gamePhase === 'question_asking' ||
-                  gameSession.gamePhase === 'noa_listening' || 
-                  gameSession.gamePhase === 'noa_selection' || 
+                  gameSession.gamePhase === 'noa_listening' ||
+                  gameSession.gamePhase === 'noa_selection' ||
                   gameSession.gamePhase === 'feedback') && currentScenario && (
-                  <div className="flex h-full w-full">
-                    
-                    {/* Robot Section - LEFT */}
-                    <div className="w-1/2 flex flex-col items-center justify-center p-4 relative">
-                      <motion.div
-                        className="relative"
-                        initial={{ opacity: 0, x: -50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        {/* Robot Character */}
-                        <div className="relative w-[400px] h-[400px] mb-0">
-                          <Image
-                            src={robotSpeaking 
-                              ? TONE_GAME_CONFIG.characters.robot.talking 
-                              : TONE_GAME_CONFIG.characters.robot.static}
-                            alt="Robot"
-                            fill
-                            className="object-contain"
-                          />
-                        </div>
-                      </motion.div>
+                  <div className="flex flex-col h-full w-full">
+
+                    {/* Header Section - Centered Above */}
+                    <div className="flex items-center justify-center pt-4 pb-2">
+                      <div className="bg-teal-100 border-2 border-teal-300 rounded-lg px-6 py-3 flex items-center gap-4">
+                        <h3 className="text-2xl font-bold text-teal-700">Noa te ayuda</h3>
+                        <div className="w-px h-8 bg-teal-300"></div>
+                        <p className="text-lg font-semibold text-teal-800">
+                          {gameSession.gamePhase === 'question_asking' && 'Escuchando pregunta...'}
+                          {gameSession.gamePhase === 'noa_listening' && 'Escucha ambos tonos de voz'}
+                          {gameSession.gamePhase === 'noa_selection' && 'Ahora elige el tono correcto'}
+                          {gameSession.gamePhase === 'robot_speaking' && 'Esperando...'}
+                        </p>
+                      </div>
                     </div>
-                    
-                    {/* NOA Section - RIGHT */}
-                    <div className="w-1/2 flex flex-col items-center justify-center p-4">
-                      <motion.div
-                        className="relative w-full"
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 }}
-                      >
-                        <div className="text-center mb-6">
-                          <h3 className="text-xl font-bold text-teal-700 mb-2">Noa te ayuda</h3>
-                          <p className="text-sm text-teal-600">
-                            {gameSession.gamePhase === 'question_asking' && 'Escuchando pregunta...'}
-                            {gameSession.gamePhase === 'noa_listening' && 'Escucha ambos tonos de voz'}
-                            {gameSession.gamePhase === 'noa_selection' && 'Ahora elige el tono correcto'}
-                            {gameSession.gamePhase === 'robot_speaking' && 'Esperando...'}
-                          </p>
-                        </div>
-                        
-                        {/* NOA Options */}
+
+                    {/* Main Content - Two Columns */}
+                    <div className="flex flex-1 w-full">
+                      {/* Robot Section - LEFT */}
+                      <div className="w-1/2 flex flex-col items-center justify-center p-4 relative">
+                        <motion.div
+                          className="relative"
+                          initial={{ opacity: 0, x: -50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {/* Robot Character */}
+                          <div className="relative w-[400px] h-[400px] mb-0">
+                            <Image
+                              src={robotSpeaking
+                                ? TONE_GAME_CONFIG.characters.robot.talking
+                                : TONE_GAME_CONFIG.characters.robot.static}
+                              alt="Robot"
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      {/* NOA Section - RIGHT */}
+                      <div className="w-1/2 flex flex-col items-center justify-center p-4">
+                        <motion.div
+                          className="relative w-full"
+                          initial={{ opacity: 0, x: 50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          {/* NOA Options */}
                         {(gameSession.gamePhase === 'noa_listening' || gameSession.gamePhase === 'noa_selection') && (
                           <div className="grid grid-cols-2 gap-4 w-full">
                             {currentScenario.noaOptions.map((option) => (
@@ -523,28 +529,31 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                                   
                                   {/* Option Info */}
                                   <div className="text-center">
-                                    <p className="font-semibold text-teal-800 text-sm">{option.label}</p>
-                                    <p className="text-xs text-teal-600 mt-1">
-                                      {gameSession.gamePhase === 'noa_listening' && gameSession.listenedOptions.includes(option.id) && '✓ Escuchado'}
-                                      {gameSession.gamePhase === 'noa_listening' && !gameSession.listenedOptions.includes(option.id) && 'Clic para escuchar'}
-                                      {gameSession.gamePhase === 'noa_selection' && 'Clic para seleccionar'}
-                                    </p>
-                                  </div>
-                                  
-                                  {/* Selection Mode Indicator */}
-                                  {gameSession.gamePhase === 'noa_selection' && (
-                                    <div className="w-6 h-6 rounded-full border-2 border-teal-500 flex items-center justify-center">
-                                      {gameSession.selectedOption === option.id && (
-                                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                                    <p className="font-semibold text-teal-800 text-lg mb-2">{option.label}</p>
+                                    <div className="bg-teal-100 border-2 border-teal-300 rounded-lg px-4 py-3 mt-2 flex items-center justify-center gap-3">
+                                      <p className="text-base font-medium text-teal-800">
+                                        {gameSession.gamePhase === 'noa_listening' && gameSession.listenedOptions.includes(option.id) && '✓ Escuchado'}
+                                        {gameSession.gamePhase === 'noa_listening' && !gameSession.listenedOptions.includes(option.id) && 'Clic para escuchar'}
+                                        {gameSession.gamePhase === 'noa_selection' && 'Clic para seleccionar'}
+                                      </p>
+
+                                      {/* Selection Mode Indicator inside background */}
+                                      {gameSession.gamePhase === 'noa_selection' && (
+                                        <div className="w-7 h-7 rounded-full border-2 border-teal-600 flex items-center justify-center flex-shrink-0 bg-white">
+                                          {gameSession.selectedOption === option.id && (
+                                            <div className="w-4 h-4 rounded-full bg-green-500" />
+                                          )}
+                                        </div>
                                       )}
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
                               </motion.div>
                             ))}
                           </div>
                         )}
-                      </motion.div>
+                        </motion.div>
+                      </div>
                     </div>
                     
                     {/* Feedback overlay - CENTERED RELATIVE TO MODAL */}
