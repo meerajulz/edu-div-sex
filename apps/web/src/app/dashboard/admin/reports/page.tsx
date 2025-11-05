@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardWrapper from '../../DashboardWrapper';
+import { ChevronDown, ChevronRight, GraduationCap } from 'lucide-react';
 
 interface ReportData {
   totalStudents: number;
@@ -19,9 +20,52 @@ interface ActivityProgress {
   progressPercentage: number;
 }
 
+interface ActivityAttempts {
+  activityId: number;
+  activityName: string;
+  activitySlug: string;
+  totalAttempts: number;
+  completedScenes: number;
+  totalScenes: number;
+}
+
+interface StudentWithProgress {
+  id: number;
+  name: string;
+  age: number;
+  supervision_level: number;
+  is_active: boolean;
+  user_id: number;
+  completedScenes: number;
+  totalScenes: number;
+  progressPercentage: number;
+  lastActivityDate: string | null;
+  averageAttempts: number;
+  attemptsByActivity: ActivityAttempts[];
+}
+
+interface TeacherReport {
+  id: number;
+  name: string;
+  email: string;
+  is_active: boolean;
+  students: StudentWithProgress[];
+  totalStudents: number;
+  activeStudents: number;
+  averageProgress: number;
+  supervisionLevelDistribution: {
+    nivel1: number;
+    nivel2: number;
+    nivel3: number;
+  };
+}
+
 export default function AdminReportsPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [activityProgress, setActivityProgress] = useState<ActivityProgress[]>([]);
+  const [teachers, setTeachers] = useState<TeacherReport[]>([]);
+  const [expandedTeachers, setExpandedTeachers] = useState<Set<number>>(new Set());
+  const [showActivityProgress, setShowActivityProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('week');
@@ -38,12 +82,12 @@ export default function AdminReportsPage() {
 
       // Fetch teachers assigned to this admin
       const teachersResponse = await fetch('/api/admin/users?role=teacher');
-      const teachersData = await teachersResponse.ok ? await teachersResponse.json() : { users: [] };
+      const teachersData = teachersResponse.ok ? await teachersResponse.json() : { users: [] };
       const teachers = teachersData.users || [];
 
       // Fetch students from assigned teachers
       const studentsResponse = await fetch('/api/admin/users?role=student');
-      const studentsData = await studentsResponse.ok ? await studentsResponse.json() : { users: [] };
+      const studentsData = studentsResponse.ok ? await studentsResponse.json() : { users: [] };
       const students = studentsData.users || [];
 
       // Calculate statistics
@@ -65,26 +109,80 @@ export default function AdminReportsPage() {
       setAvgStudentsPerTeacher(avgStudents);
       setActiveTeachersCount(activeTeachers);
 
+      // Fetch activity progress
+      const progressResponse = await fetch('/api/admin/activity-progress');
+      const progressData = progressResponse.ok ? await progressResponse.json() : { activityProgress: [] };
+
+      // Calculate total completed activities and average progress
+      const activityProgressList = progressData.activityProgress || [];
+      const totalCompletedActivities = activityProgressList.reduce(
+        (sum: number, activity: { completedStudents: number }) => sum + activity.completedStudents,
+        0
+      );
+      const averageProgress = activityProgressList.length > 0
+        ? Math.round(
+            activityProgressList.reduce(
+              (sum: number, activity: { progressPercentage: number }) => sum + activity.progressPercentage,
+              0
+            ) / activityProgressList.length
+          )
+        : 0;
+
       setReportData({
         totalStudents: students.length,
         totalTeachers: teachers.length,
         activeStudents: activeStudents,
-        completedActivities: 0, // Not tracking this yet
-        averageProgress: 0, // Not tracking this yet
+        completedActivities: totalCompletedActivities,
+        averageProgress: averageProgress,
         lastWeekActivity: recentStudents
       });
 
-      // Activity progress - placeholder for now
-      setActivityProgress([
-        { activityName: 'Actividad 1: Conocer mi cuerpo', totalStudents: students.length, completedStudents: 0, progressPercentage: 0 },
-        { activityName: 'Actividad 2: Emociones y sentimientos', totalStudents: students.length, completedStudents: 0, progressPercentage: 0 },
-        { activityName: 'Actividad 3: Relaciones saludables', totalStudents: students.length, completedStudents: 0, progressPercentage: 0 }
-      ]);
+      // Set activity progress from API
+      setActivityProgress(
+        activityProgressList.map((activity: {
+          activityName: string;
+          totalStudents: number;
+          completedStudents: number;
+          progressPercentage: number
+        }) => ({
+          activityName: activity.activityName,
+          totalStudents: activity.totalStudents,
+          completedStudents: activity.completedStudents,
+          progressPercentage: activity.progressPercentage
+        }))
+      );
+
+      // Fetch detailed teacher and student reports
+      const teacherReportsResponse = await fetch('/api/admin/reports-by-teacher');
+      const teacherReportsData = teacherReportsResponse.ok ? await teacherReportsResponse.json() : { teachers: [] };
+      setTeachers(teacherReportsData.teachers || []);
     } catch (err) {
       console.error('Error fetching report data:', err);
       setError('Error al cargar los datos del reporte');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleTeacher = (teacherId: number) => {
+    const newExpanded = new Set(expandedTeachers);
+    if (newExpanded.has(teacherId)) {
+      newExpanded.delete(teacherId);
+    } else {
+      newExpanded.add(teacherId);
+    }
+    setExpandedTeachers(newExpanded);
+  };
+
+  const getSupervisionLevelBadge = (level: number) => {
+    switch (level) {
+      case 3:
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Nivel 3 - Independiente</span>;
+      case 2:
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Nivel 2 - 50% Supervisión</span>;
+      case 1:
+      default:
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Nivel 1 - 100% Supervisión</span>;
     }
   };
 
@@ -175,40 +273,56 @@ export default function AdminReportsPage() {
             </div>
           </div>
 
-          {/* Activity Progress Chart */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-8">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Progreso por Actividad</h2>
-              <p className="text-sm text-gray-600">Porcentaje de estudiantes que han completado cada actividad</p>
-            </div>
-            <div className="p-6">
-              <div className="space-y-6">
-                {activityProgress.map((activity, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="font-medium text-gray-900">{activity.activityName}</div>
-                      <div className="text-sm text-gray-600">
-                        {activity.completedStudents} de {activity.totalStudents} estudiantes
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-                        style={{ width: `${activity.progressPercentage}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className={`px-2 py-1 rounded-full font-medium ${getProgressColor(activity.progressPercentage)}`}>
-                        {formatPercentage(activity.progressPercentage)}
-                      </span>
-                      <span className="text-gray-500">
-                        {activity.totalStudents - activity.completedStudents} pendientes
-                      </span>
-                    </div>
+          {/* Activity Progress Chart - Collapsible */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-8 overflow-hidden">
+            <div
+              className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => setShowActivityProgress(!showActivityProgress)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {showActivityProgress ? (
+                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-gray-500" />
+                  )}
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Progreso por Actividad</h2>
+                    <p className="text-sm text-gray-600">Porcentaje de estudiantes que han completado cada actividad</p>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
+            {showActivityProgress && (
+              <div className="border-t border-gray-200 p-6">
+                <div className="space-y-6">
+                  {activityProgress.map((activity, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium text-gray-900">{activity.activityName}</div>
+                        <div className="text-sm text-gray-600">
+                          {activity.completedStudents} de {activity.totalStudents} estudiantes
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
+                          style={{ width: `${activity.progressPercentage}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className={`px-2 py-1 rounded-full font-medium ${getProgressColor(activity.progressPercentage)}`}>
+                          {formatPercentage(activity.progressPercentage)}
+                        </span>
+                        <span className="text-gray-500">
+                          {activity.totalStudents - activity.completedStudents} pendientes
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Recent Activity Summary */}
@@ -277,6 +391,156 @@ export default function AdminReportsPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Detailed Student Reports by Teacher */}
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-4">Detalle de Estudiantes por Profesor</h2>
+            <div className="space-y-4">
+              {teachers.map((teacher) => (
+                <div key={teacher.id} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                  {/* Teacher Header */}
+                  <div
+                    className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => toggleTeacher(teacher.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {expandedTeachers.has(teacher.id) ? (
+                          <ChevronDown className="w-5 h-5 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-gray-500" />
+                        )}
+                        <GraduationCap className="w-6 h-6 text-green-600" />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{teacher.name}</h3>
+                          <p className="text-sm text-gray-600">{teacher.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-center">
+                          <div className="text-sm text-gray-500">Estudiantes</div>
+                          <div className="text-lg font-semibold text-gray-900">{teacher.activeStudents}/{teacher.totalStudents}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-gray-500">Progreso Promedio</div>
+                          <div className="text-lg font-semibold text-gray-900">{teacher.averageProgress}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Teacher Details (Expanded) */}
+                  {expandedTeachers.has(teacher.id) && (
+                    <div className="border-t border-gray-200 bg-gray-50 p-6">
+                      {teacher.students.length === 0 ? (
+                        <div className="text-center text-gray-500 py-4">
+                          No hay estudiantes asignados a este profesor
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Nombre</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Edad</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Nivel Supervisión</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Progreso</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Última Actividad</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Intentos Prom.</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-700">Estado</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white">
+                              {teacher.students.map((student) => (
+                                <tr key={student.id} className="border-t border-gray-200">
+                                  <td className="px-4 py-3 font-medium text-gray-900">{student.name}</td>
+                                  <td className="px-4 py-3 text-gray-700">{student.age || 'N/A'}</td>
+                                  <td className="px-4 py-3">{getSupervisionLevelBadge(student.supervision_level)}</td>
+                                  <td className="px-4 py-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                          className={`h-full ${
+                                            student.progressPercentage >= 80 ? 'bg-green-500' :
+                                            student.progressPercentage >= 60 ? 'bg-yellow-500' :
+                                            student.progressPercentage >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                                          }`}
+                                          style={{ width: `${student.progressPercentage}%` }}
+                                        ></div>
+                                      </div>
+                                      <span className="text-xs font-medium">{student.progressPercentage}%</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {student.completedScenes}/{student.totalScenes} escenas
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    {student.lastActivityDate ? (
+                                      <div className="text-xs">
+                                        <div className="font-medium text-gray-900">
+                                          {new Date(student.lastActivityDate).toLocaleDateString('es-ES')}
+                                        </div>
+                                        <div className="text-gray-500">
+                                          {new Date(student.lastActivityDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-gray-400">Sin actividad</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {student.averageAttempts.toFixed(1)}
+                                    </div>
+                                    {student.attemptsByActivity.length > 0 && (
+                                      <details className="mt-1">
+                                        <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">
+                                          Por actividad
+                                        </summary>
+                                        <div className="mt-2 space-y-1 bg-gray-50 p-2 rounded text-xs">
+                                          {student.attemptsByActivity.map((activity) => (
+                                            <div key={activity.activityId} className="flex justify-between items-start">
+                                              <div className="flex-1 pr-2">
+                                                <div className="font-medium text-gray-700">{activity.activityName}</div>
+                                                <div className="text-gray-500">
+                                                  {activity.completedScenes}/{activity.totalScenes} escenas
+                                                </div>
+                                              </div>
+                                              <div className="font-medium text-gray-900">{activity.totalAttempts}</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </details>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    {student.is_active ? (
+                                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        Activo
+                                      </span>
+                                    ) : (
+                                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                        Inactivo
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {teachers.length === 0 && (
+                <div className="text-center text-gray-500 py-8 bg-white rounded-lg border border-gray-200">
+                  No hay profesores asignados a este centro
+                </div>
+              )}
             </div>
           </div>
 

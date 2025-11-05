@@ -43,6 +43,9 @@ const OwnerSidebar: React.FC = () => {
           <Link href='/dashboard/owner/analytics' className='text-gray-600 text-sm block mb-2'>
             Análisis del Sistema
           </Link>
+          <Link href='/dashboard/owner/reports-by-center' className='text-gray-600 text-sm block mb-2'>
+            Reportes por Centro
+          </Link>
 
           {/* Activity Tree */}
           <ActivityTree />
