@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 
@@ -43,7 +43,7 @@ interface TeacherReport {
 }
 
 // GET /api/admin/reports-by-teacher - Get detailed student reports grouped by teacher for this admin
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 

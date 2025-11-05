@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 
 // GET /api/admin/activity-progress - Get aggregated activity progress for all students
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 
@@ -61,7 +61,7 @@ interface CenterReport {
 }
 
 // GET /api/owner/reports-by-center - Get comprehensive reports grouped by center (admin)
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 
