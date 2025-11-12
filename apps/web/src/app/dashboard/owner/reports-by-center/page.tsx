@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardWrapper from '../../DashboardWrapper';
 import { ChevronDown, ChevronRight, Users, GraduationCap, School, TrendingUp } from 'lucide-react';
+import { getActivityTitle } from '@/app/utils/activityMapping';
 
 interface ActivityAttempts {
   activityId: number;
@@ -397,7 +398,7 @@ export default function OwnerReportsByCenterPage() {
                                                   {student.attemptsByActivity.map((activity) => (
                                                     <div key={activity.activityId} className="flex justify-between items-start">
                                                       <div className="flex-1 pr-2">
-                                                        <div className="font-medium text-gray-700">{activity.activityName}</div>
+                                                        <div className="font-medium text-gray-700">{getActivityTitle(activity.activitySlug)}</div>
                                                         <div className="text-gray-500">
                                                           {activity.completedScenes}/{activity.totalScenes} escenas
                                                         </div>

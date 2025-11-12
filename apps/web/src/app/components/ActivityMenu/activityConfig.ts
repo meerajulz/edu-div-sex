@@ -272,7 +272,7 @@ export const ACTIVITY_3_CONFIG: ActivityConfig = {
 export const ACTIVITY_4_CONFIG: ActivityConfig = {
   activityId: 4,
   activitySlug: 'actividad-4',
-  title: 'HIGIENE SEXUAL',
+  title: 'Higiene Sexual',
   sections: [
     {
       id: 1,

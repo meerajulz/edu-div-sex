@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import DashboardWrapper from '../../../DashboardWrapper';
+import { getSceneTitle, getActivityTitle } from '@/app/utils/activityMapping';
 
 interface User {
   id: string;
@@ -587,7 +588,7 @@ function ViewUserDetails() {
                   {progressData.activities.map((activity) => (
                     <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-medium text-gray-900">{activity.name}</h3>
+                        <h3 className="font-medium text-gray-900">{getActivityTitle(activity.slug)}</h3>
                         <span className="text-sm text-gray-600">{activity.overallProgress}%</span>
                       </div>
                       
@@ -603,7 +604,7 @@ function ViewUserDetails() {
                         {activity.scenes.map((scene) => (
                           <div key={scene.id} className="border border-gray-100 rounded p-3">
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-sm font-medium text-gray-800">{scene.name}</span>
+                              <span className="text-sm font-medium text-gray-800">{getSceneTitle(activity.slug, scene.slug)}</span>
                               <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(scene.progress.status)}`}>
                                 {getStatusText(scene.progress.status)}
                               </span>
