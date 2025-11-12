@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
-import JuegoDosActividad3 from '../scene1/JuegoDosActvidad3/JuegoDosActividad3';
+import JuegoDosActividad3Male from '../scene1/JuegoDosActvidad3/JuegoDosActividad3Male';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -15,37 +15,14 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 
-// Helper function to get user gender from session
-const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'female' => {
-  const sessionSex = session?.user?.sex?.toLowerCase();
-
-  // Handle various possible values from the session
-  if (sessionSex === 'male' || sessionSex === 'm' || sessionSex === 'masculino') {
-    return 'male';
-  } else if (sessionSex === 'female' || sessionSex === 'f' || sessionSex === 'femenino') {
-    return 'female';
-  }
-
-  // Default fallback
-  console.warn('⚠️ No valid gender found in session, defaulting to female');
-  return 'female';
-};
-
 export default function Actividad3Scene1_1Page() {
 
   // Track current activity URL for continue feature
   useActivityTracking();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
-
-  // Get user gender from session
-  const userGender = getUserGender(session);
-
-  // Debug logging
-  console.log('🎯 User gender from session:', session?.user?.sex);
-  console.log('🎯 Parsed user gender:', userGender);
-  console.log('🎯 Full session user data:', session?.user);
 
   useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -549,7 +526,7 @@ export default function Actividad3Scene1_1Page() {
                 >
                   {!gameCompleted ? (
                     <JugarButton
-                      text={userGender === 'male' ? 'Jugar' : 'Jugar'}
+                      text='Jugar'
                       onClick={handleOpenGame}
                       disabled={isAnimating}
                     />
@@ -570,8 +547,8 @@ export default function Actividad3Scene1_1Page() {
         </div>
       )}
 
-      {/* JuegoDosActividad3 Game Modal */}
-      <JuegoDosActividad3
+      {/* JuegoDosActividad3Male Game Modal */}
+      <JuegoDosActividad3Male
         isVisible={showGame}
         onClose={handleCloseGame}
         onGameComplete={handleGameComplete}

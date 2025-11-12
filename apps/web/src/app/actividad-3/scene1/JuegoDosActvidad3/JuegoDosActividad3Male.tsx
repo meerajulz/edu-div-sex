@@ -1,0 +1,384 @@
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { useGameState, useGameSession, useGameTracking, useAudioManager } from './hooks-male';
+import SituationDisplay from './SituationDisplay';
+import OkNoButtons from './OkNoButtons';
+import FeedbackOverlay from './FeedbackOverlay';
+import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
+import EscucharInstruccionesButton from '../../../components/EscucharInstruccionesButton/EscucharInstruccionesButton';
+import { playGameAudio } from '../../../utils/gameAudio';
+
+interface JuegoDosActividad3MaleProps {
+  isVisible: boolean;
+  onClose: () => void;
+  onGameComplete: () => void;
+}
+
+const JuegoDosActividad3Male: React.FC<JuegoDosActividad3MaleProps> = ({
+  isVisible,
+  onClose,
+  onGameComplete
+}) => {
+  // Game hooks
+  const {
+    currentSituation,
+    gamePhase,
+    setGamePhase,
+    selectedAnswer,
+    setSelectedAnswer,
+    isCorrect,
+    setIsCorrect,
+    score,
+    setScore,
+    situationsCorrect,
+    resetGame,
+    nextSituation,
+    markSituationCorrect,
+    gameConfig
+  } = useGameState();
+
+  const { startSession, endSession } = useGameSession();
+  const { recordAttempt } = useGameTracking();
+  const { playAudio, playAudioWithCallback, stopAudio } = useAudioManager();
+
+  // Local state for feedback control
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isFeedbackCorrect, setIsFeedbackCorrect] = useState(false);
+  const [buttonsDisabled, setButtonsDisabled] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
+
+  // Initialize game when modal opens
+  useEffect(() => {
+    if (isVisible) {
+      console.log('🎮 Game modal opened (Male version), starting game...');
+      resetGame();
+      startSession();
+      startTitlePhase();
+    } else {
+      stopAudio();
+    }
+
+  }, [isVisible]);
+
+  // Start the title phase
+  const startTitlePhase = useCallback(async () => {
+    console.log('🎵 Starting title phase (Male)...');
+    setGamePhase('title');
+    setShowButtons(false);
+    setShowFeedback(false);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      playAudioWithCallback(
+        gameConfig.title.audio,
+        () => {
+          console.log('🎵 Title audio finished, moving to first situation');
+          setTimeout(() => {
+            startSituationPhase();
+          }, 500);
+        }
+      );
+    } catch (error) {
+      console.error('Error in title phase:', error);
+      startSituationPhase();
+    }
+  }, [gameConfig.title.audio, playAudioWithCallback]);
+
+  // Start situation phase
+  const startSituationPhase = useCallback(async (situationIndex?: number) => {
+    // Use the provided index or current situation
+    const situationIdx = situationIndex !== undefined ? situationIndex : currentSituation;
+    const situation = gameConfig.situations[situationIdx];
+
+    console.log(`🎮 Starting situation ${situationIdx + 1} (Male):`, situation.title);
+    console.log('🖼️ Image path:', situation.image);
+    console.log('🎵 Audio path:', situation.audio.description);
+
+    setGamePhase('situation');
+    setShowButtons(false);
+    setShowFeedback(false);
+    setButtonsDisabled(false);
+    setSelectedAnswer(null);
+
+    // IMPORTANT: Stop any current audio before playing new one
+    stopAudio();
+
+    try {
+      // Small delay to ensure audio is stopped
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Play situation audio
+      console.log('🎵 About to play audio:', situation.audio.description);
+      playAudioWithCallback(
+        situation.audio.description,
+        () => {
+          console.log('🎵 Situation audio finished, showing buttons');
+          setTimeout(() => {
+            setGamePhase('question');
+            setShowButtons(true);
+          }, 500);
+        }
+      );
+    } catch (error) {
+      console.error('Error playing situation audio:', error);
+      setGamePhase('question');
+      setShowButtons(true);
+    }
+  }, [gameConfig.situations, playAudioWithCallback, stopAudio, currentSituation]);
+
+  // Handle answer selection
+  const handleAnswerSelect = useCallback(async (answer: 'YES' | 'NO') => {
+    if (buttonsDisabled || selectedAnswer) return;
+
+    const situation = gameConfig.situations[currentSituation];
+    console.log(`🎮 Answer selected: ${answer} for situation ${currentSituation + 1} (Male)`);
+
+    setSelectedAnswer(answer);
+    setButtonsDisabled(true);
+    setShowButtons(false);
+
+    // Determine if answer is correct
+    const correct = answer === situation.correctAnswer;
+    setIsCorrect(correct);
+    setIsFeedbackCorrect(correct);
+
+    // Record the attempt
+    recordAttempt(
+      situation.id,
+      answer,
+      situation.correctAnswer
+    );
+
+    // Update score and mark as correct if needed
+    if (correct) {
+      setScore(prev => prev + 1);
+      markSituationCorrect(currentSituation);
+    }
+
+    // Set feedback message and show overlay
+    setFeedbackMessage(situation.feedback.text);
+    setShowFeedback(true);
+
+    // Play feedback audio
+    try {
+      await playAudio(situation.feedback.audio);
+    } catch (error) {
+      console.warn('Could not play feedback audio:', error);
+    }
+
+  }, [
+    buttonsDisabled,
+    selectedAnswer,
+    currentSituation,
+    gameConfig.situations,
+    recordAttempt,
+    markSituationCorrect,
+    playAudio
+  ]);
+
+  // Handle feedback completion
+  const handleFeedbackComplete = useCallback(() => {
+    console.log('📝 Feedback completed for situation', currentSituation + 1);
+    console.log('📝 Answer was correct:', isCorrect);
+
+    setShowFeedback(false);
+
+    // Stop any current audio before proceeding
+    stopAudio();
+
+    if (isCorrect) {
+      // Correct answer - move to next situation
+      if (currentSituation >= gameConfig.situations.length - 1) {
+        // Game complete
+        console.log('🎉 Game completed (Male version)!');
+        const finalScore = score;
+        const finalCorrect = [...situationsCorrect];
+
+        endSession(true, finalScore, finalCorrect);
+        setGamePhase('complete');
+      } else {
+        // Move to next situation
+        console.log('➡️ Moving to next situation...');
+        const nextSituationIndex = currentSituation + 1;
+        nextSituation(); // This updates the state
+        setTimeout(() => {
+          // Pass the next situation index to ensure correct audio plays
+          startSituationPhase(nextSituationIndex);
+        }, 1000);
+      }
+    } else {
+      // Wrong answer - retry same situation
+      console.log('❌ Wrong answer, staying on same situation');
+      setTimeout(() => {
+        setGamePhase('question');
+        setShowButtons(true);
+        setSelectedAnswer(null);
+        setButtonsDisabled(false);
+      }, 500);
+    }
+  }, [
+    currentSituation,
+    gameConfig.situations.length,
+    score,
+    isCorrect,
+    situationsCorrect,
+    endSession,
+    nextSituation,
+    startSituationPhase,
+    stopAudio
+  ]);
+
+  // Handle game completion
+  const handleGameComplete = useCallback(() => {
+    console.log('🎮 Game completion sequence finished (Male version)');
+
+    try {
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'JuegoDosActividad3Male completion');
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+
+    setTimeout(() => {
+      onGameComplete();
+      onClose();
+    }, 1000);
+  }, [onGameComplete, onClose]);
+
+  // Handle close button
+  const handleClose = useCallback(() => {
+    stopAudio();
+    resetGame();
+    onClose();
+  }, [stopAudio, resetGame, onClose]);
+
+  // Handle listen instructions button
+  const handleListenInstructions = useCallback(() => {
+    playAudio(gameConfig.title.audio);
+  }, [playAudio, gameConfig.title.audio]);
+
+  // Handle image click to replay situation audio
+  const handleImageClick = useCallback(() => {
+    const situationData = gameConfig.situations[currentSituation];
+    if (gamePhase === 'question' && situationData) {
+      console.log('🔊 Replaying situation audio from image click');
+      playAudio(situationData.audio.description);
+    }
+  }, [gamePhase, currentSituation, gameConfig.situations, playAudio]);
+
+  if (!isVisible) return null;
+
+  const currentSituationData = gameConfig.situations[currentSituation];
+  const showSituation = gamePhase === 'situation' || gamePhase === 'question';
+
+  return (
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+      {/* Modal with gradient background */}
+      <div
+        className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600"
+        style={{
+          aspectRatio: '1200/750'
+        }}
+      >
+
+        {/* Listen Instructions Button */}
+        <EscucharInstruccionesButton
+          onPlayInstructions={handleListenInstructions}
+          position="top-right"
+        />
+
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-10 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 font-semibold"
+        >
+          Salir juego
+        </button>
+
+        {/* Progress Badge - Top left */}
+        {(gamePhase === 'situation' || gamePhase === 'question' || gamePhase === 'feedback') && (
+          <div className="absolute top-4 left-4 z-10">
+            <div className="px-3 py-2 bg-orange-500 text-white rounded-full shadow-lg text-center font-bold text-sm">
+              Situación {currentSituation + 1}/{gameConfig.situations.length}
+            </div>
+          </div>
+        )}
+
+        {/* Title Phase */}
+        {gamePhase === 'title' && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white">
+              <motion.div
+                className="text-4xl mb-4"
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                🎯
+              </motion.div>
+              <div className="text-2xl font-bold mb-4">
+                ¿Cuándo puede salir el semen?
+              </div>
+              <div className="text-lg opacity-80 mb-6">
+                Escuchando instrucciones...
+              </div>
+              <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Situation Display */}
+        {showSituation && currentSituationData && (
+          <SituationDisplay
+            image={currentSituationData.image}
+            alt={currentSituationData.title}
+            isVisible={true}
+            onClick={handleImageClick}
+            clickable={gamePhase === 'question'}
+          />
+        )}
+
+        {/* OK/NO Buttons */}
+        <OkNoButtons
+          isVisible={showButtons && gamePhase === 'question'}
+          onSelect={handleAnswerSelect}
+          disabled={buttonsDisabled}
+        />
+
+        {/* Feedback Overlay */}
+        {showFeedback && (
+          <FeedbackOverlay
+            isVisible={true}
+            isCorrect={isFeedbackCorrect}
+            message={feedbackMessage}
+            onComplete={handleFeedbackComplete}
+            duration={5000}
+          />
+        )}
+
+        {/* Congratulations Overlay */}
+        <CongratsOverlay
+          isVisible={gamePhase === 'complete'}
+          title="¡Muy Bien!"
+          subtitle={`Has completado todas las situaciones correctamente. Puntuación: ${score}/${gameConfig.situations.length}`}
+          emoji="🎉"
+          bgColor="bg-blue-500/20"
+          textColor="text-white"
+          onComplete={handleGameComplete}
+          autoCloseDelay={3000}
+        />
+
+      </div>
+    </div>
+  );
+};
+
+export default JuegoDosActividad3Male;

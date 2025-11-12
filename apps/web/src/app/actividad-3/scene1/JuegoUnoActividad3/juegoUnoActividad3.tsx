@@ -304,26 +304,6 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
           </div>
         )}
 
-        {/* Scene Phase - Show love scene */}
-        {gamePhase === 'scene' && (
-          <motion.div
-            className="absolute left-8 top-[200px] transform -translate-y-1/2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="relative w-[600px] h-[450px]">
-              <Image
-                src={GAME_CONFIG.sceneImage}
-                alt="Escena de caricias"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-          </motion.div>
-        )}
-
         {/* Situation and Question Phases */}
         {currentSituationData && (gamePhase === 'situation' || gamePhase === 'question') && (
           <div className="absolute inset-0 flex items-center justify-center px-8 gap-4">

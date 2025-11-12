@@ -1,0 +1,210 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
+import JugarButton from '../../components/JugarButton/JugarButton';
+import JuegoDosActividad3Female from '../scene1/JuegoDosActvidad3/JuegoDosActividad3Female';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { useProgressSaver } from '../../hooks/useProgressSaver';
+import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { playGameAudio } from '../../utils/gameAudio';
+
+export default function Actividad3Scene1_2Page() {
+
+  // Track current activity URL for continue feature
+  useActivityTracking();
+  const router = useRouter();
+  const { saveProgress } = useProgressSaver();
+
+  useActivityProtection();
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showGame, setShowGame] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
+
+
+  const playSound = () => {
+    try {
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'Activity 3 Scene 1-2 button');
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
+  };
+
+  const handleOpenGame = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+
+    setTimeout(() => {
+      setIsAnimating(false);
+      setShowGame(true);
+    }, 800);
+  };
+
+  const handleCloseGame = () => {
+    setShowGame(false);
+  };
+
+  const handleGameComplete = () => {
+    setGameCompleted(true);
+    setShowGame(false);
+    // Show congratulations after game completion
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
+  };
+
+  // Handle completion and go back to menu
+  const handleGoToMenu = async () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+
+    console.log('🎯 Actividad3-Scene1-2: All content completed, saving progress and returning to menu');
+
+    const progressSaved = await saveProgress('actividad-3', 'scene1-2', 'completed', 100, {
+      game_completed: gameCompleted,
+      completed_at: new Date().toISOString()
+    });
+
+    setTimeout(() => {
+      setIsAnimating(false);
+      if (progressSaved) {
+        console.log('✅ Actividad3-Scene1-2: Progress saved successfully');
+      } else {
+        console.error('❌ Actividad3-Scene1-2: Failed to save progress, but continuing');
+      }
+      router.push('/actividad-3');
+    }, 800);
+  };
+
+  return (
+    <motion.div
+      className="relative min-h-screen overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+    >
+      {/* Colorful Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-400 to-yellow-400 z-0" />
+
+      {/* Floating particles animation */}
+      <div className="absolute inset-0 z-10">
+        {[...Array(25)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-white/20"
+            style={{
+              width: Math.random() * 80 + 30,
+              height: Math.random() * 80 + 30,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, Math.random() * 30 - 15, 0],
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{
+              duration: Math.random() * 4 + 3,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Additional colorful elements */}
+      <div className="absolute inset-0 z-10">
+        {[...Array(15)].map((_, i) => (
+          <motion.div
+            key={`star-${i}`}
+            className="absolute"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              scale: [1, 1.5, 1],
+              rotate: [0, 360],
+              opacity: [0.5, 1, 0.5],
+            }}
+            transition={{
+              duration: Math.random() * 3 + 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: Math.random() * 2,
+            }}
+          >
+            <div className="w-4 h-4 bg-white/30 rounded-full" />
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="absolute top-0 right-0 z-50 flex">
+        <FloatingMenu />
+      </div>
+      <div className="">
+        <LogoComponent configKey="actividad-3-scene1-2" />
+      </div>
+
+      {!gameCompleted && !showCongratulations && (
+        <div className="relative z-20 flex items-center justify-center min-h-screen">
+          <motion.div
+            animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            <JugarButton text='Jugar' onClick={handleOpenGame} disabled={isAnimating} />
+          </motion.div>
+        </div>
+      )}
+
+      {/* JuegoDosActividad3Female Game Modal */}
+      <JuegoDosActividad3Female
+        isVisible={showGame}
+        onClose={handleCloseGame}
+        onGameComplete={handleGameComplete}
+      />
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
