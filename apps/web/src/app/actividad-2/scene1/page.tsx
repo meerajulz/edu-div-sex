@@ -254,7 +254,7 @@ export default function Actividad2Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='¿Es privado?' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (
@@ -309,17 +309,9 @@ export default function Actividad2Scene1Page() {
                     animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                     transition={{ duration: 0.8, ease: 'easeInOut' }}
                   >
-                    {!gameCompleted ? (
+                    {!gameCompleted && (
                       <JugarButton text='Jugar' onClick={handleOpenJuegoUno} disabled={isAnimating} />
-                    ) : !showCongratulations ? (
-                      <div className="flex flex-col items-center space-y-4">
-                        <JugarButton
-                          onClick={handleGoToActivityMenu}
-                          disabled={isAnimating}
-                          text="Continuar..."
-                        />
-                      </div>
-                    ) : null}
+                    )}
                   </motion.div>
 
                   {/* Volver a ver Button - positioned under main button */}

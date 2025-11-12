@@ -351,7 +351,7 @@ export default function Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text="Jugar" onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text="EL CUERPO DE LOS NIÑOS Y LAS NIÑAS" onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
 {/* 
           <motion.button

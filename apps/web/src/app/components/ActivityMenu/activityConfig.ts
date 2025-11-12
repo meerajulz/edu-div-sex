@@ -52,7 +52,7 @@ export const ACTIVITY_1_CONFIG: ActivityConfig = {
     {
       id: 2,
       title: "¿QUÉ HA CAMBIADO?",
-      scenes: ["/actividad-1/scene2", "/actividad-1/scene3", "/actividad-1/scene4"],
+      scenes: ["/actividad-1/scene2", "/actividad-1/scene3", "/actividad-1/scene4", "/actividad-1/scene5"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-2-active.svg",
@@ -70,7 +70,7 @@ export const ACTIVITY_1_CONFIG: ActivityConfig = {
     {
       id: 3,
       title: "¿QUÉ ES UNA ERECCIÓN?",
-      scenes: ["/actividad-1/scene5", "/actividad-1/scene6"],
+      scenes: ["/actividad-1/scene6"],
       isUnlocked: false,
       isCompleted: false,
       activeImage: "/svg/menu-actividad/cartell-3-active.svg",
@@ -209,7 +209,7 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
 export const ACTIVITY_3_CONFIG: ActivityConfig = {
   activityId: 3,
   activitySlug: 'actividad-3',
-  title: 'Respuesta sexual',
+  title: 'Placer sexual',
   sections: [
     {
       id: 1,
@@ -276,7 +276,7 @@ export const ACTIVITY_4_CONFIG: ActivityConfig = {
   sections: [
     {
       id: 1,
-      title: "La higiene de los chicos y las chicas",
+      title: "LA HIGIENE DE LOS CHICOS Y LAS CHICAS",
       scenes: ["/actividad-4/scene1"],
       isUnlocked: true, // First section always unlocked
       isCompleted: false,
@@ -398,7 +398,7 @@ export const ACTIVITY_5_CONFIG: ActivityConfig = {
 export const ACTIVITY_6_CONFIG: ActivityConfig = {
   activityId: 6,
   activitySlug: 'actividad-6',
-  title: 'RESPETO Y VALORES',
+  title: 'Abuso',
   sections: [
     {
       id: 1,

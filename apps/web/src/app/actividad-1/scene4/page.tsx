@@ -302,7 +302,7 @@ export default function Scene4Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Jugar' onClick={handleButtonClick} disabled={isAnimating} />
+            <JugarButton text='¿QUÉ HA CAMBIADO?' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
 
           {/* Button to replay Scene 3 */}
@@ -363,15 +363,9 @@ export default function Scene4Page() {
                   animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
-                  {!gameCompleted ? (
+                  {!gameCompleted && (
                     <JugarButton text='Jugar' onClick={handleOpenJuegoDos} disabled={isAnimating} />
-                  ) : !showCongratulations ? (
-                    <JugarButton
-                      onClick={handleGoToActivityMenu}
-                      disabled={isAnimating}
-                      text="Continuar..."
-                    />
-                  ) : null}
+                  )}
                 </motion.div>
 
                 {/* Button to replay Scene 4 video when game is available */}

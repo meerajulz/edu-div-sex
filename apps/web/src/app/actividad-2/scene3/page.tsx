@@ -7,7 +7,7 @@ import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton
 import JuegoTresActividad2 from './JuegoTresActividad2/JuegoTresActividad2';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-//import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
@@ -19,7 +19,7 @@ export default function Actividad2Scene3Page() {
   
   // Track current activity URL for continue feature
   useActivityTracking();
-//const { data: session } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   
@@ -288,7 +288,7 @@ export default function Actividad2Scene3Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='¿QUÉ ES PRIVADO Y QUÉ ES PÚBLICO?' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : showVideo && !showButton ? (
@@ -343,7 +343,7 @@ export default function Actividad2Scene3Page() {
               transition={{ duration: 0.8, ease: 'easeInOut' }}
             >
               <JugarButton
-                text={gameCompleted ? 'Jugar' : 'Jugar'}
+                text="Jugar"
                 onClick={handleButtonClick}
                 disabled={isAnimating}
               />
@@ -362,7 +362,7 @@ export default function Actividad2Scene3Page() {
         isVisible={showGame}
         onClose={handleGameClose}
         onGameComplete={handleGameComplete}
-        userId="user123" // Replace with actual user ID
+        userId={session?.user?.id}
       />
 
       {/* Congratulations Overlay */}

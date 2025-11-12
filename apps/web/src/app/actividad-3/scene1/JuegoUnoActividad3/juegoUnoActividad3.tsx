@@ -328,14 +328,7 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
         {currentSituationData && (gamePhase === 'situation' || gamePhase === 'question') && (
           <div className="absolute inset-0 flex items-center justify-center px-8 gap-4">
             {/* Scene image on left */}
-            <div className="relative w-[480px] h-[360px]">
-              <Image
-                src={GAME_CONFIG.sceneImage}
-                alt="Escena de fondo"
-                fill
-                className="object-contain"
-              />
-            </div>
+
 
             {/* Body part image on right */}
             <motion.div

@@ -7,7 +7,7 @@ import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton
 import JuegoDosActividad2 from './JuegoDosActividad2/JuegoDosActividad2';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-//import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
@@ -19,7 +19,7 @@ export default function Actividad2Scene2Page() {
  
   // Track current activity URL for continue feature
   useActivityTracking();
-// const { data: session } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
   
@@ -258,7 +258,7 @@ export default function Actividad2Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='Jugar' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text='MI CUERPO Y MI ESPACIO' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       )}
@@ -337,24 +337,8 @@ export default function Actividad2Scene2Page() {
         isVisible={showGameModal}
         onClose={handleCloseGame}
         onGameComplete={handleGameComplete}
-        userId="user123" // You can pass the actual user ID here
+        userId={session?.user?.id}
       />
-     
-      {/* After the game ends, show the final button */}
-      {gameCompleted && !showCongratulations && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center">
-          <motion.div
-            animate={{ scale: [1, 1.3, 1], rotate: [0, -360] }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-          >
-            <JugarButton
-              text="Continuar..."
-              onClick={handleGoToActivityMenu}
-            />
-          </motion.div>
-        </div>
-      )}
-
       {/* Congratulations Overlay */}
       {showCongratulations && (
         <motion.div

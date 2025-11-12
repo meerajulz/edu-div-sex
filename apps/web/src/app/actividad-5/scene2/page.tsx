@@ -314,7 +314,7 @@ export default function Actividad5Scene2Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text="Jugar" onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text="¿CÓMO LIGAMOS?" onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (

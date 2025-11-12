@@ -278,7 +278,7 @@ export default function Actividad6Scene4_1Page() {
         <LogoComponent configKey="actividad-6-scene1" />
       </div>
 
-      {!showFinalVideo && !showCongratulations ? (
+      {!juegoSeisCompleted && !showFinalVideo && !showCongratulations ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
