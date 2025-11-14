@@ -11,6 +11,7 @@ interface ActivityMenuProps {
   isVisible: boolean;
   config: ActivityConfig;
   onSectionClick?: (section: ActivitySection) => void;
+  isNavigating?: boolean;
   containerPosition?: {
     top?: string;
     left?: string;
@@ -22,6 +23,7 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
   isVisible = false,
   config,
   onSectionClick,
+  isNavigating = false,
   containerPosition = {
     top: '3/4',
     left: '1/2',
@@ -123,6 +125,12 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
   }, [isVisible]);
 
   const handleClick = (section: ActivitySection) => {
+    // Prevent clicks during navigation
+    if (isNavigating) {
+      console.log('🚫 Navigation in progress, click blocked');
+      return;
+    }
+
     if (!section.isUnlocked) {
       // Play locked sound
       playAudio('/audio/button/locked.mp3').catch(() => {
@@ -131,10 +139,10 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
       console.log(`🔒 Section ${section.id} is locked! Complete previous sections first.`);
       return;
     }
-    
-    // Play section sound
-    playAudio(section.soundClick).catch(console.warn);
-    
+
+    // Don't play section sound here anymore - parent will handle it and wait for completion
+    // playAudio(section.soundClick).catch(console.warn);
+
     if (onSectionClick) {
       onSectionClick(section);
     } else {
@@ -176,7 +184,10 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
               return (
                 <motion.div
                   key={section.id}
-                  className={`absolute pointer-events-auto ${section.isUnlocked ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                  className={`absolute pointer-events-auto ${
+                    isNavigating ? 'cursor-wait opacity-50' :
+                    section.isUnlocked ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                  }`}
                   initial={{ 
                     y: -100, 
                     x: section.xPosition, 
@@ -234,8 +245,8 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                     }
                   }}
                   onClick={() => handleClick(section)}
-                  whileHover={section.isUnlocked ? { 
-                    scale: (section.scale || 1) * 1.3, 
+                  whileHover={section.isUnlocked && !isNavigating ? {
+                    scale: (section.scale || 1) * 1.3,
                     y: (section.yPosition || 0) - 10,
                     transition: { duration: 0.2 }
                   } : {}}

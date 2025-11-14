@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from 'react';
 import Image from 'next/image';
-import { playAudio, cleanupAudio } from '../../utils/audioPlayer';
 
 interface SimpleAlexProps {
   isVisible: boolean;
@@ -31,6 +30,7 @@ const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
   const mouthIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasStarted = useRef(false);
   const allTimersRef = useRef<NodeJS.Timeout[]>([]);
+  const audioElementsRef = useRef<HTMLAudioElement[]>([]);
 
   const startMouthMovement = () => {
     if (mouthIntervalRef.current) return;
@@ -47,7 +47,7 @@ const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
     setIsMouthOpen(false);
   };
 
-  const stopSpeech = () => {
+  const stopSpeech = useCallback(() => {
     console.log('[SimpleAlex] Stopping speech and clearing timers');
 
     // Clear all voice timers
@@ -57,22 +57,50 @@ const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
     // Clear mouth movement
     stopMouthMovement();
 
-    // Stop any current audio
-    cleanupAudio();
+    // Stop all audio elements
+    audioElementsRef.current.forEach(audio => {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {
+        console.warn('Failed to stop audio:', e);
+      }
+    });
+    audioElementsRef.current = [];
 
     // Reset state
     setCurrentDialogue(0);
-  };
+  }, []);
 
   const playAlexVoice = (index: number) => {
     const dialogue = dialogues[index];
-    console.log(`[SimpleAlex] Playing voice ${index}:`, dialogue.path);
-    playAudio(dialogue.path).catch(err => {
-      console.error('Voice playback failed:', err);
+    console.log(`[SimpleAlex] Playing voice ${index + 1} of ${dialogues.length}:`, dialogue.path);
+
+    // Create independent Audio element for this dialogue
+    const audio = new Audio(dialogue.path);
+
+    // Get volume from localStorage
+    const savedVolume = localStorage.getItem('video-volume');
+    audio.volume = savedVolume ? parseFloat(savedVolume) : 0.7;
+
+    audio.onended = () => {
+      console.log(`[SimpleAlex] Dialogue ${index + 1} finished`);
+    };
+
+    audio.onerror = (err) => {
+      console.error(`[SimpleAlex] Voice ${index + 1} playback failed:`, err);
+    };
+
+    audio.play().catch(err => {
+      console.error(`[SimpleAlex] Failed to play voice ${index + 1}:`, err);
     });
+
+    // Store audio element for cleanup
+    audioElementsRef.current.push(audio);
   };
 
   const startAlexSequence = () => {
+    console.log('[SimpleAlex] Starting Alex sequence with', dialogues.length, 'dialogues');
     startMouthMovement();
     let totalDelay = 0;
 
@@ -81,6 +109,7 @@ const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
     allTimersRef.current = [];
 
     dialogues.forEach((dialogue, index) => {
+      console.log(`[SimpleAlex] Scheduling dialogue ${index + 1} to play in ${totalDelay}ms`);
       const timer = setTimeout(() => {
         setCurrentDialogue(index);
         playAlexVoice(index);
@@ -90,10 +119,12 @@ const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
       totalDelay += dialogue.duration;
     });
 
+    console.log(`[SimpleAlex] Total sequence duration: ${totalDelay}ms`);
+
     // Cleanup and finish after last dialogue
     const finishTimer = setTimeout(() => {
+      console.log('[SimpleAlex] All dialogues complete, stopping mouth movement');
       stopMouthMovement();
-      cleanupAudio();
       onAnimationComplete?.();
     }, totalDelay + 200);
 
@@ -109,14 +140,16 @@ const SimpleAlex = forwardRef<SimpleAlexRef, SimpleAlexProps>(({
     if (!isVisible || hasStarted.current) return;
     hasStarted.current = true;
 
+    console.log('[SimpleAlex] Starting Alex sequence - both dialogues will play');
     setTimeout(() => {
       startAlexSequence();
     }, 200);
 
     return () => {
+      console.log('[SimpleAlex] Cleanup - stopping speech');
       stopSpeech();
     };
-  }, [isVisible, onAnimationComplete]);
+  }, [isVisible, stopSpeech]);
 
   if (!isVisible) return null;
 

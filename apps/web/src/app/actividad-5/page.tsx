@@ -45,6 +45,7 @@ export default function Actividad5Page() {
   const aspectRatio = 16 / 9;
 
   const [showContinueButton, setShowContinueButton] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const simpleAlexRef = useRef<SimpleAlexRef>(null);
   const [currentVolume, setCurrentVolume] = useState(0.9);
   const [deviceInfo] = useState(() => {
@@ -229,24 +230,69 @@ useEffect(() => {
     // Stop background music when video ends
     stopBackgroundMusic('actividad-5-bg');
     setVideoEnded(true);
+
+    // Show Sun/Clouds FIRST (immediately)
+    setShowSun(true);
+
+    // Show Ardilla
     setTimeout(() => setShowArdilla(true), 100);
+
+    // Show Alex - he will start talking after 200ms
     setTimeout(() => setShowAlex(true), 1800);
+
+    // Show ActivityMenu during Alex's first dialogue
     setTimeout(() => {
       setShowActivityMenu(true);
-      setShowSun(true);
       setShowContinueButton(true);
-    }, 0);
+    }, 2800);
   };
 
-  const handleSectionSelect = (section: { scenes: string[] }) => {
+  const handleSectionSelect = async (section: { scenes: string[]; soundClick?: string }) => {
+    // Prevent multiple clicks while navigating
+    if (isNavigating) {
+      console.log('🚫 Already navigating, ignoring click');
+      return;
+    }
+
     console.log('🎯 Section selected:', section);
     console.log('🎯 First scene:', section.scenes[0]);
 
-    // Stop SimpleAlex speech when ActivityMenu label is clicked
+    setIsNavigating(true);
+
+    // Play the section audio and wait for it to complete
+    if (section.soundClick) {
+      try {
+        console.log('🎵 Playing section audio:', section.soundClick);
+        await new Promise<void>((resolve) => {
+          const audio = new Audio(section.soundClick);
+          audio.volume = 0.7;
+          audio.onended = () => {
+            console.log('✅ Section audio finished');
+            resolve();
+          };
+          audio.onerror = () => {
+            console.warn('⚠️ Section audio failed to play');
+            resolve();
+          };
+          audio.play().catch(() => {
+            console.warn('⚠️ Audio play failed');
+            resolve();
+          });
+        });
+
+        // Wait an additional 500ms for better UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.warn('Could not play section audio:', error);
+      }
+    }
+
+    // Stop SimpleAlex speech after audio finishes
     if (simpleAlexRef.current) {
       simpleAlexRef.current.stopSpeech();
     }
 
+    // Hide continue button when user starts playing
     setShowContinueButton(false);
 
     if (videoRef.current) {
@@ -513,13 +559,24 @@ useEffect(() => {
             )}
 
             {showActivityMenu && (
-              <div className="w-full px-6 pb-6 z-30 flex justify-center">
-                <ActivityMenu
-                  isVisible={true}
-                  config={ACTIVITY_5_CONFIG}
-                  onSectionClick={handleSectionSelect}
-                />
-              </div>
+              <>
+                {/* Blocking overlay during navigation */}
+                {isNavigating && (
+                  <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    <div className="text-white text-xl font-bold animate-pulse">
+                      Cargando...
+                    </div>
+                  </div>
+                )}
+                <div className="w-full px-6 pb-6 z-30 flex justify-center">
+                  <ActivityMenu
+                    isVisible={true}
+                    config={ACTIVITY_5_CONFIG}
+                    onSectionClick={handleSectionSelect}
+                    isNavigating={isNavigating}
+                  />
+                </div>
+              </>
             )}
 
             {showSun && (

@@ -38,10 +38,20 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ id, image, alt, isDragg
     id,
   });
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     zIndex: 9999, // High z-index when dragging
-  } : undefined;
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  } : {
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  };
 
   return (
     <div
@@ -52,6 +62,7 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ id, image, alt, isDragg
       className={`relative w-40 h-40 rounded-lg cursor-grab active:cursor-grabbing touch-none  transition-all duration-200 ${
         isDragging ? 'opacity-80 scale-95 z-[9999]' : 'hover:scale-105 z-10'
       }`}
+      onContextMenu={handleContextMenu}
     >
       <Image
         src={image}
@@ -59,6 +70,11 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ id, image, alt, isDragg
         fill
         className="object-contain rounded p-2 pointer-events-none"
         draggable={false}
+        style={{
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+        }}
+        onContextMenu={handleContextMenu}
       />
     </div>
   );

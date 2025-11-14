@@ -25,6 +25,7 @@ interface GameState {
   };
   backgroundError: boolean;
   gameCompleted: boolean;
+  lastFeedbackComplete: boolean;
   itemStates: ItemState[];
 }
 
@@ -40,6 +41,7 @@ export const useJuegoCincoGame = () => {
     },
     backgroundError: false,
     gameCompleted: false,
+    lastFeedbackComplete: false,
     itemStates: GAME_CONFIG.items.map(item => ({
       id: item.id,
       isInChest: false,
@@ -63,6 +65,7 @@ export const useJuegoCincoGame = () => {
 
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+  const isStartingRef = useRef(false);
 
   // Audio management
   const playAudio = useCallback((audioPath: string): Promise<void> => {
@@ -105,32 +108,40 @@ export const useJuegoCincoGame = () => {
 
   // Game flow management - FIXED: Keep chest closed during title
   const startGame = useCallback(async () => {
+    // Prevent multiple simultaneous executions
+    if (isStartingRef.current) {
+      console.log('startGame already in progress, skipping');
+      return;
+    }
+
+    isStartingRef.current = true;
     console.log('Starting game - playing title audio, chest should stay closed');
     setSessionData(prev => ({ ...prev, startTime: new Date() }));
-    
+
     // Make sure we're in the right state (chest closed, no items visible)
-    setGameState(prev => ({ 
-      ...prev, 
+    setGameState(prev => ({
+      ...prev,
       phase: 'intro',
       cofreOpen: false,
       itemsVisible: false
     }));
-    
+
     // Play title audio and wait for it to finish (chest stays closed during this)
     await playAudio(GAME_CONFIG.globalAudio.title);
-    
+
     console.log('Title audio finished, now opening chest and showing items');
     // After title finishes, open cofre, change phase, and show items
-    setGameState(prev => ({ 
-      ...prev, 
+    setGameState(prev => ({
+      ...prev,
       cofreOpen: true,
       phase: 'playing',
       itemsVisible: true
     }));
-    
+
     // Play chest opening sound
     playSound(GAME_CONFIG.globalAudio.cofreOpen);
-    
+
+    isStartingRef.current = false;
   }, [playAudio, playSound]);
 
   // Handle item click
@@ -230,7 +241,7 @@ export const useJuegoCincoGame = () => {
       timeoutRefs.current.push(timeout);
     }
 
-    // Hide feedback and check if game is complete
+    // Audio has finished playing, now wait a bit longer for visual feedback before checking completion
     const timeout2 = setTimeout(() => {
       setGameState(prev => {
         const newState = {
@@ -245,7 +256,7 @@ export const useJuegoCincoGame = () => {
 
         // Check if all private items are in chest
         const privateItemsInChest = prev.itemStates.filter(
-          state => state.isInChest && 
+          state => state.isInChest &&
           GAME_CONFIG.items.find(item => item.id === state.id)?.isPrivate
         ).length;
 
@@ -254,7 +265,8 @@ export const useJuegoCincoGame = () => {
         if (privateItemsInChest === totalPrivateItems) {
           newState.gameCompleted = true;
           newState.phase = 'completed';
-          
+          newState.lastFeedbackComplete = true;
+
           // Update session data
           setSessionData(prevSession => ({
             ...prevSession,
@@ -266,7 +278,7 @@ export const useJuegoCincoGame = () => {
 
         return newState;
       });
-    }, GAME_CONFIG.timing.feedbackDuration);
+    }, 2000); // Increased from feedbackDuration to give more time after audio finishes
     timeoutRefs.current.push(timeout2);
 
   }, [gameState.itemStates, gameState.phase, playAudio, playSound]);
@@ -301,6 +313,7 @@ export const useJuegoCincoGame = () => {
     }
     timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
     timeoutRefs.current = [];
+    isStartingRef.current = false; // Reset the starting flag
 
     setGameState({
       phase: 'intro',
@@ -313,6 +326,7 @@ export const useJuegoCincoGame = () => {
       },
       backgroundError: false,
       gameCompleted: false,
+      lastFeedbackComplete: false,
       itemStates: GAME_CONFIG.items.map(item => ({
         id: item.id,
         isInChest: false,

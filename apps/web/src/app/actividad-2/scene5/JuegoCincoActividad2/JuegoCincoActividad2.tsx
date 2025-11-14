@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useJuegoCincoGame } from './hooks';
 // Update import to use the central CongratsOverlay component
@@ -30,33 +30,36 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
 
   // State for congratulations overlay
   const [showCongrats, setShowCongrats] = useState(false);
+  const hasStartedRef = useRef(false);
 
   // Auto-start game when modal opens
   useEffect(() => {
-    if (isOpen && gameState.phase === 'intro') {
+    if (isOpen && gameState.phase === 'intro' && !hasStartedRef.current) {
+      hasStartedRef.current = true;
       // Add a small delay to ensure the modal is fully rendered
       const timer = setTimeout(() => {
         startGame();
       }, 100);
       return () => clearTimeout(timer);
     }
-    
-    // Reset congrats state when game opens
-    if (isOpen) {
+
+    // Reset hasStarted ref when modal closes
+    if (!isOpen) {
+      hasStartedRef.current = false;
       setShowCongrats(false);
     }
   }, [isOpen, gameState.phase, startGame]);
   
-  // Watch for game completion
+  // Watch for game completion - Wait for feedback to complete before showing congrats
   useEffect(() => {
-    if (gameState.gameCompleted && !showCongrats) {
+    if (gameState.gameCompleted && gameState.lastFeedbackComplete && !showCongrats) {
       // Add a delay to allow the chest closing animation to play
       const timer = setTimeout(() => {
         setShowCongrats(true);
-      }, 1000);
+      }, 1500); // Increased delay to ensure smooth transition
       return () => clearTimeout(timer);
     }
-  }, [gameState.gameCompleted, showCongrats]);
+  }, [gameState.gameCompleted, gameState.lastFeedbackComplete, showCongrats]);
 
   if (!isOpen) return null;
 
@@ -83,7 +86,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
   };
 
   // FIXED: Better drop zone detection using chest element ID with proper types
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, itemId: string) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, itemId: string) => {
     const { point } = info;
     
     console.log('Drag ended for item:', itemId, 'at point:', point);
@@ -329,7 +332,12 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                     <motion.div
                       key={`draggable-${item.id}`} // Unique key for draggable items
                       className={`absolute ${isDraggable ? 'cursor-grab' : 'cursor-not-allowed'}`}
-                      style={item.position}
+                      style={{
+                        ...item.position,
+                        WebkitTouchCallout: 'none',
+                        WebkitUserSelect: 'none',
+                        touchAction: 'none'
+                      }}
                       initial={config.animations.itemAppear.initial}
                       animate={itemState.shouldMoveAway ? moveAwayAnimation : config.animations.itemAppear.animate}
                       exit={{
@@ -357,7 +365,22 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                         console.log('Ended dragging:', item.id);
                         handleDragEnd(event, info, item.id);
                       }}
-                      onPointerDown={() => handleItemClick(item.id)} // FIXED: Immediate sound on press
+                      onPointerDown={(e) => {
+                        // Prevent default to stop context menu/share sheet on long press
+                        e.preventDefault();
+                        handleItemClick(item.id);
+                      }}
+                      onContextMenu={(e) => {
+                        // Prevent context menu from appearing
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onTouchStart={(e) => {
+                        // Prevent default touch behavior that triggers share sheet
+                        if (!isDraggable) {
+                          e.preventDefault();
+                        }
+                      }}
                       onClick={() => {}} // Keep empty onClick to maintain accessibility
                       whileDrag={{
                         ...config.animations.itemDrag.whileDrag,
@@ -374,7 +397,15 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                         className={`max-h-[120px] object-contain transition-all duration-200 ${
                           itemState.isDisabled ? 'opacity-50' : 'opacity-100'
                         } select-none pointer-events-none`}
+                        style={{
+                          WebkitTouchCallout: 'none',
+                          WebkitUserSelect: 'none'
+                        }}
                         draggable={false}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
                       />
 
                       {/* Red layer for disabled/tried items - but only if NOT in chest */}

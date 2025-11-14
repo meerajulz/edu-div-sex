@@ -18,6 +18,18 @@ const DraggablePart: React.FC<DraggablePartProps> = ({ id, image, sound }) => {
     playGameAudio(sound, 0.7, `DraggablePart-Scene4-${id}`);
   };
 
+  const handleTouchStart = () => {
+    playSound();
+  };
+
+  const handleMouseDown = () => {
+    playSound();
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
     <div
@@ -26,16 +38,21 @@ const DraggablePart: React.FC<DraggablePartProps> = ({ id, image, sound }) => {
       {...attributes}
       style={{
         transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        touchAction: 'none',
       }}
       className="cursor-grab"
+      onContextMenu={handleContextMenu}
     >
     <div className="w-[120px] h-[120px] relative">
 
       {/* Transparent overlay to trigger sound */}
       <button
         className="absolute inset-0 z-10 bg-transparent"
-        onTouchStart={playSound}
-        onMouseDown={playSound}
+        onTouchStart={handleTouchStart}
+        onMouseDown={handleMouseDown}
+        onContextMenu={handleContextMenu}
         aria-label={`Play sound for ${id}`}
       >
 
@@ -45,6 +62,12 @@ const DraggablePart: React.FC<DraggablePartProps> = ({ id, image, sound }) => {
           layout="fill"
           objectFit="contain"
           priority
+          draggable={false}
+          style={{
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            pointerEvents: 'none'
+          }}
         />
       </button>
       </div>

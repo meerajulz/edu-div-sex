@@ -29,9 +29,19 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ id, image, alt, isD
     id,
   });
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  } : {
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  };
 
   return (
     <div
@@ -42,6 +52,7 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ id, image, alt, isD
       className={`relative w-40 h-40 md:w-56 md:h-56 cursor-grab active:cursor-grabbing touch-none z-50 ${
         isDragging ? 'opacity-50' : ''
       }`}
+      onContextMenu={handleContextMenu}
     >
       <Image
         src={image}
@@ -49,6 +60,12 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ id, image, alt, isD
         fill
         className="object-contain pointer-events-none"
         priority
+        draggable={false}
+        style={{
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+        }}
+        onContextMenu={handleContextMenu}
       />
     </div>
   );

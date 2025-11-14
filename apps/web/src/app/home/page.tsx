@@ -13,6 +13,7 @@ import { initAudio } from '../utils/audioHandler';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { getLastActivityUrl } from '../hooks/useActivityTracking';
+import { getOrbitalActivityProgress } from '../components/OrbitalCarousel/utils';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
@@ -29,6 +30,7 @@ const Dashboard: React.FC = () => {
   const [lastActivityUrl, setLastActivityUrl] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showContinueOption, setShowContinueOption] = useState(false);
+  const [onlyActivity1Unlocked, setOnlyActivity1Unlocked] = useState(false);
 
   // For development only
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
@@ -51,6 +53,37 @@ const Dashboard: React.FC = () => {
 
     return () => clearTimeout(clearTimer);
   }, []);
+
+  // Check if only activity 1 is unlocked (for showing arrow)
+  useEffect(() => {
+    const checkActivityProgress = async () => {
+      try {
+        const progress = await getOrbitalActivityProgress();
+        // Only show arrow if activity 1 is unlocked but activity 2 is NOT unlocked
+        const activity1 = progress.find(p => p.activityId === 1);
+        const activity2 = progress.find(p => p.activityId === 2);
+
+        const showArrow = (activity1?.isUnlocked === true) && (activity2?.isUnlocked !== true);
+        setOnlyActivity1Unlocked(showArrow);
+
+        console.log('🎯 Arrow visibility check:', {
+          activity1Unlocked: activity1?.isUnlocked,
+          activity2Unlocked: activity2?.isUnlocked,
+          showArrow,
+          allProgress: progress
+        });
+      } catch (error) {
+        console.error('Failed to check activity progress for arrow:', error);
+        // Default to NOT showing arrow if we can't fetch progress
+        setOnlyActivity1Unlocked(false);
+      }
+    };
+
+    // Check on mount and when video has played
+    if (status === 'authenticated') {
+      checkActivityProgress();
+    }
+  }, [status, videoHasPlayed]); // Re-check when session is ready or video plays
 
   // Handle session status changes and role-based redirects
   useEffect(() => {
@@ -179,13 +212,14 @@ const Dashboard: React.FC = () => {
       ) : (
         <div className='relative min-h-screen'>
           <div className='absolute inset-0 z-10'>
-            <VideoBackground 
+            <VideoBackground
               videoPath='/video/HOME.mp4'
               backgroundImagePath='/svg/HOME_1.svg'
               isExiting={isExiting}
               onExitComplete={handleExitComplete}
               onVideoEnd={handleVideoEnd}
               debug={showDebug}
+              showDoorArrow={onlyActivity1Unlocked}
             />
           </div>
 
@@ -231,8 +265,8 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             
-            {/* Arrow indicator - show only after video has played */}
-            {videoHasPlayed && !isExiting && (
+            {/* Arrow indicator - show only after video has played AND only activity 1 is unlocked */}
+            {videoHasPlayed && !isExiting && onlyActivity1Unlocked && (
               <motion.div
                 className="absolute  -translate-x-1/2 pointer-events-none"
                 style={{
@@ -343,6 +377,7 @@ const Dashboard: React.FC = () => {
               <div>audioInit: {audioInitialized ? 'true' : 'false'}</div>
               <div>audioProgress: {audioPreloadProgress}%</div>
               <div>videoPlayed: {videoHasPlayed ? 'true' : 'false'}</div>
+              <div>showArrow: {onlyActivity1Unlocked ? 'true' : 'false'}</div>
               <div className="border-t border-white/30 mt-1 pt-1">
                 <div>🔐 Session: {status}</div>
                 <div>👤 User: {session?.user?.username || session?.user?.email || 'loading...'}</div>

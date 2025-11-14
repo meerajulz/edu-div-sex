@@ -305,9 +305,9 @@ export default function JuegoCincoActividad6({
                     exit={{ opacity: 0, y: -20 }}
                     className="text-center px-8 max-w-2xl"
                   >
-                    <h3 className="text-3xl font-bold text-gray-800 mb-6">
+                    {/* <h3 className="text-3xl font-bold text-gray-800 mb-6">
                       {GAME_CONFIG.title}
-                    </h3>
+                    </h3> */}
                     
                     <div className="mt-8">
                       <motion.div

@@ -16,7 +16,7 @@ export interface Scenario {
 }
 
 export const GAME_CONFIG = {
-  title: "Victimización",
+  title: "¿Me hace sentir bien o no? ",
   introAudio: "/audio/actividad-6/juego2/t.mp3",
   introText: "Vamos a ver algunas situaciones. Si crees que la situación está bien, pulsa la mano con el pulgar hacia arriba. Si te parece que la situación está mal, pulsa la mano con el pulgar hacia abajo ¿Empezamos?",
   

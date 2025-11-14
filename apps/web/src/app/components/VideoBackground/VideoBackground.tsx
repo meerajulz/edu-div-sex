@@ -28,6 +28,7 @@ interface VideoBackgroundProps {
   onVideoEnd?: () => void; // Add this callback
   debug?: boolean;
   hotspots?: Hotspot[];
+  showDoorArrow?: boolean; // Control door arrow visibility
 }
 
 interface Position {
@@ -50,6 +51,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   onExitComplete,
   onVideoEnd, // Add this
   debug = false,
+  showDoorArrow = true, // Default to true for backward compatibility
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
  // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -571,7 +573,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
               }}
               onClick={playVideo}
             >
-              {!videoFinished && !isPlaying && (
+              {!videoFinished && !isPlaying && showDoorArrow && (
                 <div className="mt-[10px] arrow ">
                   <svg
                     className="text-pink-500 hover:brightness-125 active:animate-ping transition duration-200 animate-bounce drop-shadow-md"

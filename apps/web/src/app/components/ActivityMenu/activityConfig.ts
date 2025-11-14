@@ -438,7 +438,7 @@ export const ACTIVITY_6_CONFIG: ActivityConfig = {
     },
     {
       id: 2,
-      title: "ME DEFIENTO",
+      title: "ME DEFIENDO",
       scenes: ["/actividad-6/scene2"],
       isUnlocked: false,
       isCompleted: false,

@@ -23,9 +23,21 @@ interface DraggableTowelProps {
 const DraggableTowel: React.FC<DraggableTowelProps> = ({ id, image, alt, isDragging }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        WebkitTouchCallout: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+      }
+    : {
+        WebkitTouchCallout: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+      };
 
   return (
     <div
@@ -34,14 +46,21 @@ const DraggableTowel: React.FC<DraggableTowelProps> = ({ id, image, alt, isDragg
       {...attributes}
       style={style}
       className={`cursor-grab active:cursor-grabbing touch-none z-50 ${isDragging ? 'opacity-50' : ''}`}
+      onContextMenu={handleContextMenu}
     >
       <div className="relative w-40 h-40 md:w-56 md:h-56">
         <Image
           src={image}
           alt={alt}
           fill
-          className="object-contain"
+          className="object-contain pointer-events-none"
           priority
+          draggable={false}
+          style={{
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+          }}
+          onContextMenu={handleContextMenu}
         />
       </div>
     </div>

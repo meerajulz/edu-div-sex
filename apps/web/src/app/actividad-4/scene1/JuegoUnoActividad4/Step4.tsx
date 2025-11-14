@@ -57,12 +57,22 @@ const DraggableShower: React.FC<DraggableShowerProps> = ({ isDragging }) => {
     id: 'shower',
   });
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  } : {
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  };
 
   // Use different image when dragging
-  const showerImage = isDragging 
+  const showerImage = isDragging
     ? '/image/actividad_4/juego1/enjugarse/ducha_2.png'
     : '/image/actividad_4/juego1/enjugarse/ducha_1.png';
 
@@ -73,14 +83,21 @@ const DraggableShower: React.FC<DraggableShowerProps> = ({ isDragging }) => {
       {...listeners}
       {...attributes}
       className={`cursor-grab active:cursor-grabbing touch-none z-50 ${isDragging ? 'opacity-50' : ''}`}
+      onContextMenu={handleContextMenu}
     >
       <div className="relative w-40 h-48 md:w-56 md:h-64">
         <Image
           src={showerImage}
           alt="Ducha"
           fill
-          className="object-contain"
+          className="object-contain pointer-events-none"
           priority
+          draggable={false}
+          style={{
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+          }}
+          onContextMenu={handleContextMenu}
         />
       </div>
     </div>

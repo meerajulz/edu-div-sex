@@ -26,14 +26,11 @@ export default function Actividad3Scene1_1Page() {
 
   useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const finalVideoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [showFinalVideo, setShowFinalVideo] = useState(false);
-  const [finalVideoEnded, setFinalVideoEnded] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
@@ -135,8 +132,8 @@ export default function Actividad3Scene1_1Page() {
       const { volume } = event.detail;
       console.log(`🎵 Scene1-1: Received global volume change: ${volume} (deviceInfo.isIOS: ${deviceInfo.isIOS})`);
 
-      // Apply volume immediately to both video elements if they exist and are loaded
-      const videos = [videoRef.current, finalVideoRef.current].filter(Boolean) as HTMLVideoElement[];
+      // Apply volume immediately to video element if it exists and is loaded
+      const videos = [videoRef.current].filter(Boolean) as HTMLVideoElement[];
 
       videos.forEach((video, index) => {
         if (video && video.readyState > 0) {
@@ -225,15 +222,7 @@ export default function Actividad3Scene1_1Page() {
   const handleGameComplete = () => {
     setGameCompleted(true);
     setShowGame(false);
-    // Start final video after game completion
-    setTimeout(() => {
-      setShowFinalVideo(true);
-    }, 500);
-  };
-
-  const handleFinalVideoEnd = () => {
-    setFinalVideoEnded(true);
-    // Show congratulations after final video ends
+    // Show congratulations after game completion
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
@@ -250,7 +239,6 @@ export default function Actividad3Scene1_1Page() {
     const progressSaved = await saveProgress('actividad-3', 'scene1-1', 'completed', 100, {
       video_watched: videoEnded,
       game_completed: gameCompleted,
-      final_video_watched: finalVideoEnded,
       completed_at: new Date().toISOString()
     });
 
@@ -334,10 +322,10 @@ export default function Actividad3Scene1_1Page() {
         <FloatingMenu />
       </div>
       <div className="">
-        <LogoComponent configKey="actividad-3-scene1-1" />
+        <LogoComponent configKey="actividad-3-scene1" />
       </div>
 
-      {!showVideo && !showFinalVideo ? (
+      {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
@@ -345,100 +333,6 @@ export default function Actividad3Scene1_1Page() {
           >
             <JugarButton text='EL ORGASMO MASCULINO: LA EYACULACIÓN' onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
-        </div>
-      ) : showFinalVideo ? (
-        <div className="absolute" style={containerStyle}>
-          {!finalVideoEnded ? (
-            <video
-              ref={finalVideoRef}
-              className="absolute inset-0 w-full h-full object-cover z-20"
-              src="/video/ACTIVIDAD-3-ESCENA-1_2.mp4"
-              autoPlay
-              playsInline
-              onEnded={handleFinalVideoEnd}
-              onLoadedData={() => {
-                const video = finalVideoRef.current;
-                if (!video) return;
-
-                // Apply volume when video loads
-                video.volume = currentVolume;
-                console.log(`🎬 Scene1-1: Final video loaded, volume set to: ${currentVolume}`);
-              }}
-              onPlay={async () => {
-                const video = finalVideoRef.current;
-                if (!video) return;
-
-                // When video starts playing, ensure it's unmuted and volume is applied
-                video.muted = false;
-                video.volume = currentVolume;
-                console.log(`🎬 Scene1-1: Final video started playing, unmuted: ${!video.muted}, volume set to: ${currentVolume}`);
-
-                // Initialize audio for volume control if needed
-                try {
-                  await initAudio();
-                  console.log('🍎 Scene1-1: Audio initialized for final video volume control');
-                } catch (e) {
-                  console.warn('Scene1-1: Audio initialization failed for final video:', e);
-                }
-
-                // For iPhone, connect to Web Audio API for volume control
-                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                if (isIPhone) {
-                  try {
-                    // Get or create shared AudioContext from FloatingMenu
-                    let sharedAudioContext = window.sharedAudioContext;
-                    if (!sharedAudioContext) {
-                      console.log('🍎 Scene1-1 iPhone: Initializing shared AudioContext for final video');
-                      try {
-                        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        window.sharedAudioContext = sharedAudioContext;
-                        console.log('🍎 Scene1-1 iPhone: ✅ Created new shared AudioContext for final video');
-                      } catch (audioError) {
-                        console.error('🍎 Scene1-1 iPhone: ❌ Failed to create AudioContext for final video:', audioError);
-                        return;
-                      }
-                    }
-
-                    // Ensure AudioContext is running
-                    if (sharedAudioContext.state === 'suspended') {
-                      try {
-                        await sharedAudioContext.resume();
-                        console.log('🍎 Scene1-1 iPhone: ✅ Resumed suspended AudioContext for final video');
-                      } catch (resumeError) {
-                        console.error('🍎 Scene1-1 iPhone: ❌ Failed to resume AudioContext for final video:', resumeError);
-                      }
-                    }
-
-                    if (sharedAudioContext.state === 'running') {
-                      // Connect final video to Web Audio API for iPhone volume control
-                      connectVideoToWebAudio(video, sharedAudioContext);
-                    } else {
-                      connectVideoToWebAudio(video, sharedAudioContext);
-                    }
-                  } catch (error) {
-                    console.error('🍎 Scene1-1 iPhone: ❌ Error setting up Web Audio API for final video:', error);
-                  }
-                } else {
-                  console.log(`🖥️ Scene1-1 Desktop/Android/iPad: Using direct final video volume (original behavior)`);
-                }
-              }}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center z-20">
-              {!showCongratulations && (
-                <motion.div
-                  animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                >
-                  <JugarButton
-                    text="Volver al menú"
-                    onClick={handleGoToMenu}
-                    disabled={isAnimating}
-                  />
-                </motion.div>
-              )}
-            </div>
-          )}
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
@@ -524,16 +418,12 @@ export default function Actividad3Scene1_1Page() {
                   animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
-                  {!gameCompleted ? (
+                  {!gameCompleted && (
                     <JugarButton
                       text='Jugar'
                       onClick={handleOpenGame}
                       disabled={isAnimating}
                     />
-                  ) : showFinalVideo ? null : (
-                    <div className="text-white text-center">
-                      <p>Preparando siguiente video...</p>
-                    </div>
                   )}
                 </motion.div>
 

@@ -40,9 +40,19 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ character, isDraggi
   const config = getCharacterGameConfig(character!);
   const clothesData = config.steps[0].elements.draggable;
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  } : {
+    WebkitTouchCallout: 'none' as const,
+    WebkitUserSelect: 'none' as const,
+  };
 
   return (
     <div
@@ -51,14 +61,21 @@ const DraggableClothes: React.FC<DraggableClothesProps> = ({ character, isDraggi
       {...listeners}
       {...attributes}
       className={`cursor-grab active:cursor-grabbing touch-none z-50 ${isDragging ? 'opacity-50' : ''}`}
+      onContextMenu={handleContextMenu}
     >
       <div className="relative w-56 h-56 md:w-72 md:h-72 mt-10">
         <Image
           src={clothesData.image}
           alt={clothesData.alt}
           fill
-          className="object-contain"
+          className="object-contain pointer-events-none"
           priority
+          draggable={false}
+          style={{
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+          }}
+          onContextMenu={handleContextMenu}
         />
       </div>
     </div>

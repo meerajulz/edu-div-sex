@@ -45,6 +45,7 @@ export default function Actividad4Page() {
   const aspectRatio = 16 / 9;
 
   const [showContinueButton, setShowContinueButton] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const simpleAlexRef = useRef<SimpleAlexRef>(null);
   const [currentVolume, setCurrentVolume] = useState(0.9);
   const [deviceInfo] = useState(() => {
@@ -230,18 +231,22 @@ useEffect(() => {
     // Stop background music when video ends
     stopBackgroundMusic('actividad-4-bg');
     setVideoEnded(true);
+    setShowSun(true); // Show sun immediately
     setTimeout(() => setShowArdilla(true), 100);
     setTimeout(() => setShowAlex(true), 1800);
     setTimeout(() => {
       setShowActivityMenu(true);
-      setShowSun(true);
       setShowContinueButton(true);
-    }, 0);
+    }, 2800);
   };
 
-  const handleSectionSelect = (section: { scenes: string[] }) => {
+  const handleSectionSelect = async (section: { scenes: string[], soundClick: string }) => {
     console.log('🎯 Section selected:', section);
     console.log('🎯 First scene:', section.scenes[0]);
+
+    // Prevent multiple navigations
+    if (isNavigating) return;
+    setIsNavigating(true);
 
     // Stop SimpleAlex speech when ActivityMenu label is clicked
     if (simpleAlexRef.current) {
@@ -253,6 +258,17 @@ useEffect(() => {
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
+    }
+
+    // Play section click sound and wait for completion
+    if (section.soundClick) {
+      try {
+        await playGameAudio(section.soundClick, 0.7, 'Section Click Sound');
+        // Add extra delay after sound
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error('Error playing section click sound:', error);
+      }
     }
 
     cleanupAudio();
@@ -521,13 +537,20 @@ useEffect(() => {
             )}
 
             {showActivityMenu && (
-              <div className="w-full px-6 pb-6 z-30 flex justify-center">
-                <ActivityMenu
-                  isVisible={true}
-                  config={ACTIVITY_4_CONFIG}
-                  onSectionClick={handleSectionSelect}
-                />
-              </div>
+              <>
+                {/* Blocking overlay when navigating */}
+                {isNavigating && (
+                  <div className="absolute inset-0 z-40 bg-transparent pointer-events-auto" />
+                )}
+                <div className="w-full px-6 pb-6 z-30 flex justify-center">
+                  <ActivityMenu
+                    isVisible={true}
+                    config={ACTIVITY_4_CONFIG}
+                    onSectionClick={handleSectionSelect}
+                    isNavigating={isNavigating}
+                  />
+                </div>
+              </>
             )}
 
             {showSun && (

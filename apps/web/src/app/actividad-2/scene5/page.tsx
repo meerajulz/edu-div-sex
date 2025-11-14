@@ -57,7 +57,6 @@ export default function Scene5Page() {
   };
 
   const handleOpenJuegoCinco = () => {
-    playSound();
     setShowJuegoCinco(true);
   };
 
@@ -157,10 +156,10 @@ export default function Scene5Page() {
         ))}
       </div>
 
-      <div className="absolute top-0 right-0 z-50 flex">
+      <div className="absolute top-0 right-0 z-[95] flex">
         <FloatingMenu />
       </div>
-      <div className="">
+      <div className="z-[95] relative">
         <LogoComponent configKey="actividad-2-scene1" />
       </div>
 

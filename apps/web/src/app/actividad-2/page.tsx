@@ -40,6 +40,7 @@ export default function Actividad2Page() {
   const [isExiting, setIsExiting] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [showContinueButton, setShowContinueButton] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const simpleAlexRef = useRef<SimpleAlexRef>(null);
   const [currentVolume, setCurrentVolume] = useState(0.9);
   const [deviceInfo] = useState(() => {
@@ -246,30 +247,76 @@ useEffect(() => {
     // Stop background music when video ends
     stopBackgroundMusic('actividad-2-bg');
     setVideoEnded(true);
+
+    // Show Sun/Clouds FIRST (immediately) - don't wait for anything
+    setShowSun(true);
+
+    // Show Ardilla
     setTimeout(() => setShowArdilla(true), 100);
+
+    // Show Alex - he will start talking after 200ms (total 2000ms from now)
     setTimeout(() => setShowAlex(true), 1800);
+
+    // Show ActivityMenu during Alex's first dialogue (after he starts talking)
+    // Alex starts at 2000ms, show menu at 2800ms (during his first sentence)
     setTimeout(() => {
       setShowActivityMenu(true);
-      setShowSun(true);
       // Don't show continue button if user just completed an activity
       const justCompleted = localStorage.getItem('completedActivityId');
       if (!justCompleted) {
         setShowContinueButton(true);
       }
-    }, 0);
+    }, 2800); // Alex appears at 1800ms, starts talking at 2000ms, menu appears at 2800ms
   };
 
-  const handleSectionSelect = (section: { scenes: string[] }) => {
+  const handleSectionSelect = async (section: { scenes: string[]; soundClick?: string }) => {
+    // Prevent multiple clicks while navigating
+    if (isNavigating) {
+      console.log('🚫 Already navigating, ignoring click');
+      return;
+    }
+
     console.log('🎯 Section selected:', section);
     console.log('🎯 First scene:', section.scenes[0]);
 
-    // Stop SimpleAlex speech when ActivityMenu label is clicked
+    setIsNavigating(true);
+
+    // Play the section audio and wait for it to complete
+    if (section.soundClick) {
+      try {
+        console.log('🎵 Playing section audio:', section.soundClick);
+        // Use playGameAudio which returns a promise
+        await new Promise<void>((resolve) => {
+          const audio = new Audio(section.soundClick);
+          audio.volume = 0.7;
+          audio.onended = () => {
+            console.log('✅ Section audio finished');
+            resolve();
+          };
+          audio.onerror = () => {
+            console.warn('⚠️ Section audio failed to play');
+            resolve();
+          };
+          audio.play().catch(() => {
+            console.warn('⚠️ Audio play failed');
+            resolve();
+          });
+        });
+
+        // Wait an additional 500ms for better UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.warn('Could not play section audio:', error);
+      }
+    }
+
+    // Stop SimpleAlex speech after audio finishes
     if (simpleAlexRef.current) {
       simpleAlexRef.current.stopSpeech();
     }
 
     setShowContinueButton(false);
-    
+
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -279,7 +326,7 @@ useEffect(() => {
     // Stop background music when leaving activity
     stopBackgroundMusic('actividad-2-bg');
     setIsExiting(true);
-    
+
     // Navigate to first scene of the section
     const firstScene = section.scenes[0];
     if (firstScene) {
@@ -550,13 +597,24 @@ useEffect(() => {
             )}
 
             {showActivityMenu && (
-              <div className="w-full px-6 pb-6 z-30 flex justify-center">
-                <ActivityMenu 
-                  isVisible={true} 
-                  config={ACTIVITY_2_CONFIG}
-                  onSectionClick={handleSectionSelect} 
-                />
-              </div>
+              <>
+                {/* Blocking overlay during navigation */}
+                {isNavigating && (
+                  <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    <div className="text-white text-xl font-bold animate-pulse">
+                      Cargando...
+                    </div>
+                  </div>
+                )}
+                <div className="w-full px-6 pb-6 z-30 flex justify-center">
+                  <ActivityMenu
+                    isVisible={true}
+                    config={ACTIVITY_2_CONFIG}
+                    onSectionClick={handleSectionSelect}
+                    isNavigating={isNavigating}
+                  />
+                </div>
+              </>
             )}
 
             {showSun && (
