@@ -147,7 +147,7 @@ export default function DebugProgressPage() {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Your Progress</h2>
           <div className="bg-gray-50 p-4 rounded">
-            {debugData?.user_progress?.length > 0 ? (
+            {debugData?.user_progress && debugData.user_progress.length > 0 ? (
               <table className="min-w-full">
                 <thead>
                   <tr>
