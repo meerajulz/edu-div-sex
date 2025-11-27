@@ -25,8 +25,8 @@ export default function Scene5Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -119,24 +119,39 @@ export default function Scene5Page() {
     setShowVideo(true);
   };
 
-  const handleVideoEnd = async () => {
+  const handleVideoEnd = () => {
     setVideoEnded(true);
-    console.log('🎬 Scene5: Video ended, saving progress and moving to scene6');
-    
+    console.log('🎬 Scene5: Video ended, showing congratulations');
+
+    // Show congratulations after a short delay
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
+  };
+
+  const handleGoToActivityMenu = async () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    playSound();
+
+    console.log('🎯 Scene5: Saving progress and returning to activity menu');
+
+    // Save progress for completing section 2
     const progressSaved = await saveProgress('actividad-1', 'scene5', 'completed', 100, {
       video_watched: true,
+      section_completed: true,
       completed_at: new Date().toISOString()
     });
-    
-    if (progressSaved) {
-      console.log('✅ Scene5: Progress saved successfully');
-      setTimeout(() => {
-        router.push('/actividad-1/scene6');
-      }, 200);
-    } else {
-      console.error('❌ Scene5: Failed to save progress, but continuing to next scene');
-      router.push('/actividad-1/scene6');
-    }
+
+    setTimeout(() => {
+      setIsAnimating(false);
+      if (progressSaved) {
+        console.log('✅ Scene5: Progress saved successfully, section 2 completed');
+      } else {
+        console.error('❌ Scene5: Failed to save progress, but continuing');
+      }
+      router.push('/actividad-1');
+    }, 800);
   };
 
   const playSound = () => {
@@ -221,7 +236,7 @@ export default function Scene5Page() {
             <JugarButton text='¿QUÉ HA CAMBIADO?' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      ) : (
+      ) : !videoEnded ? (
         <div className="absolute" style={containerStyle}>
           <video
             ref={videoRef}
@@ -265,6 +280,40 @@ export default function Scene5Page() {
             }}
           />
         </div>
+      ) : null}
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Felicidades!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleGoToActivityMenu}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
       )}
     </motion.div>
   );

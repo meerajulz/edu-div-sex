@@ -32,7 +32,6 @@ export default function Scene4Page() {
   const [showScene4Replay, setShowScene4Replay] = useState(false);
   const [showJuegoDos, setShowJuegoDos] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -201,35 +200,27 @@ export default function Scene4Page() {
     setShowJuegoDos(false);
   };
 
-  const handleGameComplete = () => {
+  const handleGameComplete = async () => {
     setGameCompleted(true);
-    setTimeout(() => {
-      setShowCongratulations(true);
-    }, 1000);
-  };
+    console.log('🎯 Scene4: Game completed, saving progress and moving to scene5');
 
-  const handleGoToActivityMenu = async () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    playSound();
-    
-    console.log('🎯 Scene4: Game completed, saving progress and returning to activity menu');
-    
+    // Save progress for scene4
     const progressSaved = await saveProgress('actividad-1', 'scene4', 'completed', 100, {
       video_watched: videoEnded,
-      game_completed: gameCompleted,
+      game_completed: true,
       completed_at: new Date().toISOString()
     });
-    
+
+    if (progressSaved) {
+      console.log('✅ Scene4: Progress saved successfully');
+    } else {
+      console.error('❌ Scene4: Failed to save progress, but continuing');
+    }
+
+    // Navigate to scene5 after a short delay
     setTimeout(() => {
-      setIsAnimating(false);
-      if (progressSaved) {
-        console.log('✅ Scene4: Progress saved successfully');
-      } else {
-        console.error('❌ Scene4: Failed to save progress, but continuing');
-      }
-      router.push('/actividad-1');
-    }, 800);
+      router.push('/actividad-1/scene5');
+    }, 1000);
   };
 
   const containerStyle = {
@@ -379,45 +370,11 @@ export default function Scene4Page() {
       )}
 
       {/* JuegoDos Game Modal */}
-      <JuegoDos 
-        isVisible={showJuegoDos} 
+      <JuegoDos
+        isVisible={showJuegoDos}
         onClose={handleCloseJuegoDos}
         onGameComplete={handleGameComplete}
       />
-
-      {/* Congratulations Overlay */}
-      {showCongratulations && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
-            initial={{ scale: 0.5, y: 50 }}
-            animate={{ scale: 1, y: 0 }}
-            transition={{ type: "spring", damping: 15, stiffness: 300 }}
-          >
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              ¡Felicidades!
-            </h2>
-            <p className="text-white text-lg mb-6">
-              Has completado esta sección de la actividad
-            </p>
-            <motion.button
-              onClick={handleGoToActivityMenu}
-              disabled={isAnimating}
-              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Continuar al menú
-            </motion.button>
-          </motion.div>
-        </motion.div>
-      )}
     </motion.div>
   );
 }

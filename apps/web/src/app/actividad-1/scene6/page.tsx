@@ -28,7 +28,6 @@ export default function Scene6Page() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
-  const [showScene5Video, setShowScene5Video] = useState(false);
   const [showScene6Replay, setShowScene6Replay] = useState(false);
   const [showJuegoTres, setShowJuegoTres] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
@@ -176,14 +175,6 @@ export default function Scene6Page() {
     }, 800);
   };
 
-  const handleVolverAVerScene5 = () => {
-    setShowScene5Video(true);
-  };
-
-  const handleScene5VideoEnd = () => {
-    setShowScene5Video(false);
-  };
-
   const handleVolverAVerScene6 = () => {
     setShowScene6Replay(true);
   };
@@ -299,32 +290,14 @@ export default function Scene6Page() {
         />
       )}
 
-      {!showVideo && !showScene5Video && !showScene6Replay ? (
-        <div className="relative z-20 flex flex-col items-center justify-center min-h-screen gap-6">
+      {!showVideo && !showScene6Replay ? (
+        <div className="relative z-20 flex items-center justify-center min-h-screen">
           <motion.div
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <JugarButton text='¿QUÉ ES UNA ERECCIÓN?' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
-
-          {/* Button to replay Scene 5 */}
-          <VolverAVerButton onClick={handleVolverAVerScene5} />
-        </div>
-      ) : showScene5Video ? (
-        <div className="absolute" style={containerStyle}>
-          <video
-            className="absolute inset-0 w-full h-full object-cover z-20"
-            src="/video/ACTIVIDAD-1-ESCENA-5.mp4"
-            autoPlay
-            playsInline
-            onEnded={handleScene5VideoEnd}
-            onLoadedData={(e) => {
-              const video = e.target as HTMLVideoElement;
-              video.volume = currentVolume;
-            }}
-            onPlay={(e) => setupVideoVolumeHandling(e.target as HTMLVideoElement)}
-          />
         </div>
       ) : showScene6Replay ? (
         <div className="absolute" style={containerStyle}>
