@@ -14,6 +14,7 @@ import JuegoUno from './JuegoUno/JuegoUno';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 import Image from 'next/image';
 
@@ -370,12 +371,13 @@ export default function Scene1Page() {
         <div className="absolute" style={containerStyle}>
           {/* Video layer */}
           {!videoEnded && (
-            <video
+            <OptimizedVideo
               ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-20"
               src="/video/ACTIVIDA_1-ESCENA-1.mp4"
+              className="absolute inset-0 w-full h-full object-cover z-20"
               autoPlay
               playsInline
+              volume={currentVolume}
               onEnded={handleVideoEnd}
               onLoadedData={() => {
                 const video = videoRef.current;
@@ -443,6 +445,9 @@ export default function Scene1Page() {
                   console.log(`🖥️ Scene1 Desktop/Android/iPad: Using direct video volume (original behavior)`);
                 }
               }}
+              lazyLoad={true}
+              lowPowerMode={true}
+              maxRetries={3}
             />
           )}
 

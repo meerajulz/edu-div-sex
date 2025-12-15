@@ -14,6 +14,7 @@ import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 // Helper function to get user gender from session
 const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'female' => {
@@ -322,12 +323,13 @@ const { data: session } = useSession();
       {showVideo && !gameCompleted && (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <video
+            <OptimizedVideo
               ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-20"
               src="/video/ACTIVIDAD-3-ESCENA-2.mp4"
+              className="absolute inset-0 w-full h-full object-cover z-20"
               autoPlay
               playsInline
+              volume={currentVolume}
               onEnded={handleVideoEnd}
               onLoadedData={() => {
                 const video = videoRef.current;
@@ -405,6 +407,9 @@ const { data: session } = useSession();
                   console.log(`🖥️ Scene2 Desktop/Android/iPad: Using direct video volume (original behavior)`);
                 }
               }}
+              lazyLoad={true}
+              lowPowerMode={true}
+              maxRetries={3}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">

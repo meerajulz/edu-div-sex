@@ -4,6 +4,7 @@ import LandscapeLayout from "./LandscapeLayout";
 import { SessionProvider } from "next-auth/react";
 import { ActivityProtectionWrapper } from "./components/ActivityGuard/useActivityProtection";
 import { auth } from "@/auth";
+import GlobalErrorLogViewer from "./components/GlobalErrorLogViewer/GlobalErrorLogViewer";
 
 const inter = Inter({
   subsets: ['latin']
@@ -34,6 +35,7 @@ export default async function RootLayout({
               {children}
             </LandscapeLayout>
           </ActivityProtectionWrapper>
+          <GlobalErrorLogViewer />
         </SessionProvider>
       </body>
     </html>

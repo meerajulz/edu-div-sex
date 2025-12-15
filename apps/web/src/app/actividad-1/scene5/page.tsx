@@ -12,6 +12,7 @@ import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 export default function Scene5Page() {
  
@@ -238,12 +239,12 @@ export default function Scene5Page() {
         </div>
       ) : !videoEnded ? (
         <div className="absolute" style={containerStyle}>
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-10"
+          <OptimizedVideo
             src="/video/ACTIVIDAD-1-ESCENA-5.mp4"
+            className="absolute inset-0 w-full h-full object-cover z-10"
             autoPlay
             playsInline
+            volume={currentVolume}
             onEnded={handleVideoEnd}
             onLoadedData={() => {
               const video = videoRef.current;
@@ -278,6 +279,9 @@ export default function Scene5Page() {
                 console.error('Scene5: Audio setup failed:', error);
               }
             }}
+            lazyLoad={true}
+            lowPowerMode={true}
+            maxRetries={3}
           />
         </div>
       ) : null}

@@ -13,6 +13,7 @@ import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking, clearLastActivity } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 export default function Scene7Page() {
 
@@ -275,28 +276,35 @@ export default function Scene7Page() {
         </div>
       ) : showScene7Replay ? (
         <div className="absolute" style={containerStyle}>
-          <video
-            className="absolute inset-0 w-full h-full object-cover z-20"
+          <OptimizedVideo
+            ref={videoRef}
             src="/video/ACTIVIDAD-1-ESCENA-7.mp4"
+            className="absolute inset-0 w-full h-full object-cover z-20"
             autoPlay
             playsInline
+            volume={currentVolume}
             onEnded={handleScene7ReplayEnd}
-            onLoadedData={(e) => {
-              const video = e.target as HTMLVideoElement;
-              video.volume = currentVolume;
+            onLoadedData={() => {
+              const video = videoRef.current;
+              if (video) video.volume = currentVolume;
             }}
-            onPlay={(e) => setupVideoVolumeHandling(e.target as HTMLVideoElement)}
+            onPlay={() => {
+              if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
+            }}
+            lazyLoad={true}
+            lowPowerMode={true}
+            maxRetries={3}
           />
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <video
-              ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-10"
+            <OptimizedVideo
               src="/video/ACTIVIDAD-1-ESCENA-7.mp4"
+              className="absolute inset-0 w-full h-full object-cover z-10"
               autoPlay
               playsInline
+              volume={currentVolume}
               onEnded={handleVideoEnd}
               onLoadedData={() => {
                 const video = videoRef.current;
@@ -305,6 +313,9 @@ export default function Scene7Page() {
               onPlay={() => {
                 if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
               }}
+              lazyLoad={true}
+              lowPowerMode={true}
+              maxRetries={3}
             />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">

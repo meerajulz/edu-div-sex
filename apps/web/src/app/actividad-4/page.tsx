@@ -16,6 +16,7 @@ import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
 import { playGameAudio, getDeviceAudioInfo, playBackgroundMusic, stopBackgroundMusic } from '../utils/gameAudio';
+import OptimizedVideo from '../components/OptimizedVideo';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -412,20 +413,16 @@ useEffect(() => {
       >
         <div className="absolute" style={containerStyle}>
           {!videoEnded && canPlayVideo ? (
-            <video
+            <OptimizedVideo
               ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-10"
               src="/video/INTRO_ACTIVIDAD-1.mp4"
+              className="absolute inset-0 w-full h-full object-cover z-10"
               autoPlay
               playsInline
+              volume={currentVolume}
               muted={needsInteraction && !userInteractionReceived}
               onEnded={handleVideoEnd}
-              onError={(e) => {
-                console.error('Video failed to load:', e);
-                console.log('Skipping video and showing activity menu directly');
-                handleVideoEnd();
-              }}
-              onLoadedMetadata={async () => {
+              onLoadedData={async () => {
                 console.log(`🎬 Activity4: Video metadata loaded`);
                 const video = videoRef.current;
                 if (!video) return;
@@ -476,7 +473,7 @@ useEffect(() => {
                   }
                 }
               }}
-              onCanPlay={() => {
+              onPlay={() => {
                 console.log(`🎬 Activity4: Video can play`);
                 const video = videoRef.current;
                 if (!video) return;
@@ -500,6 +497,9 @@ useEffect(() => {
                   console.log(`🖥️ Activity4 Desktop/Android: Video ready, volume: ${currentVolume}`);
                 }
               }}
+              lazyLoad={true}
+              lowPowerMode={true}
+              maxRetries={3}
             />
           ) : (
             <Image

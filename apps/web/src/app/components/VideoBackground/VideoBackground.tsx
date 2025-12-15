@@ -6,6 +6,7 @@ import WindowBirds from '../WindowBirds/WindowBirds';
 import Table from '../Table/Table';
 import Backpack from '../Backpack/Backpack';
 import { getDeviceAudioInfo } from '../../utils/gameAudio';
+import { logVideoError } from '../../utils/errorLogger';
 // Note: Simplified approach - just handle video volume directly without complex WebAudio integration
 
 interface Hotspot {
@@ -377,6 +378,15 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     const handleError = () => {
       const errorMessage = video.error ? video.error.message : 'Unknown video error';
       setVideoError(errorMessage);
+
+      // Log error for monitoring
+      if (video.error) {
+        logVideoError(videoPath, video.error, {
+          readyState: video.readyState,
+          networkState: video.networkState,
+          currentTime: video.currentTime,
+        });
+      }
     };
 
     video.addEventListener('loadeddata', handleLoadedData);
@@ -486,7 +496,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
             ref={videoRef}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-10 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
             playsInline
-            preload="auto"
+            preload="metadata"
           >
             <source src={videoPath} type="video/mp4" />
             Your browser does not support the video tag.

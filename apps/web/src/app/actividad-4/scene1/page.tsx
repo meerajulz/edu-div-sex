@@ -14,6 +14,7 @@ import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 export default function Actividad4Scene1Page() {
   
@@ -271,13 +272,14 @@ export default function Actividad4Scene1Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!allVideosEnded ? (
-            <video
+            <OptimizedVideo
               ref={videoRef}
               key={currentVideoIndex} // Force re-render when video changes
-              className="absolute inset-0 w-full h-full object-cover z-20"
               src={videos[currentVideoIndex]}
+              className="absolute inset-0 w-full h-full object-cover z-20"
               autoPlay
               playsInline
+              volume={currentVolume}
               onEnded={handleVideoEnd}
               onLoadedData={() => {
                 const video = videoRef.current;
@@ -312,6 +314,9 @@ export default function Actividad4Scene1Page() {
                   console.error('Activity4-Scene1: Audio setup failed:', error);
                 }
               }}
+              lazyLoad={true}
+              lowPowerMode={true}
+              maxRetries={3}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">

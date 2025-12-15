@@ -13,6 +13,7 @@ import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 export default function Scene3Page() {
   
@@ -227,19 +228,25 @@ export default function Scene3Page() {
         </div>
       ) : showScene2Video ? (
         <div className="absolute" style={containerStyle}>
-          <video
-            className="absolute inset-0 w-full h-full object-cover z-20"
+          <OptimizedVideo
+            ref={videoRef}
             src="/video/ACTIVIDAD_1_ESCENA_2.mp4"
+            className="absolute inset-0 w-full h-full object-cover z-20"
             autoPlay
             playsInline
+            volume={currentVolume}
             onEnded={handleScene2VideoEnd}
-            onLoadedData={(e) => {
-              const video = e.target as HTMLVideoElement;
-              video.volume = currentVolume;
-              console.log(`🎬 Scene3 Scene2Video: Loaded, volume: ${currentVolume}`);
+            onLoadedData={() => {
+              const video = videoRef.current;
+              if (video) {
+                video.volume = currentVolume;
+                console.log(`🎬 Scene3 Scene2Video: Loaded, volume: ${currentVolume}`);
+              }
             }}
-            onPlay={async (e) => {
-              const video = e.target as HTMLVideoElement;
+            onPlay={async () => {
+              const video = videoRef.current;
+              if (!video) return;
+
               video.muted = false;
               video.volume = currentVolume;
 
@@ -261,16 +268,19 @@ export default function Scene3Page() {
                 console.error('Scene3 Scene2Video: Audio setup failed:', error);
               }
             }}
+            lazyLoad={true}
+            lowPowerMode={true}
+            maxRetries={3}
           />
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-20"
+          <OptimizedVideo
             src="/video/ACTIVIDAD-1-ESCENA3.mp4"
+            className="absolute inset-0 w-full h-full object-cover z-20"
             autoPlay
             playsInline
+            volume={currentVolume}
             onEnded={handleVideoEnd}
             onLoadedData={() => {
               const video = videoRef.current;
@@ -305,6 +315,9 @@ export default function Scene3Page() {
                 console.error('Scene3: Audio setup failed:', error);
               }
             }}
+            lazyLoad={true}
+            lowPowerMode={true}
+            maxRetries={3}
           />
         </div>
       )}

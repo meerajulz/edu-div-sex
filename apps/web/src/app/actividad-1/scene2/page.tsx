@@ -11,6 +11,7 @@ import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
+import OptimizedVideo from '../../components/OptimizedVideo';
 
 export default function Scene2Page() {
   
@@ -234,12 +235,12 @@ export default function Scene2Page() {
         </div>
       ) : (
         <div className="absolute" style={containerStyle}>
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-20"
+          <OptimizedVideo
             src="/video/ACTIVIDAD_1_ESCENA_2.mp4"
+            className="absolute inset-0 w-full h-full object-cover z-20"
             autoPlay
             playsInline
+            volume={currentVolume}
             onEnded={handleVideoEnd}
             onLoadedData={() => {
               const video = videoRef.current;
@@ -298,6 +299,9 @@ export default function Scene2Page() {
                 }
               }
             }}
+            lazyLoad={true}
+            lowPowerMode={true}
+            maxRetries={3}
           />
         </div>
       )}
