@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 interface SignInProps {
 	error?: string;
@@ -11,6 +12,7 @@ interface SignInProps {
 export function SignIn({ error }: SignInProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [loginError, setLoginError] = useState(error || '');
+	const [showPassword, setShowPassword] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		console.log('🔄 FORM SUBMITTED - Event triggered');
@@ -101,15 +103,30 @@ export function SignIn({ error }: SignInProps) {
 						</div>
 						<div className="space-y-2">
 							<label className="block font-medium" htmlFor="password">CONTRASEÑA</label>
-							<input
-								type="password"
-								name="password"
-								id="password"
-								placeholder="Contraseña"
-								className="w-full p-3 rounded-lg text-gray-900 placeholder-gray-400 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
-								required
-								disabled={isLoading}
-							/>
+							<div className="relative">
+								<input
+									type={showPassword ? "text" : "password"}
+									name="password"
+									id="password"
+									placeholder="Contraseña"
+									className="w-full p-3 pr-12 rounded-lg text-gray-900 placeholder-gray-400 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
+									required
+									disabled={isLoading}
+								/>
+								<button
+									type="button"
+									onClick={() => setShowPassword(!showPassword)}
+									className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+									disabled={isLoading}
+									aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+								>
+									{showPassword ? (
+										<EyeOff className="w-5 h-5" />
+									) : (
+										<Eye className="w-5 h-5" />
+									)}
+								</button>
+							</div>
 						</div>
 						<div className="flex items-center">
 							<input
