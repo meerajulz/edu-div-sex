@@ -176,15 +176,10 @@ export default function AdminReportsPage() {
   };
 
   const getSupervisionLevelBadge = (level: number) => {
-    switch (level) {
-      case 3:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Nivel 3 - Independiente</span>;
-      case 2:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Nivel 2 - 50% Supervisión</span>;
-      case 1:
-      default:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Nivel 1 - 100% Supervisión</span>;
+    if (level >= 2) {
+      return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Nivel Avanzado</span>;
     }
+    return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Nivel 1</span>;
   };
 
   const formatPercentage = (value: number) => `${value}%`;

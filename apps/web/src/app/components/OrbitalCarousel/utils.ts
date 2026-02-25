@@ -1,5 +1,6 @@
 import { ContainerSize, Position } from './types';
 import { playGameAudio, isIPad, isIPhone } from '../../utils/gameAudio';
+import { NIVEL_BASICO_ITEMS, NIVEL_AVANZADO_ITEMS } from './menuLevelConfig';
 
 /**
  * Calculate the position of an item in the carousel
@@ -199,53 +200,42 @@ export const getOrbitalActivityProgress = async (): Promise<OrbitalActivityProgr
 };
 
 /**
- * Get the default carousel items with dynamic unlock status
+ * Get the supervision level for the current user.
+ * Returns 1 (básico) as a safe default.
+ */
+export const getUserSupervisionLevel = async (): Promise<number> => {
+  try {
+    const response = await fetch('/api/user/supervision-level');
+    if (!response.ok) return 1;
+    const data = await response.json();
+    return data.supervision_level ?? 1;
+  } catch {
+    return 1;
+  }
+};
+
+/**
+ * Get the default carousel items with dynamic unlock status.
+ * Items depend on the user's supervision level:
+ *  - Nivel 1 (básico):    actividades 1–6 with progress-based unlocking
+ *  - Nivel Avanzado (≥2): advanced activities (aventura-X), all unlocked
  */
 export const getDefaultItems = async () => {
+  const supervisionLevel = await getUserSupervisionLevel();
+
+  // ── Nivel Avanzado ───────────────────────────────────────────────────────
+  if (supervisionLevel >= 2) {
+    return NIVEL_AVANZADO_ITEMS.map(item => ({
+      ...item,
+      isUnlocked: true,
+    }));
+  }
+
+  // ── Nivel Básico ─────────────────────────────────────────────────────────
   const progress = await getOrbitalActivityProgress();
-  
-  return [
-    {
-      id: 1,
-      label: "Aventura 1",
-      url: "/actividad-1", // Updated to go to activity menu
-      svgPath: "/svg/menu/orbital/activity1-descubriendo-mi-cuerpo.svg",
-      isUnlocked: progress.find(p => p.activityId === 1)?.isUnlocked || true
-    },
-    {
-      id: 2,
-      label: "Aventura 2", 
-      url: "/actividad-2", // Updated to match ActivityLabels
-      svgPath: "/svg/menu/orbital/activity2-intimidad.svg",
-      isUnlocked: progress.find(p => p.activityId === 2)?.isUnlocked || false
-    },
-    {
-      id: 3,
-      label: "Aventura 3",
-      url: "/actividad-3", // Updated to go to activity menu page
-      svgPath: "/svg/menu/orbital/activity3-placer-sexual.svg",
-      isUnlocked: progress.find(p => p.activityId === 3)?.isUnlocked || false
-    },
-    {
-      id: 4,
-      label: "Aventura 4",
-      url: "/actividad-4", // Updated to go to activity menu
-      svgPath: "/svg/menu/orbital/activity4cuido-mi-sexualidad.svg",
-      isUnlocked: progress.find(p => p.activityId === 4)?.isUnlocked || false
-    },
-    {
-      id: 5,
-      label: "Aventura 5",
-      url: "/actividad-5", // Updated to go to activity menu
-      svgPath: "/svg/menu/orbital/activity5-entender-respectar.svg",
-      isUnlocked: progress.find(p => p.activityId === 5)?.isUnlocked || false
-    },
-    {
-      id: 6,
-      label: "Aventura 6",
-      url: "/actividad-6", // Updated to go to activity menu
-      svgPath: "/svg/menu/orbital/activity6.svg",
-      isUnlocked: progress.find(p => p.activityId === 6)?.isUnlocked || false
-    }
-  ];
+
+  return NIVEL_BASICO_ITEMS.map(item => ({
+    ...item,
+    isUnlocked: progress.find(p => p.activityId === item.id)?.isUnlocked ?? (item.id === 1),
+  }));
 };

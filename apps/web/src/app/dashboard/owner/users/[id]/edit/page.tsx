@@ -9,6 +9,7 @@ interface UserFormData {
   email: string;
   role: 'owner' | 'admin' | 'teacher' | 'student' | '';
   is_active: boolean;
+  supervision_level?: number;
 }
 
 function EditUserForm() {
@@ -44,7 +45,8 @@ function EditUserForm() {
         name: data.user.name,
         email: data.user.email,
         role: data.user.role,
-        is_active: data.user.is_active
+        is_active: data.user.is_active,
+        supervision_level: data.user.student_profile?.supervision_level ?? undefined
       };
       
       setFormData(userData);
@@ -83,6 +85,7 @@ function EditUserForm() {
         role: string;
         is_active: boolean;
         new_password?: string;
+        supervision_level?: number;
       }
 
       const updateData: UpdateData = {
@@ -91,6 +94,10 @@ function EditUserForm() {
         role: formData.role,
         is_active: formData.is_active
       };
+
+      if (formData.role === 'student' && formData.supervision_level !== undefined) {
+        updateData.supervision_level = formData.supervision_level;
+      }
 
       // Only include password if it's provided
       if (newPassword && newPassword.trim() !== '') {
@@ -285,6 +292,49 @@ function EditUserForm() {
                 Los usuarios inactivos no podrán iniciar sesión en el sistema.
               </p>
             </div>
+
+            {/* Supervision Level - only for students */}
+            {formData.role === 'student' && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Nivel de Supervisión
+                </label>
+                <div className="flex flex-col gap-3">
+                  <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    formData.supervision_level === 1 ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="supervision_level"
+                      value="1"
+                      checked={formData.supervision_level === 1}
+                      onChange={() => setFormData({...formData, supervision_level: 1})}
+                      className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">Nivel 1</div>
+                      <div className="text-sm text-gray-500">Acceso al contenido básico (actividades 1–6)</div>
+                    </div>
+                  </label>
+                  <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    formData.supervision_level === 2 ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="supervision_level"
+                      value="2"
+                      checked={formData.supervision_level === 2}
+                      onChange={() => setFormData({...formData, supervision_level: 2})}
+                      className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">Nivel Avanzado</div>
+                      <div className="text-sm text-gray-500">Acceso al contenido avanzado (nivel 2)</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-gray-700 font-medium mb-1">

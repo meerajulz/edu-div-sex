@@ -202,10 +202,16 @@ export default function Scene7Page() {
     // Clear last activity tracking to prevent redirect issues
     await clearLastActivity();
 
-    // Set flag that activity was just completed for auto-rotation
-    localStorage.setItem('completedActivityId', '1');
-    // Go back to home main page
-    router.push('/home');
+    const returnTo = localStorage.getItem('aventura-1-return-to');
+    if (returnTo) {
+      localStorage.removeItem('aventura-1-return-to');
+      router.push(returnTo);
+    } else {
+      // Set flag that activity was just completed for auto-rotation
+      localStorage.setItem('completedActivityId', '1');
+      // Go back to home main page
+      router.push('/home');
+    }
   };
 
   const containerStyle = {

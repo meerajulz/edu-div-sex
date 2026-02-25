@@ -218,9 +218,15 @@ export default function Scene4Page() {
       console.error('❌ Scene4: Failed to save progress, but continuing');
     }
 
-    // Navigate to scene5 after a short delay
+    // Navigate to scene5 (or aventura return path) after a short delay
     setTimeout(() => {
-      router.push('/actividad-1/scene5');
+      const returnTo = localStorage.getItem('aventura-1-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-1-return-to');
+        router.push(returnTo);
+      } else {
+        router.push('/actividad-1/scene5');
+      }
     }, 1000);
   };
 

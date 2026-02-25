@@ -131,15 +131,10 @@ export default function OwnerReportsByCenterPage() {
   };
 
   const getSupervisionLevelBadge = (level: number) => {
-    switch (level) {
-      case 3:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Nivel 3 - Independiente</span>;
-      case 2:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Nivel 2 - 50% Supervisión</span>;
-      case 1:
-      default:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Nivel 1 - 100% Supervisión</span>;
+    if (level >= 2) {
+      return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Nivel Avanzado</span>;
     }
+    return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Nivel 1</span>;
   };
 
   const getProgressColor = (percentage: number) => {
@@ -235,18 +230,14 @@ export default function OwnerReportsByCenterPage() {
           {overallStats && (
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-8 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Distribución de Niveles de Supervisión (Global)</h2>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                  <div className="text-2xl font-bold text-red-900">{overallStats.supervisionLevelDistribution.nivel1}</div>
-                  <div className="text-sm text-red-700">Nivel 1 - 100% Supervisión</div>
-                </div>
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <div className="text-2xl font-bold text-yellow-900">{overallStats.supervisionLevelDistribution.nivel2}</div>
-                  <div className="text-sm text-yellow-700">Nivel 2 - 50% Supervisión</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="text-2xl font-bold text-blue-900">{overallStats.supervisionLevelDistribution.nivel1}</div>
+                  <div className="text-sm text-blue-700">Nivel 1</div>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <div className="text-2xl font-bold text-green-900">{overallStats.supervisionLevelDistribution.nivel3}</div>
-                  <div className="text-sm text-green-700">Nivel 3 - Independiente</div>
+                  <div className="text-2xl font-bold text-green-900">{(overallStats.supervisionLevelDistribution.nivel2 ?? 0) + (overallStats.supervisionLevelDistribution.nivel3 ?? 0)}</div>
+                  <div className="text-sm text-green-700">Nivel Avanzado</div>
                 </div>
               </div>
             </div>

@@ -78,6 +78,7 @@ export default function StudentDetailsPage() {
   const [detailedProgress, setDetailedProgress] = useState<DetailedProgressData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updatingScene, setUpdatingScene] = useState<string | null>(null);
 
   useEffect(() => {
     if (studentId) {
@@ -108,6 +109,35 @@ export default function StudentDetailsPage() {
       setError(err instanceof Error ? err.message : 'Error al cargar los datos');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateSceneProgress = async (activityId: number, sceneId: number, status: string) => {
+    const key = `${activityId}-${sceneId}`;
+    if (updatingScene === key) return;
+    setUpdatingScene(key);
+    try {
+      const response = await fetch(`/api/students/${studentId}/progress`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activity_id: activityId,
+          scene_id: sceneId,
+          status,
+          completion_percentage: status === 'completed' ? 100 : status === 'in_progress' ? 50 : 0,
+        }),
+      });
+      if (!response.ok) throw new Error('Error al actualizar');
+      // Refresh progress
+      const progressResponse = await fetch(`/api/students/${studentId}/progress`);
+      if (progressResponse.ok) {
+        const progressData = await progressResponse.json();
+        setDetailedProgress(progressData);
+      }
+    } catch (err) {
+      console.error('Error updating progress:', err);
+    } finally {
+      setUpdatingScene(null);
     }
   };
 
@@ -156,6 +186,24 @@ export default function StudentDetailsPage() {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('es-ES');
   };
+
+  // Compute filtered activities based on student supervision level
+  const studentSupervisionLevel = student?.supervision_level ?? 1;
+  const studentIsAdvanced = studentSupervisionLevel >= 2;
+  const filteredStudentActivities = detailedProgress
+    ? detailedProgress.activities.filter(activity =>
+        studentIsAdvanced ? activity.slug.startsWith('aventura-') : activity.slug.startsWith('actividad-')
+      )
+    : [];
+  const filteredStudentTotal = filteredStudentActivities.reduce(
+    (sum, a) => sum + a.overall_progress.total_scenes, 0
+  );
+  const filteredStudentCompleted = filteredStudentActivities.reduce(
+    (sum, a) => sum + a.overall_progress.completed_scenes, 0
+  );
+  const filteredStudentProgress = filteredStudentTotal > 0
+    ? Math.round((filteredStudentCompleted / filteredStudentTotal) * 100)
+    : 0;
 
   if (isLoading) {
     return (
@@ -285,11 +333,11 @@ export default function StudentDetailsPage() {
                     <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
                       <span className="text-gray-600 font-semibold">Nivel de Supervisión:</span>
                       <span className={`px-4 py-2 rounded-full text-sm font-bold ${
-                        student.supervision_level === 3 ? 'bg-green-100 text-green-800 border-2 border-green-300' :
-                        student.supervision_level === 2 ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' :
-                        'bg-red-100 text-red-800 border-2 border-red-300'
+                        student.supervision_level >= 2
+                          ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                          : 'bg-blue-100 text-blue-800 border-2 border-blue-300'
                       }`}>
-                        Nivel {student.supervision_level}
+                        {student.supervision_level >= 2 ? 'Nivel Avanzado' : 'Nivel 1'}
                       </span>
                     </div>
                   )}
@@ -307,22 +355,29 @@ export default function StudentDetailsPage() {
               <div className="bg-blue-50 p-4 rounded-lg mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-blue-800">Progreso General</span>
-                  <span className="text-sm font-bold text-blue-900">{detailedProgress.overall_progress.completion_percentage}%</span>
+                  <span className="text-sm font-bold text-blue-900">{filteredStudentProgress}%</span>
                 </div>
                 <div className="w-full bg-blue-200 rounded-full h-3">
-                  <div 
+                  <div
                     className="bg-blue-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${detailedProgress.overall_progress.completion_percentage}%` }}
+                    style={{ width: `${filteredStudentProgress}%` }}
                   ></div>
                 </div>
                 <div className="text-xs text-blue-700 mt-1">
-                  {detailedProgress.overall_progress.completed_scenes} de {detailedProgress.overall_progress.total_scenes} escenas completadas
+                  {filteredStudentCompleted} de {filteredStudentTotal} escenas completadas
                 </div>
               </div>
 
               {/* Activities Progress */}
               <div className="space-y-4">
-                {detailedProgress.activities.map((activity) => {
+                {filteredStudentActivities.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    {studentIsAdvanced
+                      ? 'No hay actividades de aventura registradas aún.'
+                      : 'No hay actividades registradas aún.'}
+                  </p>
+                )}
+                {filteredStudentActivities.map((activity) => {
                   const activityProgress = activity.overall_progress.total_scenes > 0 
                     ? Math.round((activity.overall_progress.completed_scenes / activity.overall_progress.total_scenes) * 100)
                     : 0;
@@ -346,7 +401,7 @@ export default function StudentDetailsPage() {
                         {activity.scenes.map((scene) => (
                           <div key={scene.id} className="border border-gray-100 rounded p-3">
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-sm font-medium text-gray-800">{getSceneTitle(activity.slug, scene.slug)}</span>
+                              <span className="text-sm font-medium text-gray-800">{scene.name || getSceneTitle(activity.slug, scene.slug)}</span>
                               <span className={`px-2 py-1 text-xs rounded-full ${getSceneStatusColor(scene.status)}`}>
                                 {getSceneStatusText(scene.status)}
                               </span>
@@ -372,6 +427,24 @@ export default function StudentDetailsPage() {
                                 Último acceso: {formatDate(scene.last_accessed_at)}
                               </div>
                             )}
+
+                            {/* Mark progress buttons */}
+                            <div className="flex gap-1 mt-2 flex-wrap">
+                              {(['not_started', 'in_progress', 'completed'] as const).map((s) => (
+                                <button
+                                  key={s}
+                                  disabled={updatingScene === `${activity.id}-${scene.id}` || scene.status === s}
+                                  onClick={() => updateSceneProgress(activity.id, scene.id, s)}
+                                  className={`px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 ${
+                                    scene.status === s
+                                      ? s === 'completed' ? 'bg-green-500 text-white' : s === 'in_progress' ? 'bg-yellow-500 text-white' : 'bg-red-400 text-white'
+                                      : s === 'completed' ? 'bg-green-100 text-green-700 hover:bg-green-200' : s === 'in_progress' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                  }`}
+                                >
+                                  {s === 'not_started' ? 'No iniciado' : s === 'in_progress' ? 'En progreso' : 'Completado'}
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         ))}
                       </div>

@@ -96,6 +96,7 @@ export async function PUT(
       comprehension_level,
       attention_span,
       motor_skills,
+      supervision_level: supervision_level_input,
       additional_abilities,
       notes
     } = body;
@@ -110,37 +111,8 @@ export async function PUT(
       }
     }
 
-    // Calculate supervision_level if any ability fields are being updated
-    let supervision_level;
-    if (reading_level !== undefined || comprehension_level !== undefined ||
-        attention_span !== undefined || motor_skills !== undefined) {
-
-      // Get current student data to fill in missing fields
-      const currentStudent = await query('SELECT * FROM students WHERE id = $1', [studentId]);
-      if (currentStudent.rows.length === 0) {
-        return NextResponse.json({ error: 'Student not found' }, { status: 404 });
-      }
-
-      const current = currentStudent.rows[0];
-      const finalReadingLevel = reading_level ?? current.reading_level;
-      const finalComprehensionLevel = comprehension_level ?? current.comprehension_level;
-      const finalAttentionSpan = attention_span ?? current.attention_span;
-      const finalMotorSkills = motor_skills ?? current.motor_skills;
-
-      // Calculate average of all 4 abilities (1-5 scale)
-      const avgAbility = (finalReadingLevel + finalComprehensionLevel + finalAttentionSpan + finalMotorSkills) / 4;
-      const percentage = (avgAbility - 1) / 4; // Normalize to 0-1 scale
-
-      // Convert to supervision level (1-3 scale)
-      // Higher abilities = Higher supervision level (more independent)
-      if (percentage >= 0.67) {
-        supervision_level = 3; // Independent (abilities 3.68-5)
-      } else if (percentage >= 0.34) {
-        supervision_level = 2; // Needs 50% supervision (abilities 2.36-3.67)
-      } else {
-        supervision_level = 1; // Needs 100% supervision (abilities 1-2.35)
-      }
-    }
+    // Determine supervision_level: use directly provided value if given
+    let supervision_level = supervision_level_input;
 
     // Build dynamic update query
     const updates = [];

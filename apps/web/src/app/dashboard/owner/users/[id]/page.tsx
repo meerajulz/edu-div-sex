@@ -283,6 +283,20 @@ function ViewUserDetails() {
     }
   };
 
+  // Compute filtered activities based on student supervision level
+  const supervisionLevel = user?.student_profile?.supervision_level ?? 1;
+  const isAdvanced = supervisionLevel >= 2;
+  const filteredActivities = progressData
+    ? progressData.activities.filter(activity =>
+        isAdvanced ? activity.slug.startsWith('aventura-') : activity.slug.startsWith('actividad-')
+      )
+    : [];
+  const filteredTotalScenes = filteredActivities.reduce((sum, a) => sum + a.totalScenes, 0);
+  const filteredCompletedScenes = filteredActivities.reduce((sum, a) => sum + a.completedScenes, 0);
+  const filteredOverallProgress = filteredTotalScenes > 0
+    ? Math.round((filteredCompletedScenes / filteredTotalScenes) * 100)
+    : 0;
+
   if (isLoading) {
     return (
       <div className="p-6">
@@ -570,22 +584,29 @@ function ViewUserDetails() {
                 <div className="bg-yellow-50 p-4 rounded-lg mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-yellow-800">Progreso General</span>
-                    <span className="text-sm font-bold text-yellow-900">{progressData.overall_progress}%</span>
+                    <span className="text-sm font-bold text-yellow-900">{filteredOverallProgress}%</span>
                   </div>
                   <div className="w-full bg-yellow-200 rounded-full h-3">
-                    <div 
+                    <div
                       className="bg-yellow-600 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${progressData.overall_progress}%` }}
+                      style={{ width: `${filteredOverallProgress}%` }}
                     ></div>
                   </div>
                   <div className="text-xs text-yellow-700 mt-1">
-                    {progressData.completed_scenes} de {progressData.total_scenes} escenas completadas
+                    {filteredCompletedScenes} de {filteredTotalScenes} escenas completadas
                   </div>
                 </div>
 
                 {/* Activities Progress */}
                 <div className="space-y-4">
-                  {progressData.activities.map((activity) => (
+                  {filteredActivities.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      {isAdvanced
+                        ? 'No hay actividades de aventura registradas aún.'
+                        : 'No hay actividades registradas aún.'}
+                    </p>
+                  )}
+                  {filteredActivities.map((activity) => (
                     <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-center mb-3">
                         <h3 className="font-medium text-gray-900">{getActivityTitle(activity.slug)}</h3>
@@ -604,7 +625,7 @@ function ViewUserDetails() {
                         {activity.scenes.map((scene) => (
                           <div key={scene.id} className="border border-gray-100 rounded p-3">
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-sm font-medium text-gray-800">{getSceneTitle(activity.slug, scene.slug)}</span>
+                              <span className="text-sm font-medium text-gray-800">{scene.name || getSceneTitle(activity.slug, scene.slug)}</span>
                               <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(scene.progress.status)}`}>
                                 {getStatusText(scene.progress.status)}
                               </span>

@@ -212,7 +212,13 @@ export default function Actividad4Scene1Page() {
       } else {
         console.error('❌ Actividad4-Scene1: Failed to save progress, but continuing');
       }
-      router.push('/actividad-4');
+      const returnTo = localStorage.getItem('aventura-1-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-1-return-to');
+        router.push(returnTo);
+      } else {
+        router.push('/actividad-4');
+      }
     }, 800);
   };
 

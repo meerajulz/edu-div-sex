@@ -226,10 +226,26 @@ useEffect(() => {
   return () => window.removeEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
 }, [deviceInfo.isIOS]);
 
+  // Skip intro video on return visits (user has already seen it)
+  useEffect(() => {
+    const hasSeenIntro = localStorage.getItem('actividad-5-intro-seen') === 'true';
+    if (hasSeenIntro) {
+      setVideoEnded(true);
+      setShowSun(true);
+      setTimeout(() => setShowArdilla(true), 100);
+      setTimeout(() => setShowAlex(true), 600);
+      setTimeout(() => {
+        setShowActivityMenu(true);
+        setShowContinueButton(true);
+      }, 1200);
+    }
+  }, []);
+
   const handleVideoEnd = () => {
     cleanupAudio();
     // Stop background music when video ends
     stopBackgroundMusic('actividad-5-bg');
+    localStorage.setItem('actividad-5-intro-seen', 'true');
     setVideoEnded(true);
 
     // Show Sun/Clouds FIRST (immediately)

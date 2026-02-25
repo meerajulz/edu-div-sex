@@ -161,14 +161,25 @@ export default function Scene3Page() {
       completed_at: new Date().toISOString()
     });
     
+    const returnTo = localStorage.getItem('aventura-1-return-to');
     if (progressSaved) {
       console.log('✅ Scene3: Progress saved successfully');
       setTimeout(() => {
-        router.push('/actividad-1/scene4');
+        if (returnTo) {
+          localStorage.removeItem('aventura-1-return-to');
+          router.push(returnTo);
+        } else {
+          router.push('/actividad-1/scene4');
+        }
       }, 200);
     } else {
       console.error('❌ Scene3: Failed to save progress, but continuing to next scene');
-      router.push('/actividad-1/scene4');
+      if (returnTo) {
+        localStorage.removeItem('aventura-1-return-to');
+        router.push(returnTo);
+      } else {
+        router.push('/actividad-1/scene4');
+      }
     }
   };
 

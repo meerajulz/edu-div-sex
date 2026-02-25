@@ -136,7 +136,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, email, role, is_active, new_password, notes } = body;
+    const { name, email, role, is_active, new_password, notes, supervision_level } = body;
 
     // If changing email, check if it's already in use by another active user
     if (email !== undefined) {
@@ -196,13 +196,29 @@ export async function PUT(
     const result = await query(updateQuery, values);
     const updatedUser = result.rows[0];
 
-    // Handle notes update for students
-    if (notes !== undefined && updatedUser.role === 'student') {
-      await query(`
-        UPDATE students 
-        SET notes = $1, updated_at = NOW()
-        WHERE user_id = $2
-      `, [notes, userId]);
+    // Handle student-specific field updates
+    if (updatedUser.role === 'student') {
+      const studentUpdates: string[] = [];
+      const studentValues: unknown[] = [];
+      let studentParamCount = 1;
+
+      if (notes !== undefined) {
+        studentUpdates.push(`notes = $${studentParamCount++}`);
+        studentValues.push(notes);
+      }
+      if (supervision_level !== undefined) {
+        studentUpdates.push(`supervision_level = $${studentParamCount++}`);
+        studentValues.push(supervision_level);
+      }
+
+      if (studentUpdates.length > 0) {
+        studentUpdates.push(`updated_at = NOW()`);
+        studentValues.push(userId);
+        await query(
+          `UPDATE students SET ${studentUpdates.join(', ')} WHERE user_id = $${studentParamCount}`,
+          studentValues
+        );
+      }
     }
 
     return NextResponse.json({

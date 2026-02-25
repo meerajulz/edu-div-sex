@@ -7,6 +7,10 @@ import { query } from "./lib/db";
 
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+	pages: {
+		signIn: '/auth/login',
+		error: '/auth/login',
+	},
 	session: {
 		strategy: "jwt",
 	},

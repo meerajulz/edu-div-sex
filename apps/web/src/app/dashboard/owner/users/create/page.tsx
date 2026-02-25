@@ -4,7 +4,6 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import DashboardWrapper from '../../../DashboardWrapper';
-import { Question, questionsData } from '../../../../data/questions';
 
 interface UserFormData {
   name: string;
@@ -53,7 +52,7 @@ function OwnerCreateUserForm() {
     message: string;
   }>({ checking: false, available: null, message: '' });
   const [emailTimeout, setEmailTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [questions, setQuestions] = useState<Question[]>(questionsData);
+  const [supervisionLevel, setSupervisionLevel] = useState<1 | 2>(1);
   const [teachers, setTeachers] = useState<Array<{ id: number; name: string; email: string }>>([]);
   const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
 
@@ -108,14 +107,6 @@ function OwnerCreateUserForm() {
     // Email and username availability check
     if (emailStatus.available === false || usernameStatus.available === false) {
       return false;
-    }
-
-    // For students, check if evaluation is complete (at least some questions answered)
-    if (formData.role === 'student') {
-      const answeredQuestions = questions.filter(q => q.supportType !== null);
-      if (answeredQuestions.length === 0) {
-        return false;
-      }
     }
 
     return true;
@@ -230,60 +221,6 @@ function OwnerCreateUserForm() {
     setEmailTimeout(timeout);
   };
 
-  // Handle TIPO DE APOYO change
-  const handleSupportTypeChange = (id: number, value: "1" | "0") => {
-    setQuestions((prev) =>
-      prev.map((q) =>
-        q.id === id
-          ? { ...q, supportType: value, frequency: value === "1" ? null : q.frequency }
-          : q
-      )
-    );
-  };
-
-  // Handle FRECUENCIA change
-  const handleFrequencyChange = (id: number, value: "1" | "0") => {
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, frequency: value } : q))
-    );
-  };
-
-  // Calculate ability levels from evaluation responses
-  const calculateAbilityLevels = () => {
-    const responses = questions.filter(q => q.supportType !== null);
-    
-    if (responses.length === 0) {
-      return {
-        reading_level: 1,
-        comprehension_level: 1,
-        attention_span: 1,
-        motor_skills: 1
-      };
-    }
-
-    // Simple scoring algorithm based on evaluation responses
-    const totalScore = responses.reduce((sum, q) => {
-      let score = 0;
-      if (q.supportType === "1") score = 2; // No support needed
-      else if (q.supportType === "0" && q.frequency === "1") score = 1; // Sometimes support
-      else if (q.supportType === "0" && q.frequency === "0") score = 0; // Always support
-      return sum + score;
-    }, 0);
-
-    const maxScore = responses.length * 2;
-    const percentage = totalScore / maxScore;
-    
-    // Convert to 1-5 scale
-    const level = Math.ceil(percentage * 5) || 1;
-    
-    return {
-      reading_level: Math.max(1, Math.min(5, level)),
-      comprehension_level: Math.max(1, Math.min(5, level)),
-      attention_span: Math.max(1, Math.min(5, level)),
-      motor_skills: Math.max(1, Math.min(5, level))
-    };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -321,11 +258,10 @@ function OwnerCreateUserForm() {
       
       if (isCreatingStudent) {
         // Use students API for creating students
-        const abilities = calculateAbilityLevels();
         const nameParts = formData.name.trim().split(' ');
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || firstName;
-        
+
         const studentData = {
           first_name: firstName,
           last_name: lastName,
@@ -336,13 +272,12 @@ function OwnerCreateUserForm() {
           username: formData.username,
           use_generated_password: useGeneratedPassword,
           custom_password: useGeneratedPassword ? undefined : formData.password,
-          teacher_id: selectedTeacherId, // Include teacher_id for admin/owner
-          ...abilities,
-          additional_abilities: {
-            evaluation_responses: questions.filter(q => q.supportType !== null),
-            evaluation_date: new Date().toISOString()
-          },
-          notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`
+          teacher_id: selectedTeacherId,
+          reading_level: 1,
+          comprehension_level: 1,
+          attention_span: 1,
+          motor_skills: 1,
+          supervision_level: supervisionLevel
         };
 
         response = await fetch('/api/students', {
@@ -363,14 +298,14 @@ function OwnerCreateUserForm() {
           sex: formData.role === 'student' ? formData.sex : undefined
         };
 
-        // Add evaluation data for students (fallback, shouldn't reach here for students)
+        // Add supervision level for students
         if (formData.role === 'student') {
-          const abilities = calculateAbilityLevels();
           userData.evaluation = {
-            ...abilities,
-            evaluation_responses: questions.filter(q => q.supportType !== null),
-            evaluation_date: new Date().toISOString(),
-            notes: `Evaluación completada: ${questions.filter(q => q.supportType !== null).length} de ${questions.length} preguntas respondidas.`
+            reading_level: 1,
+            comprehension_level: 1,
+            attention_span: 1,
+            motor_skills: 1,
+            supervision_level: supervisionLevel
           };
         }
 
@@ -867,81 +802,46 @@ function OwnerCreateUserForm() {
               </div>
             )}
 
-            {/* Student Evaluation Form - only show for students */}
+            {/* Supervision Level - only for students */}
             {formData.role === 'student' && (
               <div className="border-t pt-6 mt-6">
-                <h3 className="text-lg font-medium mb-4">Evaluación de Nivel del Estudiante</h3>
-                <p className="text-sm text-gray-600 mb-6">
-                  Complete esta evaluación para determinar los niveles iniciales de habilidades del estudiante.
+                <h3 className="text-lg font-medium mb-2">Nivel de Supervisión</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecciona el nivel de acceso al contenido educativo para este estudiante.
                 </p>
-                
-                <div className="space-y-6">
-                  {questions.map((q) => (
-                    <div key={q.id} className="bg-gray-50 p-4 rounded-lg">
-                      <label className="block text-gray-700 font-medium mb-4">{q.question}</label>
-
-                      {/* TIPO DE APOYO */}
-                      <div className="mb-4">
-                        <div className="flex gap-6">
-                          <label className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name={`supportType-${q.id}`}
-                              value="1"
-                              checked={q.supportType === "1"}
-                              onChange={(e) => handleSupportTypeChange(q.id, e.target.value as "1" | "0")}
-                              className="form-radio h-4 w-4 text-pink-600"
-                            />
-                            <span className="text-gray-700">Ninguno (1)</span>
-                          </label>
-                          <label className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name={`supportType-${q.id}`}
-                              value="0"
-                              checked={q.supportType === "0"}
-                              onChange={(e) => handleSupportTypeChange(q.id, e.target.value as "1" | "0")}
-                              className="form-radio h-4 w-4 text-pink-600"
-                            />
-                            <span className="text-gray-700">Supervisión (0)</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* FRECUENCIA */}
-                      {q.supportType === "0" && (
-                        <div className="ml-6 mt-4">
-                          <label className="block text-gray-700 font-medium mb-2">
-                            Frecuencia
-                          </label>
-                          <div className="flex gap-6">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name={`frequency-${q.id}`}
-                                value="0"
-                                checked={q.frequency === "0"}
-                                onChange={(e) => handleFrequencyChange(q.id, e.target.value as "1" | "0")}
-                                className="form-radio h-4 w-4 text-pink-600"
-                              />
-                              <span className="text-gray-700">A veces (0)</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name={`frequency-${q.id}`}
-                                value="1"
-                                checked={q.frequency === "1"}
-                                onChange={(e) => handleFrequencyChange(q.id, e.target.value as "1" | "0")}
-                                className="form-radio h-4 w-4 text-pink-600"
-                              />
-                              <span className="text-gray-700">Siempre (1)</span>
-                            </label>
-                          </div>
-                        </div>
-                      )}
+                <div className="flex flex-col gap-3">
+                  <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    supervisionLevel === 1 ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="supervision_level"
+                      value="1"
+                      checked={supervisionLevel === 1}
+                      onChange={() => setSupervisionLevel(1)}
+                      className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">Nivel 1</div>
+                      <div className="text-sm text-gray-500">Acceso al contenido básico (actividades 1–6)</div>
                     </div>
-                  ))}
+                  </label>
+                  <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    supervisionLevel === 2 ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="supervision_level"
+                      value="2"
+                      checked={supervisionLevel === 2}
+                      onChange={() => setSupervisionLevel(2)}
+                      className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">Nivel Avanzado</div>
+                      <div className="text-sm text-gray-500">Acceso al contenido avanzado (nivel 2)</div>
+                    </div>
+                  </label>
                 </div>
               </div>
             )}
@@ -961,7 +861,6 @@ function OwnerCreateUserForm() {
                   {!useGeneratedPassword && !formData.password && <li>• Contraseña</li>}
                   {!useGeneratedPassword && formData.password && formData.password !== formData.confirmPassword && <li>• Las contraseñas deben coincidir</li>}
                   {!useGeneratedPassword && formData.password && formData.password.length < 8 && <li>• Contraseña de al menos 8 caracteres</li>}
-                  {formData.role === 'student' && questions.filter(q => q.supportType !== null).length === 0 && <li>• Complete al menos una pregunta de evaluación</li>}
                 </ul>
               </div>
             )}

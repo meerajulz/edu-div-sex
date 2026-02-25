@@ -151,7 +151,13 @@ export default function Scene5Page() {
       } else {
         console.error('❌ Scene5: Failed to save progress, but continuing');
       }
-      router.push('/actividad-1');
+      const returnTo = localStorage.getItem('aventura-1-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-1-return-to');
+        router.push(returnTo);
+      } else {
+        router.push('/actividad-1');
+      }
     }, 800);
   };
 

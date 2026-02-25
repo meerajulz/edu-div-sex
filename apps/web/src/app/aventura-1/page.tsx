@@ -16,16 +16,18 @@ import JugarButton from '../components/JugarButton/JugarButton';
 import { useSession } from 'next-auth/react';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
 import { playGameAudio, getDeviceAudioInfo, playBackgroundMusic, stopBackgroundMusic } from '../utils/gameAudio';
-import OptimizedVideo from '../components/OptimizedVideo';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
 const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAlex'), { ssr: false });
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
 import { SimpleAlexRef } from '../components/ModuleAnimations/SimpleAlex';
-import { ACTIVITY_3_CONFIG } from '../components/ActivityMenu/activityConfig';
+import { AVENTURA_1_CONFIG } from '../components/ActivityMenu/activityConfig';
 
-export default function Actividad3Page() {
+// TODO: replace with /video/INTRO_AVENTURA-1.mp4 when the video is ready
+const INTRO_VIDEO_SRC = '/video/INTRO_ACTIVIDAD-1.mp4';
+
+export default function Aventura1NivelAvanzadoPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -47,72 +49,43 @@ export default function Actividad3Page() {
   const [deviceInfo] = useState(() => {
     if (typeof window !== 'undefined') {
       const info = getDeviceAudioInfo();
-      console.log(`🎬 Activity3: Device audio info:`, info);
       return info;
     }
     return { isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false };
   });
 
-  // Function to connect video element to Web Audio API for iOS volume control
-  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
-    try {
-      console.log(`🍎 Activity3 iPhone: Attempting to connect video to Web Audio API...`);
-      console.log(`🍎 Activity3 iPhone: Video readyState: ${video.readyState}`);
-      console.log(`🍎 Activity3 iPhone: AudioContext state: ${audioContext.state}`);
-
-      // Check if video already connected to avoid double-connection
-      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) {
-        console.log(`🍎 Activity3 iPhone: Video already connected to Web Audio API, skipping`);
-        return;
-      }
-
-      // Create MediaElementSource from video
-      const source = audioContext.createMediaElementSource(video);
-      console.log(`🍎 Activity3 iPhone: MediaElementSource created successfully`);
-
-      // CRITICAL: Use the EXACT same gain node that FloatingMenu volume buttons control
-      let sharedGainNode = window.globalGainNode;
-
-      if (!sharedGainNode) {
-        // Create the shared gain node that FloatingMenu will also use
-        sharedGainNode = audioContext.createGain();
-        window.globalGainNode = sharedGainNode;
-        console.log(`🍎 Activity3 iPhone: Created shared gainNode (FloatingMenu will use this same one)`);
-      } else {
-        console.log(`🍎 Activity3 iPhone: Using pre-existing shared gainNode`);
-      }
-
-      // Set initial volume
-      sharedGainNode.gain.value = currentVolume;
-      console.log(`🍎 Activity3 iPhone: Shared gainNode value set to: ${sharedGainNode.gain.value}`);
-
-      // Connect: video -> sharedGainNode -> speakers
-      source.connect(sharedGainNode);
-      console.log(`🍎 Activity3 iPhone: Video source connected to shared gainNode`);
-
-      sharedGainNode.connect(audioContext.destination);
-      console.log(`🍎 Activity3 iPhone: Shared gainNode connected to AudioContext destination`);
-
-      // Store same reference for both video and global controls
-      window.videoGainNode = sharedGainNode;
-      window.globalGainNode = sharedGainNode; // Ensure they're the same object
-
-      // Mark video as connected to prevent duplicate connections
-      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
-      console.log(`🍎 Activity3 iPhone: Video successfully connected to Web Audio API for volume control`);
-
-    } catch (error) {
-      console.error(`🍎 Activity3 iPhone: Failed to connect video to Web Audio API:`, error);
-    }
-  };
-
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
 
-  // Debug mode for development
-  const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
+  // Connect video element to Web Audio API for iOS volume control
+  const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
+    try {
+      if ((video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected) {
+        return;
+      }
 
+      const source = audioContext.createMediaElementSource(video);
+
+      let sharedGainNode = window.globalGainNode;
+      if (!sharedGainNode) {
+        sharedGainNode = audioContext.createGain();
+        window.globalGainNode = sharedGainNode;
+      }
+
+      sharedGainNode.gain.value = currentVolume;
+      source.connect(sharedGainNode);
+      sharedGainNode.connect(audioContext.destination);
+
+      window.videoGainNode = sharedGainNode;
+      window.globalGainNode = sharedGainNode;
+      (video as HTMLVideoElement & { _webAudioConnected?: boolean })._webAudioConnected = true;
+    } catch (e) {
+      console.error('Aventura-1 iPhone: FAILED to connect video to Web Audio API:', e);
+    }
+  };
+
+  const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -139,11 +112,7 @@ export default function Actividad3Page() {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const playSound = () => {
-    try {
-      playGameAudio('/audio/button/Bright.mp3', 0.7, 'Activity 3 button');
-    } catch (error) {
-      console.warn('Could not play sound:', error);
-    }
+    playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button-Sound');
   };
 
   const containerStyle = {
@@ -153,85 +122,78 @@ export default function Actividad3Page() {
     top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
   };
 
-useEffect(() => {
-  const checkAudio = async () => {
-    const needs = needsInteractionForAudio();
-    setNeedsInteraction(needs);
-
-    if (!needs) {
-      try {
-        await initAudio();
-      } catch (e) {
-        console.warn('Audio auto init failed:', e);
-      }
+  // Initialize video volume from localStorage
+  useEffect(() => {
+    const savedVolume = localStorage.getItem('video-volume');
+    if (savedVolume) {
+      setCurrentVolume(parseFloat(savedVolume));
     }
-  };
+  }, []);
 
-  checkAudio();
-}, []);
+  // Listen for global volume changes from FloatingMenu
+  useEffect(() => {
+    const handleVolumeChange = (event: CustomEvent) => {
+      const { volume, isIPhone, isIPad } = event.detail;
 
-// Hot key for toggling debug mode in development
-useEffect(() => {
-  if (process.env.NODE_ENV === 'development') {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'd' && e.ctrlKey) {
-        setShowDebug(prev => !prev);
-        console.log(`Debug mode ${!showDebug ? 'enabled' : 'disabled'}`);
+      const video = videoRef.current;
+      if (video && video.readyState > 0) {
+        if (isIPhone) {
+          video.muted = false;
+          video.volume = 1.0;
+          if (window.videoGainNode) {
+            window.videoGainNode.gain.value = volume;
+          }
+        } else if (isIPad) {
+          video.volume = volume;
+          video.muted = volume === 0;
+        } else {
+          video.muted = false;
+          video.volume = volume;
+        }
+      }
+
+      setCurrentVolume(volume);
+    };
+
+    window.addEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    return () => {
+      window.removeEventListener('globalVolumeChange', handleVolumeChange as EventListener);
+    };
+  }, [deviceInfo.isIOS]);
+
+  useEffect(() => {
+    const checkAudio = async () => {
+      const needs = needsInteractionForAudio();
+      setNeedsInteraction(needs);
+
+      if (!needs) {
+        try {
+          await initAudio();
+        } catch (e) {
+          console.warn('Audio auto init failed:', e);
+        }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }
-}, [showDebug]);
+    checkAudio();
+  }, []);
 
-// Log session status changes
-useEffect(() => {
-  console.log('🔒 Actividad-3: Session status changed:', status);
-  console.log('🔒 Actividad-3: Session data:', session);
-}, [session, status]);
-
-// Listen for global volume changes from FloatingMenu
-useEffect(() => {
-  const handleGlobalVolumeChange = (e: CustomEvent) => {
-    const { volume, isIPhone, isIPad } = e.detail;
-    console.log(`🎵 Activity3: Received global volume change: ${volume} (iPhone: ${isIPhone}, iPad: ${isIPad})`);
-    setCurrentVolume(volume);
-
-    // Apply volume to video element
-    const video = videoRef.current;
-    if (video && video.readyState > 0) {
-      if (isIPhone) {
-        // iPhone: Use Web Audio API gain node
-        video.muted = false;
-        video.volume = 1.0; // Keep at max, gain node controls volume
-
-        const sharedGainNode = window.globalGainNode || window.videoGainNode;
-        if (sharedGainNode && sharedGainNode.gain) {
-          sharedGainNode.gain.value = volume;
-          console.log(`📱 Activity3 iPhone: Volume applied via shared gainNode: ${volume}`);
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'd' && e.ctrlKey) {
+          setShowDebug(prev => !prev);
         }
-      } else if (isIPad) {
-        // iPad: Direct volume control
-        video.volume = volume;
-        video.muted = volume === 0;
-        console.log(`🔲 Activity3 iPad: Applied volume ${volume} directly (muted: ${volume === 0})`);
-      } else {
-        // Desktop/Android: Direct video volume
-        video.muted = false;
-        video.volume = volume;
-        console.log(`🖥️ Activity3 Desktop/Android: Applied volume ${volume} directly`);
-      }
-    }
-  };
+      };
 
-  window.addEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
-  return () => window.removeEventListener('globalVolumeChange', handleGlobalVolumeChange as EventListener);
-}, [deviceInfo.isIOS]);
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [showDebug]);
 
   // Skip intro video on return visits (user has already seen it)
   useEffect(() => {
-    const hasSeenIntro = localStorage.getItem('actividad-3-intro-seen') === 'true';
+    const hasSeenIntro = localStorage.getItem('aventura-1-intro-seen') === 'true';
     if (hasSeenIntro) {
       setVideoEnded(true);
       setShowSun(true);
@@ -246,21 +208,13 @@ useEffect(() => {
 
   const handleVideoEnd = () => {
     cleanupAudio();
-    // Stop background music when video ends
-    stopBackgroundMusic('actividad-3-bg');
-    localStorage.setItem('actividad-3-intro-seen', 'true');
+    stopBackgroundMusic('aventura-1-bg');
+    localStorage.setItem('aventura-1-intro-seen', 'true');
     setVideoEnded(true);
 
-    // Show Sun/Clouds FIRST (immediately)
     setShowSun(true);
-
-    // Show Ardilla
     setTimeout(() => setShowArdilla(true), 100);
-
-    // Show Alex - he will start talking after 200ms
     setTimeout(() => setShowAlex(true), 1800);
-
-    // Show ActivityMenu during Alex's first dialogue
     setTimeout(() => {
       setShowActivityMenu(true);
       setShowContinueButton(true);
@@ -268,51 +222,29 @@ useEffect(() => {
   };
 
   const handleSectionSelect = async (section: { scenes: string[]; soundClick?: string }) => {
-    // Prevent multiple clicks while navigating
-    if (isNavigating) {
-      console.log('🚫 Already navigating, ignoring click');
-      return;
-    }
-
-    console.log('🎯 Section selected:', section);
-    console.log('🎯 First scene:', section.scenes[0]);
+    if (isNavigating) return;
 
     setIsNavigating(true);
 
-    // Play the section audio and wait for it to complete
     if (section.soundClick) {
       try {
-        console.log('🎵 Playing section audio:', section.soundClick);
         await new Promise<void>((resolve) => {
           const audio = new Audio(section.soundClick);
           audio.volume = 0.7;
-          audio.onended = () => {
-            console.log('✅ Section audio finished');
-            resolve();
-          };
-          audio.onerror = () => {
-            console.warn('⚠️ Section audio failed to play');
-            resolve();
-          };
-          audio.play().catch(() => {
-            console.warn('⚠️ Audio play failed');
-            resolve();
-          });
+          audio.onended = () => resolve();
+          audio.onerror = () => resolve();
+          audio.play().catch(() => resolve());
         });
-
-        // Wait an additional 500ms for better UX
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.warn('Could not play section audio:', error);
       }
     }
 
-    // Stop SimpleAlex speech after audio finishes
     if (simpleAlexRef.current) {
       simpleAlexRef.current.stopSpeech();
     }
 
-    // Hide continue button when user starts playing
     setShowContinueButton(false);
 
     if (videoRef.current) {
@@ -321,29 +253,22 @@ useEffect(() => {
     }
 
     cleanupAudio();
-    // Stop background music when leaving activity
-    stopBackgroundMusic('actividad-3-bg');
+    stopBackgroundMusic('aventura-1-bg');
     setIsExiting(true);
 
-    // Navigate to first scene of the section
     const firstScene = section.scenes[0];
     if (firstScene) {
-      console.log('🎯 Setting pending navigation to:', firstScene);
       setPendingNavigation(firstScene);
     }
-
-    // Background music will stop automatically when leaving page
   };
 
   const handleExitComplete = () => {
-    console.log('🎯 Exit animation complete, navigating to:', pendingNavigation);
     if (pendingNavigation) {
       router.push(pendingNavigation);
     }
   };
 
   const handleJugarClick = () => {
-    console.log('Start Activity 3');
     if (isAnimating) return;
 
     setIsAnimating(true);
@@ -357,10 +282,7 @@ useEffect(() => {
     setUserInteractionReceived(true);
     setNeedsInteraction(false);
 
-    // Start background music using new background music system
-    // This will respond to volume changes from FloatingMenu
-    playBackgroundMusic('/audio/Softy.mp3', 0.4, 'actividad-3-bg');
-
+    playBackgroundMusic('/audio/Softy.mp3', 0.4, 'aventura-1-bg');
     setCanPlayVideo(true);
   };
 
@@ -374,10 +296,10 @@ useEffect(() => {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Only show animated background and button BEFORE video */}
+      {/* Animated background + JugarButton shown BEFORE video starts */}
       {!videoEnded && (!canPlayVideo || needsInteraction) && (
         <>
-          <div className="absolute inset-0 z-50 bg-gradient-to-b from-purple-400 via-pink-300 to-orange-300" />
+          <div className="absolute inset-0 z-50 bg-gradient-to-b from-purple-500 via-pink-400 to-orange-300" />
 
           {/* Floating bubbles */}
           <div className="absolute inset-0 z-50">
@@ -407,8 +329,11 @@ useEffect(() => {
           </div>
 
           <div className="absolute inset-0 z-50 flex items-center justify-center">
-            <motion.div animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}} transition={{ duration: 0.8, ease: 'easeInOut' }}>
-            <JugarButton text='Placer sexual' onClick={handleJugarClick} />
+            <motion.div
+              animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+            >
+              <JugarButton text="Descubriendo mi sexualidad" onClick={handleJugarClick} />
             </motion.div>
           </div>
         </>
@@ -425,8 +350,7 @@ useEffect(() => {
         onNavigate={(url) => {
           setShowContinueButton(false);
           cleanupAudio();
-          // Stop background music when leaving activity
-          stopBackgroundMusic('actividad-3-bg');
+          stopBackgroundMusic('aventura-1-bg');
           setIsExiting(true);
           setPendingNavigation(url);
         }}
@@ -446,93 +370,83 @@ useEffect(() => {
       >
         <div className="absolute" style={containerStyle}>
           {!videoEnded && canPlayVideo ? (
-            <OptimizedVideo
+            <video
               ref={videoRef}
-              src="/video/INTRO_ACTIVIDAD-1.mp4"
               className="absolute inset-0 w-full h-full object-cover z-10"
+              src={INTRO_VIDEO_SRC}
               autoPlay
               playsInline
-              volume={currentVolume}
               muted={needsInteraction && !userInteractionReceived}
               onEnded={handleVideoEnd}
-              onLoadedData={async () => {
-                console.log(`🎬 Activity3: Video metadata loaded`);
+              onLoadedData={() => {
+                const video = videoRef.current;
+                if (!video) return;
+                video.volume = currentVolume;
+              }}
+              onPlay={async () => {
                 const video = videoRef.current;
                 if (!video) return;
 
-                // Determine device type
                 const isIPhone = /iPhone/.test(navigator?.userAgent || '');
                 const isIPad = /iPad/.test(navigator?.userAgent || '') ||
-                             (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+                  (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
 
-                // Initialize audio for all devices
+                if (isIPhone) {
+                  video.muted = false;
+                  video.volume = 1.0;
+                } else if (isIPad) {
+                  video.volume = currentVolume;
+                  video.muted = currentVolume === 0;
+                } else {
+                  video.muted = false;
+                  video.volume = currentVolume;
+                }
+
                 try {
                   await initAudio();
-                  console.log('🍎 Activity3: Audio initialized');
                 } catch (e) {
-                  console.warn('Activity3: Audio init failed:', e);
+                  console.warn('Aventura-1: Audio init failed:', e);
                 }
 
                 if (isIPhone) {
-                  console.log(`📱 Activity3 iPhone: Setting up Web Audio API for volume control`);
-
-                  // Get or create AudioContext for iPhone volume control
-                  if (!window.globalAudioContext) {
-                    window.globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    console.log(`📱 Activity3 iPhone: AudioContext created`);
+                  try {
+                    let sharedAudioContext = window.globalAudioContext;
+                    if (!sharedAudioContext) {
+                      const AudioContext = window.AudioContext || window.webkitAudioContext;
+                      if (AudioContext) {
+                        sharedAudioContext = new AudioContext();
+                        window.globalAudioContext = sharedAudioContext;
+                        if (!window.globalGainNode) {
+                          const initialGainNode = sharedAudioContext.createGain();
+                          initialGainNode.gain.value = currentVolume;
+                          window.globalGainNode = initialGainNode;
+                        }
+                      }
+                    }
+                    if (sharedAudioContext) {
+                      if (sharedAudioContext.state === 'suspended') {
+                        await sharedAudioContext.resume();
+                      }
+                      connectVideoToWebAudio(video, sharedAudioContext);
+                    }
+                  } catch (e) {
+                    console.error('Aventura-1 iPhone: AudioContext setup failed:', e);
                   }
-
-                  if (window.globalAudioContext.state === 'suspended') {
-                    await window.globalAudioContext.resume();
-                  }
-
-                  // Connect video to Web Audio API for volume control
-                  connectVideoToWebAudio(video, window.globalAudioContext);
                 } else if (isIPad) {
-                  // For iPad, initialize audio context for playGameAudio to work
                   try {
                     let sharedAudioContext = window.sharedAudioContext;
                     if (!sharedAudioContext) {
                       sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
                       window.sharedAudioContext = sharedAudioContext;
                     }
-
                     if (sharedAudioContext.state === 'suspended') {
                       await sharedAudioContext.resume();
                     }
-                    console.log(`🔲 Activity3 iPad: Audio context initialized for playGameAudio`);
                   } catch (error) {
-                    console.error('🔲 Activity3 iPad: Error setting up audio context:', error);
+                    console.error('Aventura-1 iPad: Error setting up audio context:', error);
                   }
                 }
               }}
-              onPlay={() => {
-                console.log(`🎬 Activity3: Video can play`);
-                const video = videoRef.current;
-                if (!video) return;
-
-                // Determine device type and apply volume
-                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                const isIPad = /iPad/.test(navigator?.userAgent || '') ||
-                             (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
-
-                if (isIPhone) {
-                  video.muted = false;
-                  video.volume = 1.0; // iPhone uses Web Audio for volume control
-                  console.log(`📱 Activity3 iPhone: Video ready, using Web Audio volume control`);
-                } else if (isIPad) {
-                  video.volume = currentVolume;
-                  video.muted = currentVolume === 0;
-                  console.log(`🔲 Activity3 iPad: Video ready, direct volume: ${currentVolume} (muted: ${currentVolume === 0})`);
-                } else {
-                  video.muted = false;
-                  video.volume = currentVolume;
-                  console.log(`🖥️ Activity3 Desktop/Android: Video ready, volume: ${currentVolume}`);
-                }
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
             />
           ) : (
             <Image
@@ -571,7 +485,6 @@ useEffect(() => {
 
             {showActivityMenu && (
               <>
-                {/* Blocking overlay during navigation */}
                 {isNavigating && (
                   <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex items-center justify-center">
                     <div className="text-white text-xl font-bold animate-pulse">
@@ -582,7 +495,7 @@ useEffect(() => {
                 <div className="w-full px-6 pb-6 z-30 flex justify-center">
                   <ActivityMenu
                     isVisible={true}
-                    config={ACTIVITY_3_CONFIG}
+                    config={AVENTURA_1_CONFIG}
                     onSectionClick={handleSectionSelect}
                     isNavigating={isNavigating}
                   />
@@ -602,17 +515,14 @@ useEffect(() => {
       {/* Debug panel */}
       {showDebug && (
         <div className="fixed bottom-0 left-0 bg-black/70 text-white p-2 max-w-xs max-h-40 overflow-auto text-xs z-[1000]">
-          <div className="font-bold mb-1">Actividad-3 Debug</div>
-          <div>👤 User: {session?.user?.username || session?.user?.email || 'none'}</div>
-          <div>🏷️ Role: {(session?.user as { role?: string })?.role || 'none'}</div>
-          <div>⚧️ Sex: {(session?.user as { sex?: string })?.sex || 'none'}</div>
-          <div>📊 Status: {status}</div>
-          <div>🎬 Video Ended: {videoEnded ? 'yes' : 'no'}</div>
-          <div>🔊 Can Play Video: {canPlayVideo ? 'yes' : 'no'}</div>
-          <div>👆 Needs Interaction: {needsInteraction ? 'yes' : 'no'}</div>
-          <div>🍎 iOS: {deviceInfo.isIOS ? 'yes' : 'no'}</div>
-          <div>🔊 Volume: {currentVolume.toFixed(2)}</div>
-          <div className="text-yellow-300">Press Ctrl+D to toggle</div>
+          <div className="font-bold mb-1">Aventura-1 Debug</div>
+          <div>User: {session?.user?.username || session?.user?.email || 'none'}</div>
+          <div>Role: {(session?.user as { role?: string })?.role || 'none'}</div>
+          <div>Status: {status}</div>
+          <div>Video Ended: {videoEnded ? 'yes' : 'no'}</div>
+          <div>Can Play Video: {canPlayVideo ? 'yes' : 'no'}</div>
+          <div>Needs Interaction: {needsInteraction ? 'yes' : 'no'}</div>
+          <div className="text-yellow-300">Ctrl+D to toggle</div>
         </div>
       )}
     </div>

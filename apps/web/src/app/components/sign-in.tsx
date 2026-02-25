@@ -12,37 +12,86 @@ interface SignInProps {
 export function SignIn({ error }: SignInProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [loginError, setLoginError] = useState(error || '');
+	const [passwordError, setPasswordError] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
+
+	// Clear errors when user starts typing
+	const handleInputChange = () => {
+		if (loginError) setLoginError('');
+		if (passwordError) setPasswordError('');
+	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		console.log('🔄 FORM SUBMITTED - Event triggered');
 		e.preventDefault();
+		e.stopPropagation();
+
 		setIsLoading(true);
 		setLoginError('');
-		
+		setPasswordError('');
+
 		const formData = new FormData(e.currentTarget);
 		const login = formData.get('login') as string;
 		const password = formData.get('password') as string;
-		
+
 		console.log('🚀 Sign-in: Starting authentication for:', login);
 		console.log('🔑 Password length:', password?.length);
-		
+
+		// Block any navigation attempts during login
+		const blockNavigation = (e: BeforeUnloadEvent) => {
+			e.preventDefault();
+			return '';
+		};
+		window.addEventListener('beforeunload', blockNavigation);
+
 		try {
+			console.log('📡 Calling signIn with redirect: false');
 			const result = await signIn("credentials", {
 				login,
 				password,
 				redirect: false
+			}).catch((err) => {
+				console.error('🚨 signIn threw error:', err);
+				return { ok: false, error: 'SignInError' };
 			});
-			
+
+			console.log('🔍 Sign-in result:', JSON.stringify(result, null, 2));
+			console.log('✅ Result OK:', result?.ok);
+			console.log('❌ Result Error:', result?.error);
+			console.log('🔗 Result URL:', result?.url);
+
+			// Remove navigation block
+			window.removeEventListener('beforeunload', blockNavigation);
+
 			if (result?.ok) {
-				// Simple redirect - just go to home
+				console.log('✅ Login successful, redirecting to home...');
+				// Only redirect on success
 				window.location.href = '/home';
 			} else {
-				setLoginError('Login failed');
+				console.log('❌ Login failed with error:', result?.error);
+
+				// Force staying on the same page
+				if (window.location.pathname !== '/auth/login') {
+					window.history.pushState(null, '', '/auth/login');
+				}
+
+				// Handle specific error messages
+				if (result?.error === 'CredentialsSignin' || result?.error?.includes('Invalid')) {
+					setPasswordError('Usuario o contraseña incorrectos');
+					setLoginError('Las credenciales no son válidas. Por favor, verifica tu usuario y contraseña.');
+				} else if (result?.error?.includes('User not found')) {
+					setLoginError('El usuario no existe');
+					setPasswordError('');
+				} else {
+					setLoginError('Error de autenticación. Por favor, inténtalo de nuevo.');
+					setPasswordError('Verifica tus credenciales');
+				}
 			}
 		} catch (error) {
 			console.error('❌ Sign-in: Unexpected error:', error);
+			window.removeEventListener('beforeunload', blockNavigation);
 			setLoginError('Error de autenticación. Por favor, inténtalo de nuevo.');
+			setPasswordError('');
 		} finally {
 			setIsLoading(false);
 		}
@@ -99,6 +148,7 @@ export function SignIn({ error }: SignInProps) {
 								className="w-full p-3 rounded-lg text-gray-900 placeholder-gray-400 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
 								required
 								disabled={isLoading}
+								onChange={handleInputChange}
 							/>
 						</div>
 						<div className="space-y-2">
@@ -109,9 +159,14 @@ export function SignIn({ error }: SignInProps) {
 									name="password"
 									id="password"
 									placeholder="Contraseña"
-									className="w-full p-3 pr-12 rounded-lg text-gray-900 placeholder-gray-400 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
+									className={`w-full p-3 pr-12 rounded-lg text-gray-900 placeholder-gray-400 border focus:outline-none focus:ring-2 transition-colors ${
+										passwordError
+											? 'border-red-500 focus:ring-red-300'
+											: 'border-gray-300 focus:ring-white'
+									}`}
 									required
 									disabled={isLoading}
+									onChange={handleInputChange}
 								/>
 								<button
 									type="button"
@@ -127,6 +182,11 @@ export function SignIn({ error }: SignInProps) {
 									)}
 								</button>
 							</div>
+							{passwordError && (
+								<p className="text-red-300 text-sm mt-1 flex items-center gap-1">
+									<span className="font-bold">⚠</span> {passwordError}
+								</p>
+							)}
 						</div>
 						<div className="flex items-center">
 							<input

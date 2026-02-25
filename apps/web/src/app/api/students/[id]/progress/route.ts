@@ -166,3 +166,73 @@ export async function GET(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+// PUT /api/students/[id]/progress - Update progress for a specific scene
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const studentId = parseInt(id);
+    if (isNaN(studentId)) {
+      return NextResponse.json({ error: 'Invalid student ID' }, { status: 400 });
+    }
+
+    const canAccess = await canManageStudent(session.user.id, studentId);
+    if (!canAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { activity_id, scene_id, status, completion_percentage } = body;
+
+    if (!activity_id || !scene_id || !status) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const now = new Date().toISOString();
+    const result = await query(`
+      INSERT INTO student_progress (
+        student_id, activity_id, scene_id, status, completion_percentage,
+        last_accessed_at, started_at, completed_at, attempts
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
+      ON CONFLICT (student_id, activity_id, scene_id)
+      DO UPDATE SET
+        status = EXCLUDED.status,
+        completion_percentage = EXCLUDED.completion_percentage,
+        last_accessed_at = EXCLUDED.last_accessed_at,
+        started_at = CASE
+          WHEN student_progress.started_at IS NULL THEN EXCLUDED.started_at
+          ELSE student_progress.started_at
+        END,
+        completed_at = CASE
+          WHEN EXCLUDED.status = 'completed' THEN EXCLUDED.completed_at
+          ELSE NULL
+        END,
+        attempts = student_progress.attempts + 1
+      RETURNING *
+    `, [
+      studentId,
+      activity_id,
+      scene_id,
+      status,
+      completion_percentage ?? (status === 'completed' ? 100 : status === 'in_progress' ? 50 : 0),
+      now,
+      status !== 'not_started' ? now : null,
+      status === 'completed' ? now : null
+    ]);
+
+    return NextResponse.json({ message: 'Progress updated', progress: result.rows[0] });
+
+  } catch (error) {
+    console.error('Error updating student progress:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

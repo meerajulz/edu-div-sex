@@ -17,6 +17,7 @@ interface Student {
   comprehension_level: number;
   attention_span: number;
   motor_skills: number;
+  supervision_level?: number;
   notes?: string;
   created_at: string;
   teacher_name?: string;
@@ -40,6 +41,7 @@ export default function EditStudentPage() {
     comprehension_level: 1,
     attention_span: 1,
     motor_skills: 1,
+    supervision_level: 1,
     notes: ''
   });
 
@@ -68,6 +70,7 @@ export default function EditStudentPage() {
         comprehension_level: studentData.comprehension_level || 1,
         attention_span: studentData.attention_span || 1,
         motor_skills: studentData.motor_skills || 1,
+        supervision_level: studentData.supervision_level || 1,
         notes: studentData.notes || ''
       });
     } catch (err) {
@@ -92,6 +95,7 @@ export default function EditStudentPage() {
         comprehension_level: formData.comprehension_level,
         attention_span: formData.attention_span,
         motor_skills: formData.motor_skills,
+        supervision_level: formData.supervision_level,
         notes: formData.notes
       };
 
@@ -124,8 +128,8 @@ export default function EditStudentPage() {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name.includes('level') || name === 'attention_span' || name === 'motor_skills' 
-        ? parseInt(value) 
+      [name]: name.includes('level') || name === 'attention_span' || name === 'motor_skills' || name === 'supervision_level'
+        ? parseInt(value)
         : value
     }));
   };
@@ -315,6 +319,45 @@ export default function EditStudentPage() {
                       ))}
                     </select>
                   </div>
+                </div>
+              </div>
+
+              {/* Supervision Level */}
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Nivel de Supervisión</h2>
+                <div className="flex flex-col gap-3">
+                  <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    formData.supervision_level === 1 ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="supervision_level"
+                      value="1"
+                      checked={formData.supervision_level === 1}
+                      onChange={() => setFormData(prev => ({ ...prev, supervision_level: 1 }))}
+                      className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">Nivel 1</div>
+                      <div className="text-sm text-gray-500">Acceso al contenido básico (actividades 1–6)</div>
+                    </div>
+                  </label>
+                  <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    formData.supervision_level === 2 ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="supervision_level"
+                      value="2"
+                      checked={formData.supervision_level === 2}
+                      onChange={() => setFormData(prev => ({ ...prev, supervision_level: 2 }))}
+                      className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">Nivel Avanzado</div>
+                      <div className="text-sm text-gray-500">Acceso al contenido avanzado (nivel 2)</div>
+                    </div>
+                  </label>
                 </div>
               </div>
 

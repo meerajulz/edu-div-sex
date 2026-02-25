@@ -511,6 +511,102 @@ export const ACTIVITY_6_CONFIG: ActivityConfig = {
   ]
 };
 
+// Aventura 1 – Nivel Avanzado
+// Reuses scenes from actividad-1 and actividad-4 in a new order,
+// plus new placeholder scenes under /aventura-1/.
+export const AVENTURA_1_CONFIG: ActivityConfig = {
+  activityId: 11,
+  activitySlug: 'aventura-1',
+  title: 'Descubriendo mi sexualidad',
+  sections: [
+    {
+      id: 1,
+      title: 'NUESTRO CUERPO CAMBIA',
+      scenes: ['/aventura-1/scene1'],
+      isUnlocked: true,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-hover.svg',
+      soundClick: '/audio/labels/mAct1/a1.mp3',
+      xPosition: -60,
+      yPosition: 280,
+      zPosition: 150,
+      scale: 0.9,
+      rotateX: 18,
+      rotateY: 15,
+      delay: 0.2,
+      brightness: 1,
+    },
+    {
+      id: 2,
+      title: 'CAMBIOS EN LA PUBERTAD',
+      scenes: [
+        '/aventura-1/scene2', // Cambios en Nico
+        '/aventura-1/scene3', // Erección
+        '/aventura-1/juego1', // Juego 1 – ¿Qué ha cambiado?
+      ],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-2-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-2-hover.svg',
+      soundClick: '/audio/labels/mAct1/a2.mp3',
+      xPosition: 100,
+      yPosition: 350,
+      zPosition: -50,
+      scale: 1,
+      rotateX: 18,
+      rotateY: -45,
+      delay: 0.5,
+      brightness: 1,
+    },
+    {
+      id: 3,
+      title: 'HIGIENE ÍNTIMA',
+      scenes: [
+        '/aventura-1/scene4', // Cuido de mi higiene
+        '/aventura-1/juego2', // Juego 2 – Ayuda en la higiene
+        '/aventura-1/scene5', // La menstruación
+        '/aventura-1/scene6', // Higiene después del WC
+        '/aventura-1/juego3', // Juego 3 – Higiene menstrual
+      ],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-3-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-3-hover.svg',
+      soundClick: '/audio/labels/mAct1/a3.mp3',
+      xPosition: -150,
+      yPosition: 280,
+      zPosition: -300,
+      scale: 1.2,
+      rotateX: 0,
+      rotateY: 10,
+      delay: 0.9,
+      brightness: 0.5,
+    },
+    {
+      id: 4,
+      title: 'LA TÍA MAR EN LA GINECÓLOGA',
+      scenes: [
+        '/aventura-1/scene7', // La tía Mar en la ginecóloga
+        '/aventura-1/juego4', // Juego 4 – ¡Concurso!
+      ],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-4-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-4-hover.svg',
+      soundClick: '/audio/labels/mAct1/a4.mp3',
+      xPosition: 100,
+      yPosition: 250,
+      zPosition: -300,
+      scale: 1.2,
+      rotateX: 28,
+      rotateY: 20,
+      delay: 1.1,
+      brightness: 0.5,
+    },
+  ],
+};
+
 // Helper functions
 export function getActivityConfig(activityId: number): ActivityConfig | null {
   switch (activityId) {
@@ -526,6 +622,8 @@ export function getActivityConfig(activityId: number): ActivityConfig | null {
       return ACTIVITY_5_CONFIG;
     case 6:
       return ACTIVITY_6_CONFIG;
+    case 11:
+      return AVENTURA_1_CONFIG;
     default:
       return null;
   }
