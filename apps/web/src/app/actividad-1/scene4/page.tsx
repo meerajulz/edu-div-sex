@@ -118,6 +118,14 @@ export default function Scene4Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+
+    // Skip video and go straight to game when coming from aventura-1
+    const skipVideo = localStorage.getItem('aventura-1-skip-video');
+    if (skipVideo === 'true') {
+      localStorage.removeItem('aventura-1-skip-video');
+      setShowVideo(true);
+      setVideoEnded(true);
+    }
   }, []);
 
   // Listen for global volume changes
