@@ -195,6 +195,20 @@ export default function Scene6Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
+
+    // If coming from aventura-1, skip congratulations and navigate directly
+    const returnTo = localStorage.getItem('aventura-1-return-to');
+    if (returnTo) {
+      localStorage.removeItem('aventura-1-return-to');
+      saveProgress('actividad-1', 'scene6', 'completed', 100, {
+        video_watched: videoEnded,
+        game_completed: true,
+        completed_at: new Date().toISOString()
+      });
+      setTimeout(() => router.push(returnTo), 800);
+      return;
+    }
+
     setTimeout(() => {
       setShowCongratulations(true);
     }, 1000);

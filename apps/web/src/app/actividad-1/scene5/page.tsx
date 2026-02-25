@@ -122,9 +122,22 @@ export default function Scene5Page() {
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
-    console.log('🎬 Scene5: Video ended, showing congratulations');
 
-    // Show congratulations after a short delay
+    // If coming from aventura-1, skip congratulations and navigate directly
+    const returnTo = localStorage.getItem('aventura-1-return-to');
+    if (returnTo) {
+      localStorage.removeItem('aventura-1-return-to');
+      saveProgress('actividad-1', 'scene5', 'completed', 100, {
+        video_watched: true,
+        section_completed: true,
+        completed_at: new Date().toISOString()
+      });
+      setTimeout(() => router.push(returnTo), 800);
+      return;
+    }
+
+    // Default actividad-1 flow: show congratulations
+    console.log('🎬 Scene5: Video ended, showing congratulations');
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);

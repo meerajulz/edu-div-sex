@@ -185,8 +185,21 @@ export default function Actividad4Scene1Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
-    setShowJuegoUno(false); // Close the game modal
-    // Show congratulations after a short delay
+    setShowJuegoUno(false);
+
+    // If coming from aventura-1, skip congratulations and navigate directly
+    const returnTo = localStorage.getItem('aventura-1-return-to');
+    if (returnTo) {
+      localStorage.removeItem('aventura-1-return-to');
+      saveProgress('actividad-4', 'scene1', 'completed', 100, {
+        videos_watched: allVideosEnded,
+        game_completed: true,
+        completed_at: new Date().toISOString()
+      });
+      setTimeout(() => router.push(returnTo), 800);
+      return;
+    }
+
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
