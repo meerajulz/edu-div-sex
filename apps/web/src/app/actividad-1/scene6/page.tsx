@@ -118,6 +118,14 @@ export default function Scene6Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+
+    // Skip video and go straight to game when coming from aventura-1
+    const skipVideo = localStorage.getItem('aventura-1-skip-video');
+    if (skipVideo === 'true') {
+      localStorage.removeItem('aventura-1-skip-video');
+      setShowVideo(true);
+      setVideoEnded(true);
+    }
   }, []);
 
   // Listen for global volume changes
@@ -195,20 +203,7 @@ export default function Scene6Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
-
-    // If coming from aventura-1, skip congratulations and navigate directly
-    const returnTo = localStorage.getItem('aventura-1-return-to');
-    if (returnTo) {
-      localStorage.removeItem('aventura-1-return-to');
-      saveProgress('actividad-1', 'scene6', 'completed', 100, {
-        video_watched: videoEnded,
-        game_completed: true,
-        completed_at: new Date().toISOString()
-      });
-      setTimeout(() => router.push(returnTo), 800);
-      return;
-    }
-
+    // Always show congratulations overlay — handleGoToActivityMenu handles navigation
     setTimeout(() => {
       setShowCongratulations(true);
     }, 1000);

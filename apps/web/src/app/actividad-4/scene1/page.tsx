@@ -196,6 +196,30 @@ export default function Actividad4Scene1Page() {
         game_completed: true,
         completed_at: new Date().toISOString()
       });
+      // Shift the chain: apply skip-video for the next page
+      const skipVideoOnReturn = localStorage.getItem('aventura-1-skip-video-on-return');
+      if (skipVideoOnReturn) {
+        localStorage.removeItem('aventura-1-skip-video-on-return');
+        localStorage.setItem('aventura-1-skip-video', 'true');
+      }
+      // Shift: next-return-to → return-to
+      const nextReturnTo = localStorage.getItem('aventura-1-next-return-to');
+      if (nextReturnTo) {
+        localStorage.removeItem('aventura-1-next-return-to');
+        localStorage.setItem('aventura-1-return-to', nextReturnTo);
+      }
+      // Shift: skip-video-on-next-return → skip-video-on-return
+      const skipVideoOnNextReturn = localStorage.getItem('aventura-1-skip-video-on-next-return');
+      if (skipVideoOnNextReturn) {
+        localStorage.removeItem('aventura-1-skip-video-on-next-return');
+        localStorage.setItem('aventura-1-skip-video-on-return', skipVideoOnNextReturn);
+      }
+      // Shift: after-next-return-to → next-return-to
+      const afterNextReturnTo = localStorage.getItem('aventura-1-after-next-return-to');
+      if (afterNextReturnTo) {
+        localStorage.removeItem('aventura-1-after-next-return-to');
+        localStorage.setItem('aventura-1-next-return-to', afterNextReturnTo);
+      }
       setTimeout(() => router.push(returnTo), 800);
       return;
     }

@@ -21,7 +21,13 @@ export function useActivityProtection() {
         console.log('🔒 Not an activity page, skipping protection:', pathname);
         return; // Not an activity page
       }
-      
+
+      // Skip protection when navigating within an aventura context
+      if (typeof window !== 'undefined' && localStorage.getItem('aventura-1-return-to')) {
+        console.log('🔒 Aventura context detected, skipping protection for:', pathname);
+        return;
+      }
+
       console.log('🔒 Activity protection checking path:', pathname, 'Match:', activityMatch);
 
       // Wait for session to load - this is critical to prevent false redirects

@@ -29,6 +29,9 @@ export default function Scene7Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showScene7Replay, setShowScene7Replay] = useState(false);
+  const [showPlaceholderGame, setShowPlaceholderGame] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -324,39 +327,95 @@ export default function Scene7Page() {
               maxRetries={3}
             />
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
-                        <motion.div
-                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
-                            initial={{ rotate: -5 }}
-                            animate={{ rotate: [0, 2, -2, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                        >
-                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                                ¡Felicidades!
-                            </h1>
-                            <p className="text-xl sm:text-2xl text-white/90 font-semibold">
-                                Haz completado la aventura.
-                            </p>
-                        </motion.div>
-                        <div className="flex flex-col items-center gap-6">
-                          <motion.div
-                              className="inline-block"
-                              animate={{ rotate: [0, -5, 5, 0] }}
-                              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                              style={{ transformOrigin: 'center center' }}
-                          >
-                              <div className="whitespace-nowrap">
-                                  <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleBackClick} disabled={isAnimating} />
-                              </div>
-                          </motion.div>
-
-                          {/* Button to replay Scene 7 video */}
-                          <VolverAVerButton onClick={handleVolverAVerScene7} />
-                        </div>
-                    </div>
-                    
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              {!gameCompleted && (
+                <div className="flex flex-col items-center gap-6">
+                  <motion.div
+                    animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  >
+                    <JugarButton
+                      text="Jugar"
+                      onClick={() => {
+                        playSound();
+                        setShowPlaceholderGame(true);
+                      }}
+                      disabled={isAnimating}
+                    />
+                  </motion.div>
+                  <VolverAVerButton onClick={handleVolverAVerScene7} />
+                </div>
+              )}
+            </div>
           )}
         </div>
+      )}
+
+      {/* Placeholder Game Overlay */}
+      {showPlaceholderGame && (
+        <motion.div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-purple-400 via-pink-400 to-yellow-300 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🚧</div>
+            <h2 className="text-3xl font-bold text-white mb-4">¡Próximamente!</h2>
+            <p className="text-white text-lg mb-6">
+              Este juego estará disponible muy pronto.
+            </p>
+            <motion.button
+              onClick={() => {
+                setShowPlaceholderGame(false);
+                setGameCompleted(true);
+                setTimeout(() => setShowCongratulations(true), 500);
+              }}
+              className="bg-white text-purple-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Congratulations Overlay */}
+      {showCongratulations && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+          >
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
+            <p className="text-white text-lg mb-6">
+              Has completado esta sección de la actividad
+            </p>
+            <motion.button
+              onClick={handleBackClick}
+              disabled={isAnimating}
+              className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continuar al menú
+            </motion.button>
+          </motion.div>
+        </motion.div>
       )}
     </motion.div>
   );

@@ -565,9 +565,6 @@ export const AVENTURA_1_CONFIG: ActivityConfig = {
       scenes: [
         '/aventura-1/scene4', // Cuido de mi higiene
         '/aventura-1/juego2', // Juego 2 – Ayuda en la higiene
-        '/aventura-1/scene5', // La menstruación
-        '/aventura-1/scene6', // Higiene después del WC
-        '/aventura-1/juego3', // Juego 3 – Higiene menstrual
       ],
       isUnlocked: false,
       isCompleted: false,
@@ -585,10 +582,9 @@ export const AVENTURA_1_CONFIG: ActivityConfig = {
     },
     {
       id: 4,
-      title: 'LA TÍA MAR EN LA GINECÓLOGA',
+      title: 'EL CUERPO DE LOS MAYORES',
       scenes: [
-        '/aventura-1/scene7', // La tía Mar en la ginecóloga
-        '/aventura-1/juego4', // Juego 4 – ¡Concurso!
+        '/aventura-1/scene7', // El cuerpo de los mayores
       ],
       isUnlocked: false,
       isCompleted: false,

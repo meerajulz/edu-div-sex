@@ -22,7 +22,8 @@ export default function Aventura1Juego3Page() {
       completed_at: new Date().toISOString(),
     });
     localStorage.setItem('aventura-1-return-to', '/aventura-1/scene7');
-    router.push('/actividad-1/scene3');
+    localStorage.setItem('aventura-1-skip-video', 'true');
+    router.push('/actividad-1/scene6');
   };
 
   const handleNext = async () => {

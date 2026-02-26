@@ -126,6 +126,12 @@ export default function Scene4Page() {
       setShowVideo(true);
       setVideoEnded(true);
     }
+
+    // Video-only mode: show video but don't show game when it ends
+    const videoOnly = localStorage.getItem('aventura-1-video-only');
+    if (videoOnly === 'true') {
+      setShowVideo(true);
+    }
   }, []);
 
   // Listen for global volume changes
@@ -167,6 +173,38 @@ export default function Scene4Page() {
   };
 
   const handleVideoEnd = () => {
+    // Video-only mode: navigate to next step instead of showing game
+    const videoOnly = localStorage.getItem('aventura-1-video-only');
+    if (videoOnly === 'true') {
+      localStorage.removeItem('aventura-1-video-only');
+      // Save progress for this video-only visit
+      saveProgress('actividad-1', 'scene4', 'completed', 100, {
+        video_watched: true,
+        completed_at: new Date().toISOString()
+      });
+      const returnTo = localStorage.getItem('aventura-1-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-1-return-to');
+        // Shift chain flags so the destination page has its return path set
+        const nextReturnTo = localStorage.getItem('aventura-1-next-return-to');
+        if (nextReturnTo) {
+          localStorage.removeItem('aventura-1-next-return-to');
+          localStorage.setItem('aventura-1-return-to', nextReturnTo);
+        }
+        const skipVideoOnNextReturn = localStorage.getItem('aventura-1-skip-video-on-next-return');
+        if (skipVideoOnNextReturn) {
+          localStorage.removeItem('aventura-1-skip-video-on-next-return');
+          localStorage.setItem('aventura-1-skip-video-on-return', skipVideoOnNextReturn);
+        }
+        const afterNextReturnTo = localStorage.getItem('aventura-1-after-next-return-to');
+        if (afterNextReturnTo) {
+          localStorage.removeItem('aventura-1-after-next-return-to');
+          localStorage.setItem('aventura-1-next-return-to', afterNextReturnTo);
+        }
+        setTimeout(() => router.push(returnTo), 500);
+        return;
+      }
+    }
     setVideoEnded(true);
   };
 
@@ -231,6 +269,18 @@ export default function Scene4Page() {
       const returnTo = localStorage.getItem('aventura-1-return-to');
       if (returnTo) {
         localStorage.removeItem('aventura-1-return-to');
+        // Shift: video-only-on-return → aventura-1-video-only
+        const videoOnlyOnReturn = localStorage.getItem('aventura-1-video-only-on-return');
+        if (videoOnlyOnReturn) {
+          localStorage.removeItem('aventura-1-video-only-on-return');
+          localStorage.setItem('aventura-1-video-only', 'true');
+        }
+        // Shift: next-return-to → return-to
+        const nextReturnTo = localStorage.getItem('aventura-1-next-return-to');
+        if (nextReturnTo) {
+          localStorage.removeItem('aventura-1-next-return-to');
+          localStorage.setItem('aventura-1-return-to', nextReturnTo);
+        }
         router.push(returnTo);
       } else {
         router.push('/actividad-1/scene5');
