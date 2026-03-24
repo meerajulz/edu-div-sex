@@ -112,7 +112,7 @@ export async function PUT(
     }
 
     // Determine supervision_level: use directly provided value if given
-    let supervision_level = supervision_level_input;
+    const supervision_level = supervision_level_input;
 
     // Build dynamic update query
     const updates = [];

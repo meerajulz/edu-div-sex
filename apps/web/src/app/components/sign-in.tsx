@@ -58,7 +58,6 @@ export function SignIn({ error }: SignInProps) {
 			console.log('🔍 Sign-in result:', JSON.stringify(result, null, 2));
 			console.log('✅ Result OK:', result?.ok);
 			console.log('❌ Result Error:', result?.error);
-			console.log('🔗 Result URL:', result?.url);
 
 			// Remove navigation block
 			window.removeEventListener('beforeunload', blockNavigation);

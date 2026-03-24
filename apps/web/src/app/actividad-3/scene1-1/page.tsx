@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad3Scene1_1Page() {
 
@@ -125,6 +126,7 @@ export default function Actividad3Scene1_1Page() {
     if (savedVolume) {
       setCurrentVolume(parseFloat(savedVolume));
     }
+    setHasWatchedVideo(!!localStorage.getItem('a3-scene1-1-video-watched'));
   }, []);
 
   // Listen for global volume changes from FloatingMenu
@@ -198,6 +200,7 @@ export default function Actividad3Scene1_1Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a3-scene1-1-video-watched', 'true');
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
@@ -250,7 +253,13 @@ export default function Actividad3Scene1_1Page() {
       } else {
         console.error('❌ Actividad3-Scene1-1: Failed to save progress, but continuing');
       }
-      router.push('/actividad-3');
+      const returnTo = localStorage.getItem('aventura-3-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-3-return-to');
+        router.push(returnTo);
+      } else {
+        router.push('/actividad-3');
+      }
     }, 800);
   };
 
@@ -338,84 +347,87 @@ export default function Actividad3Scene1_1Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              ref={videoRef}
-              src="/video/ACTIVIDAD-3-ESCENA-1_1.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-20"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (!video) return;
+            <>
+              <OptimizedVideo
+                ref={videoRef}
+                src="/video/ACTIVIDAD-3-ESCENA-1_1.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-20"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (!video) return;
 
-                // Apply volume when video loads
-                video.volume = currentVolume;
-                console.log(`🎬 Scene1-1: Video loaded, volume set to: ${currentVolume}`);
-              }}
-              onPlay={async () => {
-                const video = videoRef.current;
-                if (!video) return;
+                  // Apply volume when video loads
+                  video.volume = currentVolume;
+                  console.log(`🎬 Scene1-1: Video loaded, volume set to: ${currentVolume}`);
+                }}
+                onPlay={async () => {
+                  const video = videoRef.current;
+                  if (!video) return;
 
-                // When video starts playing, ensure it's unmuted and volume is applied
-                video.muted = false;
-                video.volume = currentVolume;
-                console.log(`🎬 Scene1-1: Video started playing, unmuted: ${!video.muted}, volume set to: ${currentVolume}`);
+                  // When video starts playing, ensure it's unmuted and volume is applied
+                  video.muted = false;
+                  video.volume = currentVolume;
+                  console.log(`🎬 Scene1-1: Video started playing, unmuted: ${!video.muted}, volume set to: ${currentVolume}`);
 
-                // Initialize audio for volume control if needed
-                try {
-                  await initAudio();
-                  console.log('🍎 Scene1-1: Audio initialized for volume control');
-                } catch (e) {
-                  console.warn('Scene1-1: Audio initialization failed:', e);
-                }
-
-                // For iPhone, connect to Web Audio API for volume control
-                const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                if (isIPhone) {
+                  // Initialize audio for volume control if needed
                   try {
-                    // Get or create shared AudioContext from FloatingMenu
-                    let sharedAudioContext = window.sharedAudioContext;
-                    if (!sharedAudioContext) {
-                      console.log('🍎 Scene1-1 iPhone: Initializing shared AudioContext for video');
-                      try {
-                        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        window.sharedAudioContext = sharedAudioContext;
-                        console.log('🍎 Scene1-1 iPhone: ✅ Created new shared AudioContext');
-                      } catch (audioError) {
-                        console.error('🍎 Scene1-1 iPhone: ❌ Failed to create AudioContext:', audioError);
-                        return;
-                      }
-                    }
-
-                    // Ensure AudioContext is running
-                    if (sharedAudioContext.state === 'suspended') {
-                      try {
-                        await sharedAudioContext.resume();
-                        console.log('🍎 Scene1-1 iPhone: ✅ Resumed suspended AudioContext');
-                      } catch (resumeError) {
-                        console.error('🍎 Scene1-1 iPhone: ❌ Failed to resume AudioContext:', resumeError);
-                      }
-                    }
-
-                    if (sharedAudioContext.state === 'running') {
-                      // Connect video to Web Audio API for iPhone volume control
-                      connectVideoToWebAudio(video, sharedAudioContext);
-                    } else {
-                      connectVideoToWebAudio(video, sharedAudioContext);
-                    }
-                  } catch (error) {
-                    console.error('🍎 Scene1-1 iPhone: ❌ Error setting up Web Audio API:', error);
+                    await initAudio();
+                    console.log('🍎 Scene1-1: Audio initialized for volume control');
+                  } catch (e) {
+                    console.warn('Scene1-1: Audio initialization failed:', e);
                   }
-                } else {
-                  console.log(`🖥️ Scene1-1 Desktop/Android/iPad: Using direct video volume (original behavior)`);
-                }
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+
+                  // For iPhone, connect to Web Audio API for volume control
+                  const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                  if (isIPhone) {
+                    try {
+                      // Get or create shared AudioContext from FloatingMenu
+                      let sharedAudioContext = window.sharedAudioContext;
+                      if (!sharedAudioContext) {
+                        console.log('🍎 Scene1-1 iPhone: Initializing shared AudioContext for video');
+                        try {
+                          sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                          window.sharedAudioContext = sharedAudioContext;
+                          console.log('🍎 Scene1-1 iPhone: ✅ Created new shared AudioContext');
+                        } catch (audioError) {
+                          console.error('🍎 Scene1-1 iPhone: ❌ Failed to create AudioContext:', audioError);
+                          return;
+                        }
+                      }
+
+                      // Ensure AudioContext is running
+                      if (sharedAudioContext.state === 'suspended') {
+                        try {
+                          await sharedAudioContext.resume();
+                          console.log('🍎 Scene1-1 iPhone: ✅ Resumed suspended AudioContext');
+                        } catch (resumeError) {
+                          console.error('🍎 Scene1-1 iPhone: ❌ Failed to resume AudioContext:', resumeError);
+                        }
+                      }
+
+                      if (sharedAudioContext.state === 'running') {
+                        // Connect video to Web Audio API for iPhone volume control
+                        connectVideoToWebAudio(video, sharedAudioContext);
+                      } else {
+                        connectVideoToWebAudio(video, sharedAudioContext);
+                      }
+                    } catch (error) {
+                      console.error('🍎 Scene1-1 iPhone: ❌ Error setting up Web Audio API:', error);
+                    }
+                  } else {
+                    console.log(`🖥️ Scene1-1 Desktop/Android/iPad: Using direct video volume (original behavior)`);
+                  }
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               <div className="flex flex-col items-center gap-6">

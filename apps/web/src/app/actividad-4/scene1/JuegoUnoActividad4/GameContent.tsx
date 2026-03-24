@@ -91,7 +91,7 @@ export default function GameContent({ selectedCharacter, onGameComplete }: GameC
         </div>
       </div>
 
-      <div className="relative w-[85%] h-[85%] bg-yellow-100/30 border-4 border-yellow-600 rounded-xl backdrop-blur-sm shadow-lg flex items-center justify-center overflow-hidden">
+      <div className="relative w-[85%] h-[85%] bg-yellow-100/30 border-4 border-yellow-600 rounded-xl backdrop-blur-lg shadow-lg flex items-center justify-center overflow-hidden">
         <div className="w-full h-full p-4">
           {renderCurrentStep()}
         </div>

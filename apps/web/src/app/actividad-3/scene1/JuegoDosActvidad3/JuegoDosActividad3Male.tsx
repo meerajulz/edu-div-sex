@@ -275,7 +275,7 @@ const JuegoDosActividad3Male: React.FC<JuegoDosActividad3MaleProps> = ({
   const showSituation = gamePhase === 'situation' || gamePhase === 'question';
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 backdrop-blur-lg flex items-center justify-center pointer-events-auto p-2 sm:p-4">
       {/* Modal with gradient background */}
       <div
         className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600"

@@ -63,7 +63,10 @@ const Dashboard: React.FC = () => {
         const activity1 = progress.find(p => p.activityId === 1);
         const activity2 = progress.find(p => p.activityId === 2);
 
-        const showArrow = (activity1?.isUnlocked === true) && (activity2?.isUnlocked !== true);
+        // Activity 1 is always unlocked — treat missing progress as unlocked (new student)
+        const activity1Unlocked = !activity1 || activity1.isUnlocked !== false;
+        const activity2Unlocked = activity2?.isUnlocked === true;
+        const showArrow = activity1Unlocked && !activity2Unlocked;
         setOnlyActivity1Unlocked(showArrow);
 
         console.log('🎯 Arrow visibility check:', {
@@ -220,6 +223,7 @@ const Dashboard: React.FC = () => {
               onVideoEnd={handleVideoEnd}
               debug={showDebug}
               showDoorArrow={onlyActivity1Unlocked}
+              showStartButton={true}
             />
           </div>
 
@@ -244,7 +248,7 @@ const Dashboard: React.FC = () => {
             <div className="absolute top-40 left-4  z-50">
               <Link 
                 href="/dashboard"
-                className="bg-white/90 backdrop-blur-sm text-blue-600 font-semibold px-6 py-3 rounded-full border border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="bg-white/90 backdrop-blur-lg text-blue-600 font-semibold px-6 py-3 rounded-full border border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -324,18 +328,17 @@ const Dashboard: React.FC = () => {
             <FloatingMenu />
           </div>
 
-          {/* Door overlay - ensure it's on top of everything */}
+{/* Door overlay - ensure it's on top of everything */}
           {!isExiting && !videoHasPlayed && (
-            <div 
+            <div
               className="absolute cursor-pointer z-[10001]"
               style={{
                 left: '30.1%',
-                top: '33%', 
+                top: '33%',
                 width: '10.5%',
                 height: '35%'
               }}
               onClick={() => {
-                // Find video element and play it
                 const video = document.querySelector('video');
                 if (video) {
                   video.play().catch(() => {

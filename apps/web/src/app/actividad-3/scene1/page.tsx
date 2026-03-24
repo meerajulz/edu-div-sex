@@ -5,6 +5,7 @@ import FloatingMenu from './../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import JuegoUnoActividad3 from './JuegoUnoActividad3/juegoUnoActividad3';
+import JuegoDosActividad3Female from './JuegoDosActvidad3/JuegoDosActividad3Female';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 //import { useSession } from 'next-auth/react';
@@ -15,6 +16,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad3Scene1Page() {
   
@@ -30,6 +32,8 @@ export default function Actividad3Scene1Page() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showJuegoUno, setShowJuegoUno] = useState(false);
+  const [showJuegoDos, setShowJuegoDos] = useState(false);
+  const [juegoDosMode, setJuegoDosMode] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [juego1Completed, setJuego1Completed] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
@@ -73,7 +77,23 @@ export default function Actividad3Scene1Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a3-scene1-video-watched'));
     console.log('📱 Activity3-Scene1: Device info initialized:', info);
+
+    // aventura-3: skip video and show game directly
+    const skipVideo = localStorage.getItem('aventura-3-skip-video');
+    if (skipVideo === 'true') {
+      localStorage.removeItem('aventura-3-skip-video');
+      setShowVideo(true);
+      setVideoEnded(true);
+    }
+
+    // aventura-3/juego1: after JuegoUno show JuegoDos Female
+    const juegoDosFlag = localStorage.getItem('aventura-3-juego-dos-female');
+    if (juegoDosFlag === 'true') {
+      localStorage.removeItem('aventura-3-juego-dos-female');
+      setJuegoDosMode(true);
+    }
   }, []);
 
   // Listen for global volume changes from FloatingMenu
@@ -154,6 +174,22 @@ export default function Actividad3Scene1Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a3-scene1-video-watched', 'true');
+    // aventura-3: video-only mode — navigate back to chain without showing game
+    const videoOnly = localStorage.getItem('aventura-3-video-only');
+    if (videoOnly === 'true') {
+      localStorage.removeItem('aventura-3-video-only');
+      saveProgress('actividad-3', 'scene1', 'completed', 100, {
+        video_watched: true,
+        completed_at: new Date().toISOString()
+      });
+      const returnTo = localStorage.getItem('aventura-3-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-3-return-to');
+        setTimeout(() => router.push(returnTo), 500);
+        return;
+      }
+    }
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
@@ -179,9 +215,18 @@ export default function Actividad3Scene1Page() {
   const handleGameComplete = () => {
     setJuego1Completed(true);
     setGameCompleted(true);
-    // Close game modal
     setShowJuegoUno(false);
-    // Show congratulations after a short delay
+    setTimeout(() => {
+      if (juegoDosMode) {
+        setShowJuegoDos(true);
+      } else {
+        setShowCongratulations(true);
+      }
+    }, 500);
+  };
+
+  const handleJuegoDosComplete = () => {
+    setShowJuegoDos(false);
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
@@ -208,7 +253,13 @@ export default function Actividad3Scene1Page() {
       } else {
         console.error('❌ Actividad3-Scene1: Failed to save progress, but continuing');
       }
-      router.push('/actividad-3');
+      const returnTo = localStorage.getItem('aventura-3-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-3-return-to');
+        router.push(returnTo);
+      } else {
+        router.push('/actividad-3');
+      }
     }, 800);
   };
 
@@ -296,51 +347,54 @@ export default function Actividad3Scene1Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              ref={videoRef}
-              src="/video/ACTIVIDAD-3-ESCENA-1.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-20"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (video) {
-                  video.volume = currentVolume;
-                  console.log(`🎬 Activity3-Scene1: Video loaded, volume: ${currentVolume}`);
-                }
-              }}
-              onPlay={async () => {
-                const video = videoRef.current;
-                if (!video) return;
-
-                video.muted = false;
-                video.volume = currentVolume;
-                console.log(`🎬 Activity3-Scene1: Video playing, volume: ${currentVolume}`);
-
-                try {
-                  await initAudio();
-                  const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                  if (isIPhone) {
-                    let sharedAudioContext = window.sharedAudioContext;
-                    if (!sharedAudioContext) {
-                      sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                      window.sharedAudioContext = sharedAudioContext;
-                    }
-                    if (sharedAudioContext.state === 'suspended') {
-                      await sharedAudioContext.resume();
-                    }
-                    connectVideoToWebAudio(video, sharedAudioContext);
+            <>
+              <OptimizedVideo
+                ref={videoRef}
+                src="/video/ACTIVIDAD-3-ESCENA-1.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-20"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (video) {
+                    video.volume = currentVolume;
+                    console.log(`🎬 Activity3-Scene1: Video loaded, volume: ${currentVolume}`);
                   }
-                } catch (error) {
-                  console.error('Activity3-Scene1: Audio setup failed:', error);
-                }
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+                }}
+                onPlay={async () => {
+                  const video = videoRef.current;
+                  if (!video) return;
+
+                  video.muted = false;
+                  video.volume = currentVolume;
+                  console.log(`🎬 Activity3-Scene1: Video playing, volume: ${currentVolume}`);
+
+                  try {
+                    await initAudio();
+                    const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                    if (isIPhone) {
+                      let sharedAudioContext = window.sharedAudioContext;
+                      if (!sharedAudioContext) {
+                        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        window.sharedAudioContext = sharedAudioContext;
+                      }
+                      if (sharedAudioContext.state === 'suspended') {
+                        await sharedAudioContext.resume();
+                      }
+                      connectVideoToWebAudio(video, sharedAudioContext);
+                    }
+                  } catch (error) {
+                    console.error('Activity3-Scene1: Audio setup failed:', error);
+                  }
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               <div className="flex flex-col items-center gap-6">
@@ -378,6 +432,13 @@ export default function Actividad3Scene1Page() {
         isVisible={showJuegoUno}
         onClose={handleCloseJuegoUno}
         onGameComplete={handleGameComplete}
+      />
+
+      {/* JuegoDosActividad3Female — shown after JuegoUno in juego1 flow */}
+      <JuegoDosActividad3Female
+        isVisible={showJuegoDos}
+        onClose={() => setShowJuegoDos(false)}
+        onGameComplete={handleJuegoDosComplete}
       />
 
       {/* Congratulations Overlay */}

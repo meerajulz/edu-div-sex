@@ -16,6 +16,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad6Scene4Page() {
   
@@ -79,6 +80,7 @@ export default function Actividad6Scene4Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a6-scene4-video-watched'));
     console.log('📱 Activity6-Scene4: Device info initialized:', info);
   }, []);
 
@@ -162,6 +164,7 @@ export default function Actividad6Scene4Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a6-scene4-video-watched', 'true');
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
@@ -328,6 +331,7 @@ export default function Actividad6Scene4Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
+            <>
             <OptimizedVideo
               ref={videoRef}
               src="/video/ACTIVIDA_6-ESCENA_4.mp4"
@@ -373,6 +377,8 @@ export default function Actividad6Scene4Page() {
               lowPowerMode={true}
               maxRetries={3}
             />
+            {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               <motion.div

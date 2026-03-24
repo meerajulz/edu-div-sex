@@ -311,7 +311,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
           
           {/* Modal */}
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -360,7 +360,7 @@ export default function JuegoTresActividad5({ isVisible, onClose, onGameComplete
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 max-w-2xl text-center shadow-lg">
+                    <div className="bg-white/70 backdrop-blur-lg rounded-xl p-6 max-w-2xl text-center shadow-lg">
                       <h2 className="text-3xl font-bold text-orange-800 mb-4">
                         {EMOTION_GAME_CONFIG.title}
                       </h2>

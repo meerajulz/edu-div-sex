@@ -150,7 +150,7 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) =
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="fixed inset-0 z-50 flex items-center backdrop-blur-sm justify-center pointer-events-auto">
+      <div className="fixed inset-0 z-50 flex items-center backdrop-blur-lg justify-center pointer-events-auto">
         <div className="relative w-[90%] h-[90%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
           {/* Close Button */}
@@ -191,7 +191,7 @@ const JuegoUno: React.FC<JuegoUnoProps> = ({ isVisible, onClose, onComplete }) =
           </div>
 
           {/* Sidebar with draggable parts */}
-          <div className="absolute left-0 top-0 z-10 h-full w-24 flex flex-col items-center justify-center space-y-4 bg-black/10 p-2">
+          <div className="absolute left-0 top-0 z-10 h-full w-28 flex flex-col items-center justify-center space-y-4 bg-black/10 p-2">
             {bodyParts.map((part) =>
               !matchedParts.includes(part.id) && (
                 <DraggablePart key={part.id} id={part.id} image={part.image} sound={part.sound}/>

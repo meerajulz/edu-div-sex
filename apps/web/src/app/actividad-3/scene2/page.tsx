@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 // Helper function to get user gender from session
 const getUserGender = (session: { user?: { sex?: string } } | null): 'male' | 'female' => {
@@ -92,6 +93,7 @@ const { data: session } = useSession();
     if (savedVolume) {
       setCurrentVolume(parseFloat(savedVolume));
     }
+    setHasWatchedVideo(!!localStorage.getItem('a3-scene2-video-watched'));
   }, []);
 
   // Listen for global volume changes from FloatingMenu
@@ -165,6 +167,7 @@ const { data: session } = useSession();
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a3-scene2-video-watched', 'true');
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
@@ -217,9 +220,14 @@ const { data: session } = useSession();
         console.error('❌ Actividad3-Scene2: Failed to save progress, but continuing');
       }
       // Set flag that activity was just completed for auto-rotation
-      localStorage.setItem('completedActivityId', '3');
-      // Navigate to home page after completing final activity
-      router.push('/home');
+      const returnTo = localStorage.getItem('aventura-3-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-3-return-to');
+        router.push(returnTo);
+      } else {
+        localStorage.setItem('completedActivityId', '3');
+        router.push('/home');
+      }
     }, 800);
   };
 
@@ -323,6 +331,7 @@ const { data: session } = useSession();
       {showVideo && !gameCompleted && (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
+            <>
             <OptimizedVideo
               ref={videoRef}
               src="/video/ACTIVIDAD-3-ESCENA-2.mp4"
@@ -411,6 +420,8 @@ const { data: session } = useSession();
               lowPowerMode={true}
               maxRetries={3}
             />
+            {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoCuatro && (

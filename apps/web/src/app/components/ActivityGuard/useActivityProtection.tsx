@@ -23,7 +23,12 @@ export function useActivityProtection() {
       }
 
       // Skip protection when navigating within an aventura context
-      if (typeof window !== 'undefined' && localStorage.getItem('aventura-1-return-to')) {
+      if (typeof window !== 'undefined' && (
+        localStorage.getItem('aventura-1-return-to') ||
+        localStorage.getItem('aventura-2-return-to') ||
+        localStorage.getItem('aventura-3-return-to') ||
+        localStorage.getItem('aventura-4-return-to')
+      )) {
         console.log('🔒 Aventura context detected, skipping protection for:', pathname);
         return;
       }

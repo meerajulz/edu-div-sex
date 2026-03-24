@@ -3,7 +3,16 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import DashboardWrapper from '../../../DashboardWrapper';
-import { getSceneTitle, getActivityTitle } from '@/app/utils/activityMapping';
+import { getActivityTitle } from '@/app/utils/activityMapping';
+import {
+  ACTIVITY_1_CONFIG,
+  ACTIVITY_2_CONFIG,
+  ACTIVITY_3_CONFIG,
+  ACTIVITY_4_CONFIG,
+  ACTIVITY_5_CONFIG,
+  ACTIVITY_6_CONFIG,
+  ActivityConfig,
+} from '@/app/components/ActivityMenu/activityConfig';
 
 interface User {
   id: string;
@@ -66,6 +75,33 @@ interface Scene {
   };
 }
 
+function getBasicoActivityConfig(slug: string): ActivityConfig | null {
+  switch (slug) {
+    case 'actividad-1': return ACTIVITY_1_CONFIG;
+    case 'actividad-2': return ACTIVITY_2_CONFIG;
+    case 'actividad-3': return ACTIVITY_3_CONFIG;
+    case 'actividad-4': return ACTIVITY_4_CONFIG;
+    case 'actividad-5': return ACTIVITY_5_CONFIG;
+    case 'actividad-6': return ACTIVITY_6_CONFIG;
+    default: return null;
+  }
+}
+
+function getActivitySectionsWithScenes(activitySlug: string, dbScenes: Scene[]) {
+  const config = getBasicoActivityConfig(activitySlug);
+  if (!config) return null;
+  return config.sections.map(section => {
+    const sectionSceneSlugs = section.scenes.map(path => path.split('/').pop()!);
+    const scenesForSection = sectionSceneSlugs
+      .map(slug => dbScenes.find(s => s.slug === slug))
+      .filter((s): s is Scene => s !== undefined);
+    const allCompleted = scenesForSection.length > 0 && scenesForSection.every(
+      s => s.progress.status === 'completed' && s.progress.completion_percentage >= 100
+    );
+    return { id: section.id, title: section.title, dbScenes: scenesForSection, isCompleted: allCompleted };
+  });
+}
+
 function ViewUserDetails() {
   const router = useRouter();
   const params = useParams();
@@ -74,6 +110,7 @@ function ViewUserDetails() {
   const [user, setUser] = useState<User | null>(null);
   const [progressData, setProgressData] = useState<ProgressData | null>(null);
   const [error, setError] = useState('');
+  const [progressError, setProgressError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesText, setNotesText] = useState('');
@@ -208,6 +245,7 @@ function ViewUserDetails() {
   };
 
   const updateProgress = async (activityId: number, sceneId: number, status: string) => {
+    setProgressError('');
     try {
       const response = await fetch(`/api/admin/users/${userId}/progress`, {
         method: 'PUT',
@@ -223,20 +261,45 @@ function ViewUserDetails() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al actualizar el progreso');
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Error al actualizar el progreso');
       }
 
       // Refresh progress data
-      if (progressData) {
-        const progressResponse = await fetch(`/api/admin/users/${userId}/progress`);
-        if (progressResponse.ok) {
-          const newProgressData = await progressResponse.json();
-          setProgressData(newProgressData);
-        }
+      const progressResponse = await fetch(`/api/admin/users/${userId}/progress`);
+      if (progressResponse.ok) {
+        const newProgressData = await progressResponse.json();
+        setProgressData(newProgressData);
       }
     } catch (err) {
       console.error('Error updating progress:', err);
-      setError(err instanceof Error ? err.message : 'Error al actualizar el progreso');
+      setProgressError(err instanceof Error ? err.message : 'Error al actualizar el progreso');
+    }
+  };
+
+  const updateProgressBatch = async (activityId: number, sceneIds: number[], status: string) => {
+    setProgressError('');
+    try {
+      await Promise.all(sceneIds.map(sceneId =>
+        fetch(`/api/admin/users/${userId}/progress`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            activity_id: activityId,
+            scene_id: sceneId,
+            status,
+            completion_percentage: status === 'completed' ? 100 : 0,
+          }),
+        })
+      ));
+      const progressResponse = await fetch(`/api/admin/users/${userId}/progress`);
+      if (progressResponse.ok) {
+        const newProgressData = await progressResponse.json();
+        setProgressData(newProgressData);
+      }
+    } catch (err) {
+      console.error('Error updating progress batch:', err);
+      setProgressError(err instanceof Error ? err.message : 'Error al actualizar el progreso');
     }
   };
 
@@ -579,6 +642,11 @@ function ViewUserDetails() {
             {progressData && (
               <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
                 <h2 className="text-lg font-semibold mb-4">Progreso Académico</h2>
+                {progressError && (
+                  <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">
+                    {progressError}
+                  </div>
+                )}
                 
                 {/* Overall Progress */}
                 <div className="bg-yellow-50 p-4 rounded-lg mb-6">
@@ -620,58 +688,75 @@ function ViewUserDetails() {
                         ></div>
                       </div>
 
-                      {/* Scenes */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {activity.scenes.map((scene) => (
-                          <div key={scene.id} className="border border-gray-100 rounded p-3">
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="text-sm font-medium text-gray-800">{scene.name || getSceneTitle(activity.slug, scene.slug)}</span>
-                              <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(scene.progress.status)}`}>
-                                {getStatusText(scene.progress.status)}
-                              </span>
+                      {/* Sections (Nivel Básico) or individual scenes (Nivel Avanzado) */}
+                      {(() => {
+                        const sections = !isAdvanced ? getActivitySectionsWithScenes(activity.slug, activity.scenes) : null;
+                        if (sections) {
+                          // Nivel Básico: show ActivityMenu sections grouped
+                          return (
+                            <div className="space-y-2">
+                              {sections.map((section, sIdx) => (
+                                <div key={section.id} className="border border-gray-100 rounded p-3">
+                                  <div className="flex justify-between items-start mb-1">
+                                    <span className="text-sm font-medium text-gray-800">
+                                      {sIdx + 1}. {section.title}
+                                    </span>
+                                    <span className={`px-2 py-1 text-xs rounded-full ${section.isCompleted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                      {section.isCompleted ? 'Completado' : 'No iniciado'}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 mb-2">
+                                    {section.dbScenes.map(s => s.slug).join(', ')}
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={() => updateProgressBatch(activity.id, section.dbScenes.map(s => s.id), 'not_started')}
+                                      className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                                    >
+                                      No iniciado
+                                    </button>
+                                    <button
+                                      onClick={() => updateProgressBatch(activity.id, section.dbScenes.map(s => s.id), 'completed')}
+                                      className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                                    >
+                                      Completado
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            
-                            {scene.progress.completion_percentage > 0 && (
-                              <div className="w-full bg-gray-200 rounded-full h-1 mb-2">
-                                <div 
-                                  className="bg-green-500 h-1 rounded-full"
-                                  style={{ width: `${scene.progress.completion_percentage}%` }}
-                                ></div>
+                          );
+                        }
+                        // Nivel Avanzado: individual scenes (unchanged)
+                        return (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {activity.scenes.map((scene) => (
+                              <div key={scene.id} className="border border-gray-100 rounded p-3">
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="text-sm font-medium text-gray-800">{scene.name || scene.slug}</span>
+                                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(scene.progress.status)}`}>
+                                    {getStatusText(scene.progress.status)}
+                                  </span>
+                                </div>
+                                <div className="flex gap-1 mt-2">
+                                  <button
+                                    onClick={() => updateProgress(activity.id, scene.id, 'not_started')}
+                                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                                  >
+                                    No iniciado
+                                  </button>
+                                  <button
+                                    onClick={() => updateProgress(activity.id, scene.id, 'completed')}
+                                    className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                                  >
+                                    Completado
+                                  </button>
+                                </div>
                               </div>
-                            )}
-                            
-                            <div className="flex gap-1 mt-2">
-                              <button
-                                onClick={() => updateProgress(activity.id, scene.id, 'not_started')}
-                                className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                                title="Marcar como no iniciado"
-                              >
-                                No iniciado
-                              </button>
-                              <button
-                                onClick={() => updateProgress(activity.id, scene.id, 'in_progress')}
-                                className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
-                                title="Marcar en progreso"
-                              >
-                                En progreso
-                              </button>
-                              <button
-                                onClick={() => updateProgress(activity.id, scene.id, 'completed')}
-                                className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                                title="Marcar como completado"
-                              >
-                                Completado
-                              </button>
-                            </div>
-                            
-                            {scene.progress.attempts > 0 && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                Intentos: {scene.progress.attempts}
-                              </div>
-                            )}
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>

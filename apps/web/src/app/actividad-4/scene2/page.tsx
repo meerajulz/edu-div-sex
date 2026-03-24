@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad4Scene2Page() {
   
@@ -71,6 +72,7 @@ export default function Actividad4Scene2Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a4-scene2-video-watched'));
     console.log('📱 Activity4-Scene2: Device info initialized:', info);
 
     // Skip video and go straight to game when coming from aventura-1
@@ -162,6 +164,7 @@ export default function Actividad4Scene2Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a4-scene2-video-watched', 'true');
     // Video-only mode: navigate to return destination instead of showing game
     const videoOnly = localStorage.getItem('aventura-1-video-only');
     if (videoOnly === 'true') {
@@ -342,51 +345,54 @@ export default function Actividad4Scene2Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              ref={videoRef}
-              src="/video/ACTIVIDAD-4-ESCENA-2.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-20"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (video) {
-                  video.volume = currentVolume;
-                  console.log(`🎬 Activity4-Scene2: Video loaded, volume: ${currentVolume}`);
-                }
-              }}
-              onPlay={async () => {
-                const video = videoRef.current;
-                if (!video) return;
-
-                video.muted = false;
-                video.volume = currentVolume;
-                console.log(`🎬 Activity4-Scene2: Video playing, volume: ${currentVolume}`);
-
-                try {
-                  await initAudio();
-                  const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                  if (isIPhone) {
-                    let sharedAudioContext = window.sharedAudioContext;
-                    if (!sharedAudioContext) {
-                      sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                      window.sharedAudioContext = sharedAudioContext;
-                    }
-                    if (sharedAudioContext.state === 'suspended') {
-                      await sharedAudioContext.resume();
-                    }
-                    connectVideoToWebAudio(video, sharedAudioContext);
+            <>
+              <OptimizedVideo
+                ref={videoRef}
+                src="/video/ACTIVIDAD-4-ESCENA-2.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-20"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (video) {
+                    video.volume = currentVolume;
+                    console.log(`🎬 Activity4-Scene2: Video loaded, volume: ${currentVolume}`);
                   }
-                } catch (error) {
-                  console.error('Activity4-Scene2: Audio setup failed:', error);
-                }
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+                }}
+                onPlay={async () => {
+                  const video = videoRef.current;
+                  if (!video) return;
+
+                  video.muted = false;
+                  video.volume = currentVolume;
+                  console.log(`🎬 Activity4-Scene2: Video playing, volume: ${currentVolume}`);
+
+                  try {
+                    await initAudio();
+                    const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                    if (isIPhone) {
+                      let sharedAudioContext = window.sharedAudioContext;
+                      if (!sharedAudioContext) {
+                        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        window.sharedAudioContext = sharedAudioContext;
+                      }
+                      if (sharedAudioContext.state === 'suspended') {
+                        await sharedAudioContext.resume();
+                      }
+                      connectVideoToWebAudio(video, sharedAudioContext);
+                    }
+                  } catch (error) {
+                    console.error('Activity4-Scene2: Audio setup failed:', error);
+                  }
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoDos && (

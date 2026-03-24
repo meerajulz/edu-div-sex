@@ -53,7 +53,7 @@
 //                   }}
 //                 />
 //               </div>
-//               <div className="text-blue-800 font-bold text-lg bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-200">
+//               <div className="text-blue-800 font-bold text-lg bg-white/80 backdrop-blur-lg rounded-lg px-4 py-2 border border-blue-200">
 //                 Dani (Chico)
 //               </div>
 //             </motion.div>
@@ -81,7 +81,7 @@
 //                   }}
 //                 />
 //               </div>
-//               <div className="text-pink-500 text-xl font-bold bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-pink-200">
+//               <div className="text-pink-500 text-xl font-bold bg-white/80 backdrop-blur-lg rounded-lg px-4 py-2 border border-pink-200">
 //                 Cris (Chica)
 //               </div>
 //             </motion.div>
@@ -182,7 +182,7 @@ export default function CharacterSelection({ onCharacterSelect, isAnimating }: C
                   }}
                 />
               </div>
-              <div className="text-blue-800 font-bold text-lg bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-200">
+              <div className="text-blue-800 font-bold text-lg bg-white/80 backdrop-blur-lg rounded-lg px-4 py-2 border border-blue-200">
                 Dani (Chico)
               </div>
             </motion.div>
@@ -210,7 +210,7 @@ export default function CharacterSelection({ onCharacterSelect, isAnimating }: C
                   }}
                 />
               </div>
-              <div className="text-pink-500 text-xl font-bold bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-pink-200">
+              <div className="text-pink-500 text-xl font-bold bg-white/80 backdrop-blur-lg rounded-lg px-4 py-2 border border-pink-200">
                 Cris (Chica)
               </div>
             </motion.div>

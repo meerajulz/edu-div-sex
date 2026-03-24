@@ -323,7 +323,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
           
           {/* Modal */}
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -397,7 +397,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 max-w-lg text-center shadow-lg">
+                    <div className="bg-white/70 backdrop-blur-lg rounded-xl p-6 max-w-lg text-center shadow-lg">
                       <h2 className="text-2xl font-bold text-green-800 mb-4">
                         {FACIAL_EXPRESSION_GAME_CONFIG.title}
                       </h2>
@@ -441,7 +441,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                                 className="object-contain"
                               />
                             </div>
-                            <div className="bg-white/90 backdrop-blur-sm rounded-lg px-8 py-4 text-center shadow-xl max-w-md w-full">
+                            <div className="bg-white/90 backdrop-blur-lg rounded-lg px-8 py-4 text-center shadow-xl max-w-md w-full">
                               <p className={`font-medium text-lg leading-relaxed ${feedbackInfo.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                                 {feedbackInfo.text}
                               </p>
@@ -474,7 +474,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                       {/* Tone Section - Left */}
                       <div className="w-full md:w-1/2">
                         <motion.div
-                          className={`w-full h-full bg-blue-100 backdrop-blur-sm rounded-xl pt-2 shadow-md border-2 border-blue-300 
+                          className={`w-full h-full bg-blue-100 backdrop-blur-lg rounded-xl pt-2 shadow-md border-2 border-blue-300 
                             ${currentSection.current !== 'tone' && gameSession.toneCorrect ? 'opacity-60' : ''}`}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -513,7 +513,7 @@ export default function JuegoUnoActividad5({ isVisible, onClose, onGameComplete 
                       {/* Gesture Section - Right */}
                       <div className="w-full md:w-1/2">
                         <motion.div
-                          className={`w-full h-full bg-yellow-100 backdrop-blur-sm rounded-xl pt-2 shadow-md border-2 border-yellow-300
+                          className={`w-full h-full bg-yellow-100 backdrop-blur-lg rounded-xl pt-2 shadow-md border-2 border-yellow-300
                             ${!gameSession.toneCorrect ? 'opacity-60 pointer-events-none' : ''}`}
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}

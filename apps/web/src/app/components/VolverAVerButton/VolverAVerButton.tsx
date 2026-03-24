@@ -18,7 +18,7 @@ const VolverAVerButton: React.FC<VolverAVerButtonProps> = ({
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      className={`bg-orange-500/90 hover:bg-orange-500 backdrop-blur-sm text-white font-bold py-3 px-6 rounded-full border-2 border-orange-400 hover:border-orange-300 transition-all duration-300 shadow-2xl flex items-center gap-2 ${className}`}
+      className={`bg-orange-500/90 hover:bg-orange-500 backdrop-blur-lg text-white font-bold py-3 px-6 rounded-full border-2 border-orange-400 hover:border-orange-300 transition-all duration-300 shadow-2xl flex items-center gap-2 ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}

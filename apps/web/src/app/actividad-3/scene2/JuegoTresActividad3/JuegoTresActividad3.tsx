@@ -393,7 +393,7 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
   const showSituation = gamePhase === 'situation' || gamePhase === 'options' || gamePhase === 'waiting_for_click';
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 backdrop-blur-lg flex items-center justify-center pointer-events-auto p-2 sm:p-4">
       {/* Modal with gradient background - 30% bigger and responsive */}
       <div
         className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-500"

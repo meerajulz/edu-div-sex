@@ -231,7 +231,7 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 backdrop-blur-lg flex items-center justify-center pointer-events-auto p-2 sm:p-4">
       {/* Modal with gradient background - 30% bigger and responsive */}
       <div
         className="relative w-full h-full max-w-[1200px] max-h-[750px] rounded-xl shadow-xl pointer-events-auto overflow-hidden bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600"
@@ -312,7 +312,7 @@ const JuegoUnoActividad3: React.FC<JuegoUnoActividad3Props> = ({
 
             {/* Body part image on right */}
             <motion.div
-              className="relative w-[480px] h-[360px]"
+              className="relative w-[680px] h-[510px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}

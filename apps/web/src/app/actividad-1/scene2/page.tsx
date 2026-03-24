@@ -12,6 +12,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Scene2Page() {
   
@@ -30,6 +31,7 @@ export default function Scene2Page() {
   // iOS volume control state
   const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
   const [currentVolume, setCurrentVolume] = useState(0.8);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
   // Function to connect video element to Web Audio API for iOS volume control
   const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
@@ -79,6 +81,8 @@ export default function Scene2Page() {
     if (savedVolume) {
       setCurrentVolume(parseFloat(savedVolume));
     }
+
+    setHasWatchedVideo(!!localStorage.getItem('scene2-video-watched'));
   }, []);
 
   // Listen for global volume changes from FloatingMenu
@@ -163,6 +167,7 @@ export default function Scene2Page() {
 
   const handleVideoEnd = async () => {
     console.log('🎬 Scene2: Video ended, saving progress and moving to scene3');
+    localStorage.setItem('scene2-video-watched', 'true');
     
     // Save progress for scene2
     const progressSaved = await saveProgress('actividad-1', 'scene2', 'completed', 100, {
@@ -313,6 +318,7 @@ export default function Scene2Page() {
             lowPowerMode={true}
             maxRetries={3}
           />
+          {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
         </div>
       )}
     </motion.div>

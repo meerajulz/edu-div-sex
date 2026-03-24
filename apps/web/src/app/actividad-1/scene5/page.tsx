@@ -13,6 +13,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Scene5Page() {
  
@@ -37,6 +38,7 @@ export default function Scene5Page() {
   // iOS volume control state
   const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
   const [currentVolume, setCurrentVolume] = useState(0.8);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -88,6 +90,7 @@ export default function Scene5Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('scene5-video-watched'));
   }, []);
 
   // Listen for global volume changes
@@ -121,6 +124,7 @@ export default function Scene5Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('scene5-video-watched', 'true');
     setVideoEnded(true);
 
     // If coming from aventura-1, skip congratulations and navigate directly
@@ -302,6 +306,7 @@ export default function Scene5Page() {
             lowPowerMode={true}
             maxRetries={3}
           />
+          {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
         </div>
       ) : null}
 

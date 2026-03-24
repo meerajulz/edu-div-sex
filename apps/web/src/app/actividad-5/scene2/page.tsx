@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad5Scene2Page() {
  
@@ -73,6 +74,7 @@ export default function Actividad5Scene2Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a5-scene2-video-watched'));
     console.log('📱 Activity5-Scene2: Device info initialized:', info);
   }, []);
 
@@ -156,6 +158,7 @@ export default function Actividad5Scene2Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a5-scene2-video-watched', 'true');
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
@@ -189,16 +192,18 @@ export default function Actividad5Scene2Page() {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    
+
+    const returnTo = localStorage.getItem('aventura-4-return-to');
+
     console.log('🎉 Actividad5-Scene2: Final scene completed, saving progress for completed activity');
-    
+
     const progressSaved = await saveProgress('actividad-5', 'scene2', 'completed', 100, {
       video_watched: videoEnded,
       game_completed: juegoCuatroCompleted,
       activity_completed: true,
       completed_at: new Date().toISOString()
     });
-    
+
     setTimeout(() => {
       setIsAnimating(false);
       if (progressSaved) {
@@ -206,9 +211,12 @@ export default function Actividad5Scene2Page() {
       } else {
         console.error('❌ Actividad5-Scene2: Failed to save progress, but continuing');
       }
-      // Set flag that activity was just completed for auto-rotation
-      localStorage.setItem('completedActivityId', '5');
-      router.push('/home');
+      if (returnTo) {
+        localStorage.removeItem('aventura-4-return-to');
+        router.push(returnTo);
+        return;
+      }
+      router.push('/actividad-5');
     }, 800);
   };
 
@@ -321,51 +329,54 @@ export default function Actividad5Scene2Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              ref={videoRef}
-              src="/video/ACTIVIDAD_5_ESCENA_2.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-20"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (video) {
-                  video.volume = currentVolume;
-                  console.log(`🎬 Activity5-Scene2: Video loaded, volume: ${currentVolume}`);
-                }
-              }}
-              onPlay={async () => {
-                const video = videoRef.current;
-                if (!video) return;
-
-                video.muted = false;
-                video.volume = currentVolume;
-                console.log(`🎬 Activity5-Scene2: Video playing, volume: ${currentVolume}`);
-
-                try {
-                  await initAudio();
-                  const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                  if (isIPhone) {
-                    let sharedAudioContext = window.sharedAudioContext;
-                    if (!sharedAudioContext) {
-                      sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                      window.sharedAudioContext = sharedAudioContext;
-                    }
-                    if (sharedAudioContext.state === 'suspended') {
-                      await sharedAudioContext.resume();
-                    }
-                    connectVideoToWebAudio(video, sharedAudioContext);
+            <>
+              <OptimizedVideo
+                ref={videoRef}
+                src="/video/ACTIVIDAD_5_ESCENA_2.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-20"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (video) {
+                    video.volume = currentVolume;
+                    console.log(`🎬 Activity5-Scene2: Video loaded, volume: ${currentVolume}`);
                   }
-                } catch (error) {
-                  console.error('Activity5-Scene2: Audio setup failed:', error);
-                }
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+                }}
+                onPlay={async () => {
+                  const video = videoRef.current;
+                  if (!video) return;
+
+                  video.muted = false;
+                  video.volume = currentVolume;
+                  console.log(`🎬 Activity5-Scene2: Video playing, volume: ${currentVolume}`);
+
+                  try {
+                    await initAudio();
+                    const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                    if (isIPhone) {
+                      let sharedAudioContext = window.sharedAudioContext;
+                      if (!sharedAudioContext) {
+                        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        window.sharedAudioContext = sharedAudioContext;
+                      }
+                      if (sharedAudioContext.state === 'suspended') {
+                        await sharedAudioContext.resume();
+                      }
+                      connectVideoToWebAudio(video, sharedAudioContext);
+                    }
+                  } catch (error) {
+                    console.error('Activity5-Scene2: Audio setup failed:', error);
+                  }
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               <motion.div

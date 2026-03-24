@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad2Scene2Page() {
  
@@ -71,6 +72,7 @@ export default function Actividad2Scene2Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a2-scene2-video-watched'));
     console.log('📱 Activity2-Scene2: Device info initialized:', info);
   }, []);
 
@@ -152,6 +154,7 @@ export default function Actividad2Scene2Page() {
   };
 
   const handleVideoEnd = async () => {
+    localStorage.setItem('a2-scene2-video-watched', 'true');
     setShowVideo(false);
     setShowGameButton(true);
     setHasWatchedVideo(true);
@@ -189,20 +192,18 @@ export default function Actividad2Scene2Page() {
   };
 
   const handleGoToActivityMenu = async () => {
-    console.log('🎯 Scene2: Game completed, saving progress and returning to activity menu');
-    
-    const progressSaved = await saveProgress('actividad-2', 'scene2', 'completed', 100, {
+    await saveProgress('actividad-2', 'scene2', 'completed', 100, {
       video_watched: true,
       game_completed: true,
       completed_at: new Date().toISOString()
     });
-    
-    if (progressSaved) {
-      console.log('✅ Scene2: Progress saved successfully');
+    const returnTo = localStorage.getItem('aventura-2-return-to');
+    if (returnTo) {
+      localStorage.removeItem('aventura-2-return-to');
+      router.push(returnTo);
     } else {
-      console.error('❌ Scene2: Failed to save progress, but continuing');
+      router.push('/actividad-2');
     }
-    router.push('/actividad-2');
   };
 
   const handleCloseGame = () => {
@@ -334,6 +335,7 @@ export default function Actividad2Scene2Page() {
             lowPowerMode={true}
             maxRetries={3}
           />
+          {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
         </div>
       )}
 

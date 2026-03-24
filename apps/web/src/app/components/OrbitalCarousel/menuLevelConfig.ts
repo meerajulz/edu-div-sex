@@ -60,5 +60,23 @@ export const NIVEL_AVANZADO_ITEMS: MenuLevelItem[] = [
     url: '/aventura-1',
     svgPath: '/svg/menu/orbital/activity1-descubriendo-mi-cuerpo.svg',
   },
+  {
+    id: 2,
+    label: 'Aventura 2',
+    url: '/aventura-2',
+    svgPath: '/svg/menu/orbital/activity2-intimidad.svg',
+  },
+  {
+    id: 3,
+    label: 'Aventura 3',
+    url: '/aventura-3',
+    svgPath: '/svg/menu/orbital/activity3-placer-sexual.svg',
+  },
+  {
+    id: 4,
+    label: 'Aventura 4',
+    url: '/aventura-4',
+    svgPath: '/svg/menu/orbital/activity5-entender-respectar.svg',
+  },
   // Add more advanced activities here as they are created
 ];

@@ -60,7 +60,7 @@ export default function CongratsOverlay({
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className={`fixed inset-0 flex items-center justify-center z-[9999] ${bgColor} backdrop-blur-sm`}
+      className={`fixed inset-0 flex items-center justify-center z-[9999] ${bgColor} backdrop-blur-lg`}
     >
       <div className="text-center">
         <motion.div

@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad2Scene3Page() {
   
@@ -71,6 +72,7 @@ export default function Actividad2Scene3Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a2-scene3-video-watched'));
     console.log('📱 Activity2-Scene3: Device info initialized:', info);
   }, []);
 
@@ -152,6 +154,7 @@ export default function Actividad2Scene3Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a2-scene3-video-watched', 'true');
     setShowButton(true);
     setHasWatchedVideo(true);
   };
@@ -190,20 +193,18 @@ export default function Actividad2Scene3Page() {
   };
 
   const handleGoToActivityMenu = async () => {
-    console.log('🎯 Scene3: Game completed, saving progress and returning to activity menu');
-    
-    const progressSaved = await saveProgress('actividad-2', 'scene3', 'completed', 100, {
+    await saveProgress('actividad-2', 'scene3', 'completed', 100, {
       video_watched: true,
       game_completed: gameCompleted,
       completed_at: new Date().toISOString()
     });
-    
-    if (progressSaved) {
-      console.log('✅ Scene3: Progress saved successfully');
+    const returnTo = localStorage.getItem('aventura-2-return-to');
+    if (returnTo) {
+      localStorage.removeItem('aventura-2-return-to');
+      router.push(returnTo);
     } else {
-      console.error('❌ Scene3: Failed to save progress, but continuing');
+      router.push('/actividad-2');
     }
-    router.push('/actividad-2');
   };
 
   const handleButtonClick = () => {
@@ -339,6 +340,7 @@ export default function Actividad2Scene3Page() {
             lowPowerMode={true}
             maxRetries={3}
           />
+          {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
         </div>
       ) : showButton ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
