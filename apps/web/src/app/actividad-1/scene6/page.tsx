@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Scene6Page() {
   
@@ -42,6 +43,7 @@ export default function Scene6Page() {
   // iOS volume control state
   const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
   const [currentVolume, setCurrentVolume] = useState(0.8);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -118,6 +120,15 @@ export default function Scene6Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('scene6-video-watched'));
+
+    // Skip video and go straight to game when coming from aventura-1
+    const skipVideo = localStorage.getItem('aventura-1-skip-video');
+    if (skipVideo === 'true') {
+      localStorage.removeItem('aventura-1-skip-video');
+      setShowVideo(true);
+      setVideoEnded(true);
+    }
   }, []);
 
   // Listen for global volume changes
@@ -158,6 +169,7 @@ export default function Scene6Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('scene6-video-watched', 'true');
     setVideoEnded(true);
   };
 
@@ -195,20 +207,7 @@ export default function Scene6Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
-
-    // If coming from aventura-1, skip congratulations and navigate directly
-    const returnTo = localStorage.getItem('aventura-1-return-to');
-    if (returnTo) {
-      localStorage.removeItem('aventura-1-return-to');
-      saveProgress('actividad-1', 'scene6', 'completed', 100, {
-        video_watched: videoEnded,
-        game_completed: true,
-        completed_at: new Date().toISOString()
-      });
-      setTimeout(() => router.push(returnTo), 800);
-      return;
-    }
-
+    // Always show congratulations overlay — handleGoToActivityMenu handles navigation
     setTimeout(() => {
       setShowCongratulations(true);
     }, 1000);
@@ -345,24 +344,27 @@ export default function Scene6Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              src="/video/ACTIVIDAD-1-ESCENA-6.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-10"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (video) video.volume = currentVolume;
-              }}
-              onPlay={() => {
-                if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+            <>
+              <OptimizedVideo
+                src="/video/ACTIVIDAD-1-ESCENA-6.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-10"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (video) video.volume = currentVolume;
+                }}
+                onPlay={() => {
+                  if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoTres && (

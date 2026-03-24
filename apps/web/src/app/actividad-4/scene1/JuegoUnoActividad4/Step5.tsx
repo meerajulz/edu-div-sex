@@ -167,7 +167,7 @@ export default function Step5({ character, onStepComplete }: Step5Props) {
     <div className="relative w-full h-full flex items-center justify-center p-4">
       {!titlePlayed && (
         <motion.div
-          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-sm rounded-lg px-8 py-6 shadow-lg"
+          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-lg rounded-lg px-8 py-6 shadow-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >

@@ -233,7 +233,7 @@ const JuegoTresActividad2: React.FC<JuegoTresActividad2Props> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" style={{ backgroundColor: 'transparent' }}>
+    <div className="fixed inset-0 z-50 backdrop-blur-lg flex items-center justify-center p-2 sm:p-4" style={{ backgroundColor: 'transparent' }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

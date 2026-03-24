@@ -299,7 +299,7 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
       {/* Title display */}
       {!titlePlayed && (
         <motion.div
-          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-sm rounded-lg px-8 py-6 shadow-lg"
+          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-lg rounded-lg px-8 py-6 shadow-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -332,7 +332,7 @@ export default function Step1({ character, onStepComplete }: Step1Props) {
             )}
             
             {/* Bottom: Drop zones */}
-            <div className="flex items-end justify-between w-full px-8 mt-auto mb-12">
+            <div className="flex items-end justify-between w-full px-8 mt-auto mb-28">
               {/* Left: Basket */}
               <div className="flex flex-col items-center space-y-2">
                 <DropZone

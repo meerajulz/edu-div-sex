@@ -24,7 +24,7 @@ const BodyPartDisplay: React.FC<BodyPartDisplayProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <div className="relative w-[480px] h-[360px]">
+      <div className="relative w-[680px] h-[510px]">
         <Image
           src={image}
           alt={alt}

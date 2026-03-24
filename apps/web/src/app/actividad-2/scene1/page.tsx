@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad2Scene1Page() {
 
@@ -72,6 +73,7 @@ export default function Actividad2Scene1Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('a2-scene1-video-watched'));
     console.log('📱 Activity2-Scene1: Device info initialized:', info);
   }, []);
 
@@ -153,6 +155,7 @@ export default function Actividad2Scene1Page() {
   };
 
   const handleVideoEnd = () => {
+    localStorage.setItem('a2-scene1-video-watched', 'true');
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
@@ -186,23 +189,23 @@ export default function Actividad2Scene1Page() {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    
-    console.log('🎯 Scene1: Game completed, saving progress and returning to activity menu');
-    
+
     const progressSaved = await saveProgress('actividad-2', 'scene1', 'completed', 100, {
       video_watched: videoEnded,
       game_completed: gameCompleted,
       completed_at: new Date().toISOString()
     });
-    
+
     setTimeout(() => {
       setIsAnimating(false);
-      if (progressSaved) {
-        console.log('✅ Scene1: Progress saved successfully');
+      if (!progressSaved) console.error('❌ Scene1: Failed to save progress, but continuing');
+      const returnTo = localStorage.getItem('aventura-2-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-2-return-to');
+        router.push(returnTo);
       } else {
-        console.error('❌ Scene1: Failed to save progress, but continuing');
+        router.push('/actividad-2');
       }
-      router.push('/actividad-2');
     }, 800);
   };
 
@@ -261,51 +264,54 @@ export default function Actividad2Scene1Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              ref={videoRef}
-              src="/video/ACTIVIDAD-2-ESCENA-1.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-20"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (video) {
-                  video.volume = currentVolume;
-                  console.log(`🎬 Activity2-Scene1: Video loaded, volume: ${currentVolume}`);
-                }
-              }}
-              onPlay={async () => {
-                const video = videoRef.current;
-                if (!video) return;
-
-                video.muted = false;
-                video.volume = currentVolume;
-                console.log(`🎬 Activity2-Scene1: Video playing, volume: ${currentVolume}`);
-
-                try {
-                  await initAudio();
-                  const isIPhone = /iPhone/.test(navigator?.userAgent || '');
-                  if (isIPhone) {
-                    let sharedAudioContext = window.sharedAudioContext;
-                    if (!sharedAudioContext) {
-                      sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                      window.sharedAudioContext = sharedAudioContext;
-                    }
-                    if (sharedAudioContext.state === 'suspended') {
-                      await sharedAudioContext.resume();
-                    }
-                    connectVideoToWebAudio(video, sharedAudioContext);
+            <>
+              <OptimizedVideo
+                ref={videoRef}
+                src="/video/ACTIVIDAD-2-ESCENA-1.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-20"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (video) {
+                    video.volume = currentVolume;
+                    console.log(`🎬 Activity2-Scene1: Video loaded, volume: ${currentVolume}`);
                   }
-                } catch (error) {
-                  console.error('Activity2-Scene1: Audio setup failed:', error);
-                }
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+                }}
+                onPlay={async () => {
+                  const video = videoRef.current;
+                  if (!video) return;
+
+                  video.muted = false;
+                  video.volume = currentVolume;
+                  console.log(`🎬 Activity2-Scene1: Video playing, volume: ${currentVolume}`);
+
+                  try {
+                    await initAudio();
+                    const isIPhone = /iPhone/.test(navigator?.userAgent || '');
+                    if (isIPhone) {
+                      let sharedAudioContext = window.sharedAudioContext;
+                      if (!sharedAudioContext) {
+                        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        window.sharedAudioContext = sharedAudioContext;
+                      }
+                      if (sharedAudioContext.state === 'suspended') {
+                        await sharedAudioContext.resume();
+                      }
+                      connectVideoToWebAudio(video, sharedAudioContext);
+                    }
+                  } catch (error) {
+                    console.error('Activity2-Scene1: Audio setup failed:', error);
+                  }
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">
               {!showJuegoUno && (

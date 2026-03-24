@@ -160,7 +160,7 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center pointer-events-auto">
+      <div className="fixed inset-0 z-50 backdrop-blur-lg flex items-center justify-center pointer-events-auto">
         <div className="relative w-[80%] h-[65%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
           {/* Listen Instructions Button */}
@@ -236,7 +236,7 @@ const JuegoTres: React.FC<JuegoTresProps> = ({
 
                 {/* Question */}
                 <div className="text-center pt-20">
-                  <div className="inline-block bg-white/90 backdrop-blur-sm rounded-lg px-6 py-4 shadow-lg">
+                  <div className="inline-block bg-white/90 backdrop-blur-lg rounded-lg px-6 py-4 shadow-lg">
                     <h2 className="text-3xl font-bold text-blue-600 mb-2">{GAME_CONFIG.title}</h2>
                     <p className="text-xl text-blue-600">{GAME_CONFIG.question}</p>
                   </div>

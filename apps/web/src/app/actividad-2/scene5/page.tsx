@@ -89,27 +89,23 @@ export default function Scene5Page() {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    
-    console.log('🎉 Scene5: Final scene completed, saving progress and completing Activity 2');
-    
-    const progressSaved = await saveProgress('actividad-2', 'scene5', 'completed', 100, {
+
+    await saveProgress('actividad-2', 'scene5', 'completed', 100, {
       game_completed: gameCompleted,
       activity_completed: true,
       completed_at: new Date().toISOString()
     });
-    
+
     setTimeout(() => {
       setIsAnimating(false);
-      if (progressSaved) {
-        console.log('✅ Scene5: Activity 2 completed successfully!');
-        // Set flag that activity was just completed for auto-rotation
-        localStorage.setItem('completedActivityId', '2');
+      const returnTo = localStorage.getItem('aventura-2-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-2-return-to');
+        router.push(returnTo);
       } else {
-        console.error('❌ Scene5: Failed to save progress, but continuing');
-        // Set flag even if save failed
         localStorage.setItem('completedActivityId', '2');
+        router.push('/home');
       }
-      router.push('/home');
     }, 800);
   };
 

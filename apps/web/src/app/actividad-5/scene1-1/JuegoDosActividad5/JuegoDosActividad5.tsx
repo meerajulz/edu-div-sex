@@ -336,7 +336,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
           
           {/* Modal */}
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -414,7 +414,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 max-w-2xl text-center shadow-lg">
+                    <div className="bg-white/70 backdrop-blur-lg rounded-xl p-6 max-w-2xl text-center shadow-lg">
                       <h2 className="text-2xl font-bold text-teal-800 mb-4">
                         {TONE_GAME_CONFIG.title}
                       </h2>
@@ -493,7 +493,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                             {currentScenario.noaOptions.map((option) => (
                               <motion.div
                                 key={option.id}
-                                className={`relative bg-white/70 backdrop-blur-sm rounded-xl p-4 border-2 cursor-pointer transition-all duration-300 ${
+                                className={`relative bg-white/70 backdrop-blur-lg rounded-xl p-4 border-2 cursor-pointer transition-all duration-300 ${
                                   gameSession.gamePhase === 'noa_selection' 
                                     ? 'border-teal-400 shadow-lg hover:shadow-xl hover:border-teal-500' 
                                     : 'border-teal-200 hover:border-teal-300'
@@ -577,7 +577,7 @@ export default function JuegoDosActividad5({ isVisible, onClose, onGameComplete 
                                 className="object-contain"
                               />
                             </div>
-                            <div className="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-4 text-center shadow-xl">
+                            <div className="bg-white/90 backdrop-blur-lg rounded-lg px-6 py-4 text-center shadow-xl">
                               <p className={`font-medium text-lg ${feedbackInfo.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                                 {feedbackInfo.text}
                               </p>

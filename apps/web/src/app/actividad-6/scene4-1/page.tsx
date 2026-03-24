@@ -14,6 +14,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Actividad6Scene4_1Page() {
 
@@ -70,6 +71,7 @@ export default function Actividad6Scene4_1Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedFinalVideo(!!localStorage.getItem('a6-scene4-1-final-video-watched'));
     console.log('📱 Activity6-Scene4-1: Device info initialized:', info);
   }, []);
 
@@ -161,6 +163,7 @@ export default function Actividad6Scene4_1Page() {
   };
 
   const handleFinalVideoEnd = () => {
+    localStorage.setItem('a6-scene4-1-final-video-watched', 'true');
     setFinalVideoEnded(true);
     setHasWatchedFinalVideo(true);
     // Show congratulations after final video
@@ -294,6 +297,7 @@ export default function Actividad6Scene4_1Page() {
         </div>
       ) : showFinalVideo && !finalVideoEnded ? (
         <div className="absolute" style={containerStyle}>
+          <>
           <OptimizedVideo
             ref={finalVideoRef}
             src="/video/ACTIVIDA_6-ESCENA_5-FINAL.mp4"
@@ -339,6 +343,8 @@ export default function Actividad6Scene4_1Page() {
             lowPowerMode={true}
             maxRetries={3}
           />
+          {hasWatchedFinalVideo && <SkipVideoButton onClick={handleFinalVideoEnd} />}
+          </>
         </div>
       ) : null}
 

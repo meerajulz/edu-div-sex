@@ -14,6 +14,7 @@ import { useActivityTracking, clearLastActivity } from '../../hooks/useActivityT
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Scene7Page() {
 
@@ -38,6 +39,7 @@ export default function Scene7Page() {
   // iOS volume control state
   const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
   const [currentVolume, setCurrentVolume] = useState(0.8);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -114,6 +116,7 @@ export default function Scene7Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('scene7-video-watched'));
   }, []);
 
   // Listen for global volume changes
@@ -154,6 +157,7 @@ export default function Scene7Page() {
   };
 
   const handleVideoEnd = async () => {
+    localStorage.setItem('scene7-video-watched', 'true');
     playGameAudio('/audio/button/Bright.mp3', 0.7, 'Video-End-Sound');
     setVideoEnded(true);
     
@@ -305,56 +309,56 @@ export default function Scene7Page() {
       ) : (
         <div className="absolute" style={containerStyle}>
           {!videoEnded ? (
-            <OptimizedVideo
-              src="/video/ACTIVIDAD-1-ESCENA-7.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-10"
-              autoPlay
-              playsInline
-              volume={currentVolume}
-              onEnded={handleVideoEnd}
-              onLoadedData={() => {
-                const video = videoRef.current;
-                if (video) video.volume = currentVolume;
-              }}
-              onPlay={() => {
-                if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
-              }}
-              lazyLoad={true}
-              lowPowerMode={true}
-              maxRetries={3}
-            />
+            <>
+              <OptimizedVideo
+                src="/video/ACTIVIDAD-1-ESCENA-7.mp4"
+                className="absolute inset-0 w-full h-full object-cover z-10"
+                autoPlay
+                playsInline
+                volume={currentVolume}
+                onEnded={handleVideoEnd}
+                onLoadedData={() => {
+                  const video = videoRef.current;
+                  if (video) video.volume = currentVolume;
+                }}
+                onPlay={() => {
+                  if (videoRef.current) setupVideoVolumeHandling(videoRef.current);
+                }}
+                lazyLoad={true}
+                lowPowerMode={true}
+                maxRetries={3}
+              />
+              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+            </>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
-                        <motion.div
-                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
-                            initial={{ rotate: -5 }}
-                            animate={{ rotate: [0, 2, -2, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                        >
-                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                                ¡Felicidades!
-                            </h1>
-                            <p className="text-xl sm:text-2xl text-white/90 font-semibold">
-                                Haz completado la aventura.
-                            </p>
-                        </motion.div>
-                        <div className="flex flex-col items-center gap-6">
-                          <motion.div
-                              className="inline-block"
-                              animate={{ rotate: [0, -5, 5, 0] }}
-                              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                              style={{ transformOrigin: 'center center' }}
-                          >
-                              <div className="whitespace-nowrap">
-                                  <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleBackClick} disabled={isAnimating} />
-                              </div>
-                          </motion.div>
-
-                          {/* Button to replay Scene 7 video */}
-                          <VolverAVerButton onClick={handleVolverAVerScene7} />
-                        </div>
-                    </div>
-                    
+              <motion.div
+                className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 shadow-2xl mb-8"
+                initial={{ rotate: -5 }}
+                animate={{ rotate: [0, 2, -2, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                  ¡Felicidades!
+                </h1>
+                <p className="text-xl sm:text-2xl text-white/90 font-semibold">
+                  Haz completado la aventura.
+                </p>
+              </motion.div>
+              <div className="flex flex-col items-center gap-6">
+                <motion.div
+                  className="inline-block"
+                  animate={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ transformOrigin: 'center center' }}
+                >
+                  <div className="whitespace-nowrap">
+                    <JugarButton text="IR A LA PROXIMA AVENTURA!" onClick={handleBackClick} disabled={isAnimating} />
+                  </div>
+                </motion.div>
+                <VolverAVerButton onClick={handleVolverAVerScene7} />
+              </div>
+            </div>
           )}
         </div>
       )}

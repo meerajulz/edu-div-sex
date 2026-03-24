@@ -15,6 +15,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 import Image from 'next/image';
 
@@ -356,7 +357,7 @@ export default function Scene1Page() {
           </motion.div>
 {/* 
           <motion.button
-            className="mt-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 hover:border-white/50 transition-all duration-300 shadow-lg"
+            className="mt-12 bg-white/20 hover:bg-white/30 backdrop-blur-lg text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 hover:border-white/50 transition-all duration-300 shadow-lg"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.6 }}
@@ -449,6 +450,11 @@ export default function Scene1Page() {
               lowPowerMode={true}
               maxRetries={3}
             />
+          )}
+
+          {/* Skip button - only show during video if user has watched before */}
+          {!videoEnded && hasWatchedVideo && (
+            <SkipVideoButton onClick={handleVideoEnd} />
           )}
 
           {/* Background image - only show when video has ended */}

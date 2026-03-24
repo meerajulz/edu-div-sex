@@ -44,7 +44,7 @@ const DraggablePart: React.FC<DraggablePartProps> = ({ id, image, sound }) => {
       className="cursor-grab"
       onContextMenu={handleContextMenu}
     >
-    <div className="w-[60px] h-[60px] relative">
+    <div className="w-[80px] h-[80px] relative">
 
       {/* Transparent overlay to trigger sound */}
       <button

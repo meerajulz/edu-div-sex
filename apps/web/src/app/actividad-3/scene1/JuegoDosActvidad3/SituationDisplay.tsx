@@ -29,7 +29,7 @@ const SituationDisplay: React.FC<SituationDisplayProps> = ({
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
       <div
-        className={`relative w-[600px] h-[450px] max-w-[90%] max-h-[70%] ${clickable ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''}`}
+        className={`relative w-[780px] h-[580px] max-w-[90%] max-h-[80%] ${clickable ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''}`}
         onClick={clickable ? onClick : undefined}
         role={clickable ? "button" : undefined}
         aria-label={clickable ? "Escuchar situación de nuevo" : undefined}

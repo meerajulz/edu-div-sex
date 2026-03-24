@@ -611,7 +611,7 @@ useEffect(() => {
               <>
                 {/* Blocking overlay during navigation */}
                 {isNavigating && (
-                  <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                  <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-lg flex items-center justify-center">
                     <div className="text-white text-xl font-bold animate-pulse">
                       Cargando...
                     </div>
@@ -623,6 +623,7 @@ useEffect(() => {
                     config={ACTIVITY_1_CONFIG}
                     onSectionClick={handleSectionSelect}
                     isNavigating={isNavigating}
+                    activeItemScale={2}
                   />
                 </div>
               </>

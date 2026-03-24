@@ -564,6 +564,7 @@ useEffect(() => {
                     config={ACTIVITY_4_CONFIG}
                     onSectionClick={handleSectionSelect}
                     isNavigating={isNavigating}
+                    activeItemScale={2}
                   />
                 </div>
               </>

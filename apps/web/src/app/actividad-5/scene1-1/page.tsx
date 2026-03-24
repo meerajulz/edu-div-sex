@@ -49,20 +49,16 @@ export default function Actividad5Scene1_1Page() {
 
   const handleGameComplete = () => {
     setJuego2Completed(true);
-    setShowJuegoDos(false); // Close the game modal
-    // Show congratulations after a short delay
+    setShowJuegoDos(false);
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);
   };
 
-  // Handle game completion and go back to menu
   const handleGoToMenu = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-
-    console.log('🎯 Actividad5-Scene1-1: Game completed, saving progress and returning to menu');
 
     const progressSaved = await saveProgress('actividad-5', 'scene1-1', 'completed', 100, {
       juego2_completed: juego2Completed,

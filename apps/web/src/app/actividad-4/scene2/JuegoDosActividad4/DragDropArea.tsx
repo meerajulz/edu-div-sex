@@ -59,7 +59,7 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ id, image, alt, isDragg
       style={style}
       {...listeners}
       {...attributes}
-      className={`relative w-40 h-40 rounded-lg cursor-grab active:cursor-grabbing touch-none  transition-all duration-200 ${
+      className={`relative w-36 h-36 rounded-lg cursor-grab active:cursor-grabbing touch-none transition-all duration-200 ${
         isDragging ? 'opacity-80 scale-95 z-[9999]' : 'hover:scale-105 z-10'
       }`}
       onContextMenu={handleContextMenu}
@@ -145,18 +145,11 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     return currentSequence.filter(id => id !== null) as string[];
   }, [currentSequence]);
 
-  // Get shuffled images for initial display (memoized to prevent re-shuffling)
-  const { leftSideImages, rightSideImages } = useMemo(() => {
-    const shuffled = [...GAME_CONFIG.images].sort(() => Math.random() - 0.5);
-    return {
-      leftSideImages: shuffled.slice(0, 4),
-      rightSideImages: shuffled.slice(4, 7)
-    };
-  }, []); // Empty dependency array to shuffle only once
-  
-  // Filter out already used images
-  const availableLeftImages = leftSideImages.filter(img => !usedImages.includes(img.id));
-  const availableRightImages = rightSideImages.filter(img => !usedImages.includes(img.id));
+  // Images in correct order 1–7
+  const availableImages = GAME_CONFIG.images
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .filter(img => !usedImages.includes(img.id));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragStart = (event: any) => {
@@ -258,33 +251,24 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="absolute inset-0 flex p-6 z-0">
-        
-        {/* Left Side Images */}
-        <div className="w-1/3 flex flex-col items-center justify-center gap-3 z-10">
-          <div className="bg-blue-50 border-4 border-blue-300 rounded-lg p-5 min-h-[450px] w-full grid grid-cols-2 gap-4 place-items-center z-10">
+      <div className="absolute inset-0 flex gap-4 p-6 z-0">
 
-            {availableLeftImages.map(item => renderDraggableImage(item, 'left'))}
+        {/* LEFT: All draggable images */}
+        <div className="w-1/2 flex flex-col items-center justify-center z-10">
+          <div className="bg-blue-50 border-4 border-blue-300 rounded-lg p-1 w-full h-full grid grid-cols-3 gap-1 content-center place-items-center z-10">
+            {availableImages.map(item => renderDraggableImage(item, 'left'))}
           </div>
         </div>
 
-        {/* Center Drop Zone */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 z-0">
-          <div className="bg-yellow-50 border-4 border-yellow-300 rounded-lg p-6 min-h-[450px] flex flex-col justify-center z-0">
-            <div className="text-xl font-bold text-yellow-700 mb-6 text-center">
+        {/* RIGHT: Drop zones */}
+        <div className="w-1/2 flex flex-col items-center justify-center z-0">
+          <div className="bg-yellow-50 border-4 border-yellow-300 rounded-lg p-6 w-full h-full flex flex-col justify-center z-0">
+            <div className="text-xl font-bold text-yellow-700 mb-4 text-center">
               Orden Correcto
             </div>
-            <div className="flex flex-col items-center gap-4 z-0">
+            <div className="flex flex-col items-center gap-3 z-0">
               {renderDropZones()}
             </div>
-          </div>
-        </div>
-
-        {/* Right Side Images */}
-        <div className="w-1/3 flex flex-col items-center justify-center gap-3 z-10">
-          <div className="bg-blue-50 border-4 border-blue-300 rounded-lg p-5 min-h-[450px] w-full grid grid-cols-2 gap-4 place-items-center z-10">
-
-            {availableRightImages.map(item => renderDraggableImage(item, 'right'))}
           </div>
         </div>
 

@@ -120,7 +120,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 backdrop-blur-lg flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -128,7 +128,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
     >
       {/* Backdrop */}
       <motion.div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-lg"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         onClick={handleClose}
@@ -209,215 +209,146 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
             </div>
           )}
 
-          {/* Playing Phase - Show open chest and items */}
+          {/* Playing Phase - chest on left, items on right */}
           {gameState.phase !== 'intro' && (
-            <div className="relative w-full h-full">
-              {/* Open/Closed Chest - FIXED: Shows closed chest when game is completed */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <AnimatePresence mode="wait">
-                  {gameState.gameCompleted ? (
-                    // Closed chest when game is completed
-                    <motion.img
-                      key="chest-closed"
-                      src={config.globalImages.cofreClosed}
-                      alt="Cofre cerrado"
-                      data-chest="true"
-                      className="max-h-[400px] object-contain"
-                      initial={{ scale: 1.1, rotateY: 0 }}
-                      animate={{
-                        scale: [1.1, 0.95, 1],
-                        rotateY: [0, -5, 5, 0],
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        ease: 'easeInOut',
-                        times: [0, 0.5, 1]
-                      }}
-                    />
-                  ) : (
-                    // Open chest during gameplay - FIXED: Animation types
-                    <motion.img
-                      key="chest-open"
-                      src={config.globalImages.cofreOpen}
-                      alt="Cofre abierto"
-                      data-chest="true"
-                      className="max-h-[400px] object-contain"
-                      initial={{ scale: 1 }}
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
-                      exit={{
-                        scale: 0.9,
-                        rotateY: 10,
-                        transition: { duration: 0.4 }
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
+            <div className="relative w-full h-full flex">
 
-                {/* Items in chest - FIXED: Only show when chest is open AND game not completed */}
-                {!gameState.gameCompleted && gameState.phase !== 'completed' && (
-                  <AnimatePresence>
-                    <motion.div 
-                      key="chest-items-container"
-                      className="absolute inset-0 flex flex-wrap justify-center items-center p-4"
-                      exit={{ 
-                        opacity: 0,
-                        scale: 0.5,
-                        transition: { duration: 0.5, ease: 'easeInOut' }
-                      }}
-                    >
-                      {gameState.itemStates
-                        .filter(state => state.isInChest)
-                        .map((state, index) => {
-                          const item = getItemById(state.id);
-                          if (!item) return null;
-                          
-                          // Debug log to see which items are being rendered
-                          console.log(`Rendering item in chest: ${item.id}, isPrivate: ${item.isPrivate}, gameCompleted: ${gameState.gameCompleted}`);
-                          
-                          return (
-                            <motion.img
-                              key={`chest-${state.id}`}
-                              src={item.image}
-                              alt={`${item.name} in chest`}
-                              className="w-24 h-24 object-contain m-1"
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              exit={{
-                                scale: 0,
-                                opacity: 0,
-                                transition: {
-                                  duration: 0.4,
-                                  ease: 'easeInOut',
-                                  delay: index * 0.1
-                                }
-                              }}
-                              transition={{
-                                delay: index * 0.05,
-                                duration: 0.3,
-                                ease: 'easeOut'
-                              }}
-                            />
-                          );
-                        })}
-                    </motion.div>
+              {/* LEFT: Chest */}
+              <div className="flex-none w-[70%] h-full flex items-center justify-center p-2">
+                <div className="relative w-full">
+                  <AnimatePresence mode="wait">
+                    {gameState.gameCompleted ? (
+                      <motion.img
+                        key="chest-closed"
+                        src={config.globalImages.cofreClosed}
+                        alt="Cofre cerrado"
+                        data-chest="true"
+                        className="w-full h-auto object-contain"
+                        initial={{ scale: 1.1, rotateY: 0 }}
+                        animate={{ scale: [1.1, 0.95, 1], rotateY: [0, -5, 5, 0] }}
+                        transition={{ duration: 0.8, ease: 'easeInOut', times: [0, 0.5, 1] }}
+                      />
+                    ) : (
+                      <motion.img
+                        key="chest-open"
+                        src={config.globalImages.cofreOpen}
+                        alt="Cofre abierto"
+                        data-chest="true"
+                        className="w-full h-auto object-contain"
+                        initial={{ scale: 1 }}
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        exit={{ scale: 0.9, rotateY: 10, transition: { duration: 0.4 } }}
+                      />
+                    )}
                   </AnimatePresence>
-                )}
+
+                  {!gameState.gameCompleted && gameState.phase !== 'completed' && (
+                    <AnimatePresence>
+                      <motion.div
+                        key="chest-items-container"
+                        className="absolute inset-0 flex flex-wrap justify-center items-center p-4"
+                        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.5, ease: 'easeInOut' } }}
+                      >
+                        {gameState.itemStates
+                          .filter(state => state.isInChest)
+                          .map((state, index) => {
+                            const item = getItemById(state.id);
+                            if (!item) return null;
+                            return (
+                              <motion.img
+                                key={`chest-${state.id}`}
+                                src={item.image}
+                                alt={`${item.name} in chest`}
+                                className="w-16 h-16 object-contain m-1"
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0, transition: { duration: 0.4, ease: 'easeInOut', delay: index * 0.1 } }}
+                                transition={{ delay: index * 0.05, duration: 0.3, ease: 'easeOut' }}
+                              />
+                            );
+                          })}
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </div>
               </div>
 
-              {/* FIXED: Draggable Items - Hide ALL items when game is completed */}
-              <AnimatePresence mode="popLayout">
-                {gameState.itemsVisible && !gameState.gameCompleted && config.items.map((item, index) => {
-                  const itemState = getItemStateById(item.id);
-                  
-                  // CRITICAL FIX: Don't render if item is in chest OR game is completed
-                  if (!itemState || itemState.isInChest || gameState.gameCompleted) {
-                    console.log(`Item ${item.id} not rendered - inChest: ${itemState?.isInChest}, gameCompleted: ${gameState.gameCompleted}`);
-                    return null;
-                  }
+              {/* RIGHT: Draggable Items grid */}
+              <div className="flex-1 grid grid-cols-2 content-center gap-0 p-0">
+                <AnimatePresence mode="popLayout">
+                  {gameState.itemsVisible && !gameState.gameCompleted && config.items.map((item, index) => {
+                    const itemState = getItemStateById(item.id);
+                    if (!itemState || itemState.isInChest || gameState.gameCompleted) return null;
 
-                  const isDraggable = canDragItem(item.id);
+                    const isDraggable = canDragItem(item.id);
+                    const moveAwayAnimation = itemState.shouldMoveAway ? {
+                      x: 400,
+                      y: -100,
+                      opacity: 0,
+                      scale: 0.5
+                    } : {};
 
-                  // Calculate move away position based on item's original position
-                  const hasLeft = 'left' in item.position;
-                  const hasTop = 'top' in item.position;
-                  const moveAwayAnimation = itemState.shouldMoveAway ? {
-                    x: hasLeft && parseFloat(item.position.left as string) < 50 ? -400 : 400,
-                    y: hasTop && parseFloat(item.position.top as string) < 50 ? -200 : 200,
-                    opacity: 0,
-                    scale: 0.5
-                  } : {};
-
-                  return (
-                    <motion.div
-                      key={`draggable-${item.id}`} // Unique key for draggable items
-                      className={`absolute ${isDraggable ? 'cursor-grab' : 'cursor-not-allowed'}`}
-                      style={{
-                        ...item.position,
-                        WebkitTouchCallout: 'none',
-                        WebkitUserSelect: 'none',
-                        touchAction: 'none'
-                      }}
-                      initial={config.animations.itemAppear.initial}
-                      animate={itemState.shouldMoveAway ? moveAwayAnimation : config.animations.itemAppear.animate}
-                      exit={{
-                        opacity: 0,
-                        scale: 0,
-                        transition: { duration: 0.2 }
-                      }}
-                      transition={{
-                        ...config.animations.itemAppear.transition,
-                        delay: itemState.shouldMoveAway ? 0 : index * 0.2,
-                        duration: itemState.shouldMoveAway ? 0.6 : config.animations.itemAppear.transition.duration
-                      }}
-                      drag={isDraggable}
-                      dragMomentum={false}
-                      dragConstraints={{
-                        left: -window.innerWidth/4,
-                        right: window.innerWidth/4,
-                        top: -window.innerHeight/4,
-                        bottom: window.innerHeight/4
-                      }}
-                      onDragStart={() => {
-                        console.log('Started dragging:', item.id);
-                      }}
-                      onDragEnd={(event, info) => {
-                        console.log('Ended dragging:', item.id);
-                        handleDragEnd(event, info, item.id);
-                      }}
-                      onPointerDown={(e) => {
-                        // Prevent default to stop context menu/share sheet on long press
-                        e.preventDefault();
-                        handleItemClick(item.id);
-                      }}
-                      onContextMenu={(e) => {
-                        // Prevent context menu from appearing
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onTouchStart={(e) => {
-                        // Prevent default touch behavior that triggers share sheet
-                        if (!isDraggable) {
-                          e.preventDefault();
-                        }
-                      }}
-                      onClick={() => {}} // Keep empty onClick to maintain accessibility
-                      whileDrag={{
-                        ...config.animations.itemDrag.whileDrag,
-                        cursor: 'grabbing'
-                      }}
-                      whileHover={{
-                        scale: isDraggable ? 1.05 : 1,
-                        cursor: isDraggable ? 'grab' : 'not-allowed'
-                      }}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className={`max-h-[120px] object-contain transition-all duration-200 ${
-                          itemState.isDisabled ? 'opacity-50' : 'opacity-100'
-                        } select-none pointer-events-none`}
+                    return (
+                      <motion.div
+                        key={`draggable-${item.id}`}
+                        className={`relative flex items-center justify-center ${isDraggable ? 'cursor-grab' : 'cursor-not-allowed'}`}
                         style={{
                           WebkitTouchCallout: 'none',
-                          WebkitUserSelect: 'none'
+                          WebkitUserSelect: 'none',
+                          touchAction: 'none'
                         }}
-                        draggable={false}
-                        onContextMenu={(e) => {
+                        initial={config.animations.itemAppear.initial}
+                        animate={itemState.shouldMoveAway ? moveAwayAnimation : config.animations.itemAppear.animate}
+                        exit={{ opacity: 0, scale: 0, transition: { duration: 0.2 } }}
+                        transition={{
+                          ...config.animations.itemAppear.transition,
+                          delay: itemState.shouldMoveAway ? 0 : index * 0.2,
+                          duration: itemState.shouldMoveAway ? 0.6 : config.animations.itemAppear.transition.duration
+                        }}
+                        drag={isDraggable}
+                        dragMomentum={false}
+                        dragConstraints={{
+                          left: -window.innerWidth,
+                          right: window.innerWidth,
+                          top: -window.innerHeight,
+                          bottom: window.innerHeight
+                        }}
+                        onDragStart={() => console.log('Started dragging:', item.id)}
+                        onDragEnd={(event, info) => {
+                          console.log('Ended dragging:', item.id);
+                          handleDragEnd(event, info, item.id);
+                        }}
+                        onPointerDown={(e) => {
                           e.preventDefault();
-                          e.stopPropagation();
+                          handleItemClick(item.id);
                         }}
-                      />
+                        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onTouchStart={(e) => { if (!isDraggable) e.preventDefault(); }}
+                        onClick={() => {}}
+                        whileDrag={{ ...config.animations.itemDrag.whileDrag, cursor: 'grabbing' }}
+                        whileHover={{ scale: isDraggable ? 1.05 : 1, cursor: isDraggable ? 'grab' : 'not-allowed' }}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className={`max-h-[80px] object-contain transition-all duration-200 ${
+                            itemState.isDisabled ? 'opacity-50' : 'opacity-100'
+                          } select-none pointer-events-none`}
+                          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
+                          draggable={false}
+                          onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        />
+                        {itemState.isDisabled && !itemState.isInChest && (
+                          <div className="absolute inset-0 bg-red-500 bg-opacity-40 rounded-lg pointer-events-none" />
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
 
-                      {/* Red layer for disabled/tried items - but only if NOT in chest */}
-                      {itemState.isDisabled && !itemState.isInChest && (
-                        <div className="absolute inset-0 bg-red-500 bg-opacity-40 rounded-lg pointer-events-none" />
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-
-              {/* Feedback Icons - FIXED: Centered exactly like the progress dots */}
+              {/* Feedback Icons */}
               <AnimatePresence>
                 {gameState.currentFeedback.show && (
                   <motion.div
@@ -425,10 +356,7 @@ export default function JuegoCincoActividad2({ isOpen, onClose, onGameComplete }
                     {...config.animations.feedbackIcon}
                   >
                     <img
-                      src={gameState.currentFeedback.isCorrect 
-                        ? config.globalImages.checkYes 
-                        : config.globalImages.checkNo
-                      }
+                      src={gameState.currentFeedback.isCorrect ? config.globalImages.checkYes : config.globalImages.checkNo}
                       alt={gameState.currentFeedback.isCorrect ? "Correcto" : "Incorrecto"}
                       className="w-32 h-32 object-contain"
                     />

@@ -468,7 +468,7 @@ export default function Step4({ character, onStepComplete }: Step4Props) {
       {/* Title display */}
       {!titlePlayed && (
         <motion.div
-          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-sm rounded-lg px-8 py-6 shadow-lg"
+          className="text-center text-white text-2xl font-bold bg-orange-500 backdrop-blur-lg rounded-lg px-8 py-6 shadow-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >

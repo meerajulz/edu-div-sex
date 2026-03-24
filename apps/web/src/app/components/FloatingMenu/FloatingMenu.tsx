@@ -445,7 +445,7 @@ const FloatingMenu = () => {
 	return (
 		<motion.div
 			className={`
-        fixed z-[9999] bg-white/10 backdrop-blur-sm shadow-lg
+        fixed z-[9999] bg-white/10 backdrop-blur-lg shadow-lg
         ${
 					isMobile
 						? "bottom-0 left-0 right-0 p-2 flex justify-around items-center rounded-t-xl"

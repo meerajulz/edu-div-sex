@@ -168,7 +168,7 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
 
           {/* Modal - 70% of screen */}
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -232,7 +232,7 @@ export default function JuegoUnoActividad4({ isVisible, onClose, onGameComplete 
                   <>
                     {/* Character selection title */}
                     <motion.div
-                      className="absolute top-10 left-0 right-0 mx-auto w-fit text-xl font-bold bg-white/80 backdrop-blur-sm rounded-lg px-6 py-3 text-blue-800 shadow-md"
+                      className="absolute top-10 left-0 right-0 mx-auto w-fit text-xl font-bold bg-white/80 backdrop-blur-lg rounded-lg px-6 py-3 text-blue-800 shadow-md"
                       initial={{ opacity: 0, y: -20 }}
                       animate={{ opacity: 1, y: 0 }}
                     >

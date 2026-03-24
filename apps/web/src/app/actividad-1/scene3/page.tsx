@@ -14,6 +14,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
+import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
 
 export default function Scene3Page() {
   
@@ -36,6 +37,7 @@ export default function Scene3Page() {
   // iOS volume control state
   const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isSafari: false, hasWebAudio: false, hasGainNode: false });
   const [currentVolume, setCurrentVolume] = useState(0.8);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
   // Function to connect video element to Web Audio API for iOS volume control
   const connectVideoToWebAudio = (video: HTMLVideoElement, audioContext: AudioContext) => {
@@ -67,6 +69,7 @@ export default function Scene3Page() {
     setDeviceInfo(info);
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
+    setHasWatchedVideo(!!localStorage.getItem('scene3-video-watched'));
     console.log('📱 Scene3: Device info initialized:', info);
   }, []);
 
@@ -155,6 +158,7 @@ export default function Scene3Page() {
 
   const handleVideoEnd = async () => {
     console.log('🎬 Scene3: Video ended, saving progress and moving to scene4');
+    localStorage.setItem('scene3-video-watched', 'true');
     
     const progressSaved = await saveProgress('actividad-1', 'scene3', 'completed', 100, {
       video_watched: true,
@@ -330,6 +334,7 @@ export default function Scene3Page() {
             lowPowerMode={true}
             maxRetries={3}
           />
+          {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
         </div>
       )}
     </motion.div>

@@ -358,7 +358,7 @@ export default function JuegoUnoActividad6({ isVisible, onClose, onGameComplete 
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm z-50"
+            className="fixed inset-0 backdrop-blur-lg z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

@@ -12,6 +12,7 @@ interface ActivityMenuProps {
   config: ActivityConfig;
   onSectionClick?: (section: ActivitySection) => void;
   isNavigating?: boolean;
+  activeItemScale?: number;
   containerPosition?: {
     top?: string;
     left?: string;
@@ -24,6 +25,7 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
   config,
   onSectionClick,
   isNavigating = false,
+  activeItemScale = 1,
   containerPosition = {
     top: '3/4',
     left: '1/2',
@@ -176,7 +178,7 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
     <div className="absolute inset-0 w-full h-full z-50 pointer-events-none">
       <div className="absolute inset-0 flex items-center justify-center">
         <div className={containerPositionClass + " w-full flex justify-center items-center"}>
-          <div className="relative flex justify-center items-end" style={{ perspective: '500px', transformStyle: 'preserve-3d' }}>
+          <div className="relative flex justify-center items-end" style={{ perspective: '500px' }}>
             
             {sections.map((section, index) => {
               const isNextSection = section.id === nextSectionToPlay?.id;
@@ -201,7 +203,7 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                     y: section.yPosition,
                     x: section.xPosition,
                     z: section.zPosition,
-                    scale: [section.scale || 1, (section.scale || 1) * 1.1, section.scale || 1],
+                    scale: [(section.scale || 1) * activeItemScale, (section.scale || 1) * activeItemScale * 1.2, (section.scale || 1) * activeItemScale],
                     rotateX: section.rotateX,
                     rotateY: section.rotateY,
                     transition: { 
@@ -250,14 +252,9 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                     y: (section.yPosition || 0) - 10,
                     transition: { duration: 0.2 }
                   } : {}}
-                  style={{ 
-                    transformStyle: 'preserve-3d',
-                    zIndex: isNextSection ? 100 : (40 - index), // Higher z-index for next section
-                    filter: `brightness(${section.brightness || 1})`,
-                    // Add a subtle glow effect for the next section
-                    ...(isNextSection && section.isUnlocked ? {
-                      //boxShadow: '0 0 30px rgba(255, 215, 0, 0.6)'
-                    } : {})
+                  style={{
+                    zIndex: isNextSection ? 100 : (40 - index),
+                    filter: `brightness(${section.isCompleted ? 0.5 : (section.brightness || 1)})`,
                   }}
                 >
                   <div className="relative" style={{ width: `${150 * (section.scale || 1)}px`, height: `${200 * (section.scale || 1)}px` }}>

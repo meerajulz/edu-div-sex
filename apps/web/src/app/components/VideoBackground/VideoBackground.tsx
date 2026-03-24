@@ -30,6 +30,7 @@ interface VideoBackgroundProps {
   debug?: boolean;
   hotspots?: Hotspot[];
   showDoorArrow?: boolean; // Control door arrow visibility
+  showStartButton?: boolean; // Show EMPEZAR button before video starts
 }
 
 interface Position {
@@ -53,6 +54,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   onVideoEnd, // Add this
   debug = false,
   showDoorArrow = true, // Default to true for backward compatibility
+  showStartButton = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
  // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -566,6 +568,27 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
                 />
               </motion.div>
             </div>
+          )}
+
+          {/* EMPEZAR button - inside VideoBackground so it's in the correct stacking context */}
+          {showStartButton && !isPlaying && !videoFinished && !isExiting && (
+            <motion.button
+              className="absolute bg-orange-500 text-white font-extrabold rounded-full shadow-xl border-4 border-orange-400 px-5 py-3 text-lg z-[2000]"
+              style={{
+                left: '50%',
+                top: '62%',
+                transform: 'translateX(-50%)',
+              }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: [1, 1.05, 1] }}
+              transition={{
+                opacity: { duration: 0.4 },
+                scale: { duration: 1.5, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut' }
+              }}
+              onClick={playVideo}
+            >
+              EMPEZAR
+            </motion.button>
           )}
 
           {/* Door Area with Arrow */}

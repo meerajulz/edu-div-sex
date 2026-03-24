@@ -10,7 +10,7 @@ import {
   DragEndEvent
  } from '@dnd-kit/core';
 import Image from 'next/image';
-import { bodyParts } from './config';
+import { draggables, dropZones } from './config';
 import DraggablePart from './DraggablePart';
 import DropZone from './DropZone';
 import CongratsOverlay from '../../../components/CongratsOverlay/CongratsOverlay';
@@ -35,9 +35,9 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
 
   const [showCongrats, setShowCongrats] = useState(false);
 
-  // Detect when all parts are matched
+  // Detect when all draggables are matched
   useEffect(() => {
-    if (matchedParts.length === bodyParts.length) {
+    if (matchedParts.length === draggables.length) {
       setShowCongrats(true);
     }
   }, [matchedParts]);
@@ -53,7 +53,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
     await saveProgress('actividad-1', 'scene4', 'completed', 100, {
       game: 'JuegoDos',
       matched_parts: matchedParts.length,
-      total_parts: bodyParts.length,
+      total_parts: draggables.length,
       completed_at: new Date().toISOString()
     });
     
@@ -81,8 +81,12 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
     const { over, active } = event;
     if (!over) return;
 
-    if (over.id === active.id) {
-      setMatchedParts((prev) => [...prev, String(active.id)]);
+    const draggedId = String(active.id);
+    const zone = dropZones.find(dz => dz.id === over.id);
+    const isCorrect = zone?.acceptsId === draggedId;
+
+    if (isCorrect && !matchedParts.includes(draggedId)) {
+      setMatchedParts((prev) => [...prev, draggedId]);
       setFeedback('ok');
       playGameAudio('/audio/actividad-1/escena_1/Game_Score.mp3', 1.0, 'JuegoDos-Success');
     } else {
@@ -103,7 +107,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm pointer-events-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg pointer-events-auto">
         <div className="relative w-[90%] h-[90%] max-w-3xl bg-white/10 border-2 border-white/30 backdrop-blur-md rounded-xl shadow-xl pointer-events-auto overflow-hidden">
 
           {/* Close Button */}
@@ -124,12 +128,12 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
                 className="object-contain"
                 priority
               />
-              {bodyParts.map((part) => (
+              {dropZones.map((zone) => (
                 <DropZone
-                  key={part.id}
-                  id={part.id}
-                  position={part.position}
-                  isMatched={matchedParts.includes(part.id)}
+                  key={zone.id}
+                  id={zone.id}
+                  position={zone.position}
+                  isMatched={matchedParts.includes(zone.acceptsId)}
                 />
               ))}
             </div>
@@ -137,7 +141,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
 
           {/* Bottom horizontal draggable parts */}
           <div className="absolute bottom-0 left-0 right-0 z-10 h-40 flex items-center justify-center space-x-6 bg-white/80 p-4 border-t-2 border-white/50">
-            {bodyParts.map((part) =>
+            {draggables.map((part) =>
               !matchedParts.includes(part.id) && (
                 <DraggablePart key={part.id} id={part.id} image={part.image} sound={part.sound}/>
               )
