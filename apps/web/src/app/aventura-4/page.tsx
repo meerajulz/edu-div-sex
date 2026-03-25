@@ -9,7 +9,7 @@ import {
   cleanupAudio
 } from '../utils/audioPlayer';
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import JugarButton from '../components/JugarButton/JugarButton';
@@ -177,11 +177,11 @@ export default function Aventura4NivelAvanzadoPage() {
     handleVideoEnd();
   };
 
-  const exitVariants = {
+  const exitVariants: Variants = {
     exit: {
       y: '120vh',
       opacity: 0,
-      transition: { duration: 1.5, ease: 'easeInOut' }
+      transition: { duration: 1.5, ease: 'easeInOut' as const }
     }
   };
 

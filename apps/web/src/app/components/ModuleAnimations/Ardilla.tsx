@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 
 // Ardilla (squirrel) component for animations
@@ -69,7 +69,7 @@ const Ardilla: React.FC<ArdillaProps> = ({
   }, [shouldShowArdilla, initialDelay]);
   
   // First Ardilla animation - run from right to left (faster)
-  const ardillaVariants = {
+  const ardillaVariants: Variants = {
     hidden: {
       x: '100vw', // Start from right off-screen
       opacity: 1, // Full opacity, no fade in
@@ -79,7 +79,7 @@ const Ardilla: React.FC<ArdillaProps> = ({
       opacity: 1, // Maintain full opacity
       transition: {
         type: 'tween', // Use a smooth linear movement
-        ease: 'linear',
+        ease: 'linear' as const,
         duration: 5, // 5 seconds to cross the screen
       },
     },
@@ -93,7 +93,7 @@ const Ardilla: React.FC<ArdillaProps> = ({
   };
   
   // Second Ardilla animation - run from right to left (slower)
-  const secondArdillaVariants = {
+  const secondArdillaVariants: Variants = {
     hidden: {
       x: '110vw', // Start further right off-screen
       opacity: 1,
@@ -103,7 +103,7 @@ const Ardilla: React.FC<ArdillaProps> = ({
       opacity: 1,
       transition: {
         type: 'tween',
-        ease: 'linear',
+        ease: 'linear' as const,
         duration: 6.5, // Slower - takes 6.5 seconds to cross
         delay: 0.7, // Starts a bit later
       },

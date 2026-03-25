@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { playGameAudio } from '../../../utils/gameAudio';
 
-const sparkleVariants = {
+const sparkleVariants: Variants = {
   animate: {
     scale: [0, 1.5, 0],
     opacity: [0, 1, 0],
-    transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' },
+    transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' as const },
   },
 };
 

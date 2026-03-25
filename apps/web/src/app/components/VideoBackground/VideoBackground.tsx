@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import WindowBirds from '../WindowBirds/WindowBirds';
 import Table from '../Table/Table';
 import Backpack from '../Backpack/Backpack';
@@ -154,7 +154,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     },
   };
 
-  const furnishingVariants = {
+  const furnishingVariants: Variants = {
     visible: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 0.8, transition: { duration: 0.5 } },
   };
@@ -460,9 +460,9 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     top: `${(browserDimensions.height - containerDimensions.height) / 2}px`,
   };
 
-  const videoContainerVariants = {
+  const videoContainerVariants: Variants = {
     visible: { y: 0, opacity: 1 },
-    exit: { y: '-110%', opacity: 0, transition: { duration: 1.2, ease: 'easeInOut' } },
+    exit: { y: '-110%', opacity: 0, transition: { duration: 1.2, ease: 'easeInOut' as const } },
   };
 
 

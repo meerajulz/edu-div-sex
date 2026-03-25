@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import LogoComponent from '../../components/LogoComponent/LogoComponent';
 import JugarButton from '../../components/JugarButton/JugarButton';
@@ -281,17 +281,17 @@ export default function Scene1Page() {
     }, 800);
   };
 
-  const pageVariants = {
+  const pageVariants: Variants = {
     initial: { y: '100vh', opacity: 0 },
     animate: {
       y: 0,
       opacity: 1,
-      transition: { duration: 1, ease: 'easeOut' }
+      transition: { duration: 1, ease: 'easeOut' as const }
     },
     exit: {
       y: '-100vh',
       opacity: 0,
-      transition: { duration: 0.8, ease: 'easeIn' }
+      transition: { duration: 0.8, ease: 'easeIn' as const }
     }
   };
 
