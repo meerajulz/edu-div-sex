@@ -206,26 +206,20 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                     scale: [(section.scale || 1) * activeItemScale, (section.scale || 1) * activeItemScale * 1.2, (section.scale || 1) * activeItemScale],
                     rotateX: section.rotateX,
                     rotateY: section.rotateY,
-                    transition: { 
+                    transition: {
                       scale: {
                         duration: 1.5,
                         repeat: Infinity,
-                        ease: "easeInOut"
+                        ease: "easeInOut" as const
                       },
                       default: {
-                        type: 'spring', 
-                        damping: 12, 
-                        stiffness: 70, 
+                        type: 'spring',
+                        damping: 12,
+                        stiffness: 70,
                         delay: section.delay,
-                        onComplete: () => {
-                          playDropSound(index);
-                          if (index === sections.length - 1) {
-                            setHasAnimated(true);
-                          }
-                        }
                       }
                     }
-                  } : { 
+                  } : {
                     // Normal animation for other sections
                     y: section.yPosition,
                     x: section.xPosition,
@@ -233,17 +227,17 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                     scale: section.scale,
                     rotateX: section.rotateX,
                     rotateY: section.rotateY,
-                    transition: { 
-                      type: 'spring', 
-                      damping: 12, 
-                      stiffness: 70, 
+                    transition: {
+                      type: 'spring',
+                      damping: 12,
+                      stiffness: 70,
                       delay: section.delay,
-                      onComplete: () => {
-                        playDropSound(index);
-                        if (index === sections.length - 1) {
-                          setHasAnimated(true);
-                        }
-                      }
+                    }
+                  }}
+                  onAnimationComplete={() => {
+                    playDropSound(index);
+                    if (index === sections.length - 1) {
+                      setHasAnimated(true);
                     }
                   }}
                   onClick={() => handleClick(section)}
