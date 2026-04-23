@@ -972,6 +972,51 @@ export const AVENTURA_4_CONFIG: ActivityConfig = {
   ],
 };
 
+// Aventura 5 – Nivel Avanzado
+export const AVENTURA_5_CONFIG: ActivityConfig = {
+  activityId: 15,
+  activitySlug: 'aventura-5',
+  title: 'Diversidad Sexual',
+  sections: [
+    {
+      id: 1,
+      title: 'LOS DIFERENTES TIPOS DE PAREJA',
+      scenes: ['/aventura-5/scene1'],
+      isUnlocked: true,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-hover.svg',
+      soundClick: '/audio/advance-aventura5/scene1.mp3',
+      xPosition: -60,
+      yPosition: 280,
+      zPosition: 150,
+      scale: 0.9,
+      rotateX: 28,
+      rotateY: 15,
+      delay: 0.2,
+      brightness: 1,
+    },
+    {
+      id: 2,
+      title: 'EL RESPETO A LOS DIFERENTES TIPOS DE PAREJA',
+      scenes: ['/aventura-5/scene2'],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-2-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-2-hover.svg',
+      soundClick: '/audio/advance-aventura5/scene2.mp3',
+      xPosition: 100,
+      yPosition: 380,
+      zPosition: -50,
+      scale: 1.0,
+      rotateX: 18,
+      rotateY: -25,
+      delay: 0.5,
+      brightness: 1,
+    },
+  ],
+};
+
 // Helper functions
 export function getActivityConfig(activityId: number): ActivityConfig | null {
   switch (activityId) {
@@ -995,6 +1040,8 @@ export function getActivityConfig(activityId: number): ActivityConfig | null {
       return AVENTURA_3_CONFIG;
     case 14:
       return AVENTURA_4_CONFIG;
+    case 15:
+      return AVENTURA_5_CONFIG;
     default:
       return null;
   }

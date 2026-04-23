@@ -78,5 +78,11 @@ export const NIVEL_AVANZADO_ITEMS: MenuLevelItem[] = [
     url: '/aventura-4',
     svgPath: '/svg/menu/orbital/activity5-entender-respectar.svg',
   },
+  {
+    id: 5,
+    label: 'Aventura 5',
+    url: '/aventura-5',
+    svgPath: '/svg/menu/orbital/activity6.svg',
+  },
   // Add more advanced activities here as they are created
 ];
