@@ -99,6 +99,7 @@ async function sendErrorToServer(errorLog: ErrorLog) {
  * Get all locally stored errors
  */
 export function getLocalErrors(): ErrorLog[] {
+  if (typeof window === 'undefined') return [];
   try {
     const logs = localStorage.getItem('app_error_logs');
     return logs ? JSON.parse(logs) : [];

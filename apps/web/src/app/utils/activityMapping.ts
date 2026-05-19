@@ -10,6 +10,8 @@ import {
   AVENTURA_3_CONFIG,
   AVENTURA_4_CONFIG,
   AVENTURA_5_CONFIG,
+  AVENTURA_6_CONFIG,
+  AVENTURA_7_CONFIG,
   type ActivityConfig
 } from '../components/ActivityMenu/activityConfig';
 
@@ -58,6 +60,10 @@ function getActivityConfigBySlug(slug: string): ActivityConfig | null {
       return AVENTURA_4_CONFIG;
     case 'aventura-5':
       return AVENTURA_5_CONFIG;
+    case 'aventura-6':
+      return AVENTURA_6_CONFIG;
+    case 'aventura-7':
+      return AVENTURA_7_CONFIG;
     default:
       return null;
   }

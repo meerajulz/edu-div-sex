@@ -172,6 +172,16 @@ export async function GET() {
           isActivityCompleted = activity.scenes['scene2']?.status === 'completed' &&
                                activity.scenes['scene2']?.progress >= 100;
           break;
+        case 16:
+          // Aventura 6 (Nivel Avanzado) is completed when scene4 (final step) is completed
+          isActivityCompleted = activity.scenes['scene4']?.status === 'completed' &&
+                               activity.scenes['scene4']?.progress >= 100;
+          break;
+        case 17:
+          // Aventura 7 (Nivel Avanzado) is completed when scene4 (final step) is completed
+          isActivityCompleted = activity.scenes['scene4']?.status === 'completed' &&
+                               activity.scenes['scene4']?.progress >= 100;
+          break;
         default:
           // Fallback: any scene completed
           isActivityCompleted = activity.completedScenes > 0 &&

@@ -9,7 +9,7 @@ interface ErrorLogPanelProps {
 }
 
 const ErrorLogPanel: React.FC<ErrorLogPanelProps> = ({ isOpen, onClose }) => {
-  const [logs, setLogs] = useState(getLocalErrors());
+  const [logs, setLogs] = useState<ReturnType<typeof getLocalErrors>>([]);
   const [filter, setFilter] = useState<string>('all');
 
   useEffect(() => {
