@@ -1197,6 +1197,123 @@ export const AVENTURA_7_CONFIG: ActivityConfig = {
   ],
 };
 
+// Aventura 8 – Nivel Avanzado
+export const AVENTURA_8_CONFIG: ActivityConfig = {
+  activityId: 18,
+  activitySlug: 'aventura-8',
+  title: 'Abuso sexual',
+  sections: [
+    {
+      id: 1,
+      title: 'ZONAS PRIVADAS',
+      scenes: ['/aventura-8/scene1'],
+      isUnlocked: true,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-hover.svg',
+      soundClick: '/audio/advance-actividad8/a1.mp3',
+      xPosition: -60,
+      yPosition: 280,
+      zPosition: 150,
+      scale: 0.9,
+      rotateX: 28,
+      rotateY: 15,
+      delay: 0.2,
+      brightness: 1,
+    },
+    {
+      id: 2,
+      title: 'ME DEFIENDO',
+      scenes: ['/aventura-8/scene2'],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-2-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-2-hover.svg',
+      soundClick: '/audio/advance-actividad8/a2.mp3',
+      xPosition: 100,
+      yPosition: 380,
+      zPosition: -50,
+      scale: 1.0,
+      rotateX: 18,
+      rotateY: -25,
+      delay: 0.5,
+      brightness: 0.5,
+    },
+    {
+      id: 3,
+      title: 'SECRETOS BUENOS Y MALOS',
+      scenes: ['/aventura-8/scene3'],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-3-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-3-hover.svg',
+      soundClick: '/audio/advance-actividad8/a3.mp3',
+      xPosition: -150,
+      yPosition: 280,
+      zPosition: -300,
+      scale: 1.1,
+      rotateX: 0,
+      rotateY: 20,
+      delay: 0.9,
+      brightness: 0.5,
+    },
+    {
+      id: 4,
+      title: 'APRENDO A PREGUNTAR Y A NO INSISTIR',
+      scenes: ['/aventura-8/scene4'],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-4-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-4-hover.svg',
+      soundClick: '/audio/advance-actividad8/a4.mp3',
+      xPosition: 80,
+      yPosition: 350,
+      zPosition: -500,
+      scale: 1.2,
+      rotateX: 15,
+      rotateY: -20,
+      delay: 1.1,
+      brightness: 0.5,
+    },
+    {
+      id: 5,
+      title: 'APRENDO A DECIR NO',
+      scenes: ['/aventura-8/scene5'],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-hover.svg',
+      soundClick: '/audio/advance-actividad8/a5.mp3',
+      xPosition: -50,
+      yPosition: 250,
+      zPosition: -700,
+      scale: 1.3,
+      rotateX: 10,
+      rotateY: 30,
+      delay: 1.4,
+      brightness: 0.5,
+    },
+    {
+      id: 6,
+      title: '¿QUÉ HACER SI SUCEDE?',
+      scenes: ['/aventura-8/scene6'],
+      isUnlocked: false,
+      isCompleted: false,
+      activeImage: '/svg/menu-actividad/cartell-active.svg',
+      inactiveImage: '/svg/menu-actividad/cartell-hover.svg',
+      soundClick: '/audio/advance-actividad8/a6.mp3',
+      xPosition: 60,
+      yPosition: 300,
+      zPosition: -900,
+      scale: 1.4,
+      rotateX: 5,
+      rotateY: -25,
+      delay: 1.7,
+      brightness: 0.5,
+    },
+  ],
+};
+
 // Helper functions
 export function getActivityConfig(activityId: number): ActivityConfig | null {
   switch (activityId) {
@@ -1226,6 +1343,8 @@ export function getActivityConfig(activityId: number): ActivityConfig | null {
       return AVENTURA_6_CONFIG;
     case 17:
       return AVENTURA_7_CONFIG;
+    case 18:
+      return AVENTURA_8_CONFIG;
     default:
       return null;
   }
