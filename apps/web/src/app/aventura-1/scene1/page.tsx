@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { setAvanzadoContext } from '../../utils/avanzadoContext';
 
 export default function Aventura1Scene1Page() {
   const router = useRouter();
@@ -21,7 +22,11 @@ export default function Aventura1Scene1Page() {
     saveProgress('aventura-1', 'scene1', 'completed', 100, {
       completed_at: new Date().toISOString(),
     });
-    router.push('/aventura-1/scene2');
+    // Start the chain at actividad-1/scene2, then return into aventura-1/scene2
+    // which continues to actividad-1/scene5 → scene6 → scene4.
+    localStorage.setItem('aventura-1-return-to', '/aventura-1/scene2');
+    setAvanzadoContext('AVENTURA 1 - Descubriendo mi sexualidad');
+    router.push('/actividad-1/scene2');
   }, [saveProgress, router]);
 
   return (

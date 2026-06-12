@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
+import LogoComponent from '../../components/LogoComponent/LogoComponent';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -78,6 +79,7 @@ export default function Aventura6Scene4Page() {
         ))}
       </div>
 
+      <LogoComponent customText="AVENTURA 6 - Relaciones de pareja" customImage="/image/logo-image/aventura-6.png" customBgColor="bg-pink-500" />
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>

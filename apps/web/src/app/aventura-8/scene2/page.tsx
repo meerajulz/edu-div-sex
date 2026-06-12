@@ -193,7 +193,7 @@ export default function Aventura8Scene2Page() {
       </div>
 
       <div className="absolute top-0 right-0 z-50 flex"><FloatingMenu /></div>
-      <div className=""><LogoComponent configKey="actividad-6-scene1" /></div>
+      <div className=""><LogoComponent customText="AVENTURA 8 - Abuso sexual" customImage="/image/logo-image/aventura-8.png" customBgColor="bg-red-500" /></div>
 
       {!showVideo ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">

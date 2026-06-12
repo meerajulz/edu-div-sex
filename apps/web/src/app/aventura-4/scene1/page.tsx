@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { setAvanzadoContext } from '../../utils/avanzadoContext';
 
 export default function Aventura4Scene1Page() {
   const router = useRouter();
@@ -22,7 +23,9 @@ export default function Aventura4Scene1Page() {
       completed_at: new Date().toISOString(),
     });
 
-    localStorage.setItem('aventura-4-return-to', '/aventura-4');
+    localStorage.setItem('aventura-4-video-only', 'true');
+    localStorage.setItem('aventura-4-return-to', '/aventura-4/juego1');
+    setAvanzadoContext('AVENTURA 4 - Nos entendemos y respetamos');
     router.push('/actividad-5/scene1');
   }, [saveProgress, router]);
 

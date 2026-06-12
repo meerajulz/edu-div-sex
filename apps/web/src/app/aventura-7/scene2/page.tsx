@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
+import LogoComponent from '../../components/LogoComponent/LogoComponent';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import OptimizedVideo from '../../components/OptimizedVideo';
@@ -104,6 +105,7 @@ export default function Aventura7Scene2Page() {
           />
         ))}
       </div>
+      <LogoComponent customText="AVENTURA 7 - Prácticas sexuales, asertividad y pornografía" customImage="/image/logo-image/aventura-7.png" customBgColor="bg-indigo-500" />
       <div className="absolute top-0 right-0 z-50 flex"><FloatingMenu /></div>
 
       {!showVideo ? (

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { setAvanzadoContext } from '../../utils/avanzadoContext';
 
 export default function Aventura2Scene4Page() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function Aventura2Scene4Page() {
       completed_at: new Date().toISOString(),
     });
     localStorage.setItem('aventura-2-return-to', '/aventura-2/scene5');
+    setAvanzadoContext('AVENTURA 2 - Intimidad');
     router.push('/actividad-2/scene4');
   }, [saveProgress, router]);
 

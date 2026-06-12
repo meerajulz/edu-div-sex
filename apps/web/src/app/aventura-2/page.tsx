@@ -22,6 +22,7 @@ const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAl
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
 import { SimpleAlexRef } from '../components/ModuleAnimations/SimpleAlex';
 import { AVENTURA_2_CONFIG } from '../components/ActivityMenu/activityConfig';
+import { clearAvanzadoContext } from '../utils/avanzadoContext';
 
 const INTRO_VIDEO_SRC = '/video/INTRO_ACTIVIDAD-2.mp4';
 
@@ -75,6 +76,11 @@ export default function Aventura2NivelAvanzadoPage() {
       console.error('Aventura-2 iPhone: FAILED to connect video to Web Audio API:', e);
     }
   };
+
+  // Returning to the aventura menu ends the avanzado header context.
+  useEffect(() => {
+    clearAvanzadoContext();
+  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
+import LogoComponent from '../../components/LogoComponent/LogoComponent';
 import JugarButton from '../../components/JugarButton/JugarButton';
 import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
 import OptimizedVideo from '../../components/OptimizedVideo';
@@ -164,6 +165,7 @@ export default function Aventura6Scene2Page() {
         ))}
       </div>
 
+      <LogoComponent customText="AVENTURA 6 - Relaciones de pareja" customImage="/image/logo-image/aventura-6.png" customBgColor="bg-pink-500" />
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>

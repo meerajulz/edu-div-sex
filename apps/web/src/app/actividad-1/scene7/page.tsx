@@ -159,22 +159,25 @@ export default function Scene7Page() {
   const handleVideoEnd = async () => {
     localStorage.setItem('scene7-video-watched', 'true');
     playGameAudio('/audio/button/Bright.mp3', 0.7, 'Video-End-Sound');
+
+    const videoOnly = localStorage.getItem('aventura-1-video-only');
+    if (videoOnly === 'true') {
+      localStorage.removeItem('aventura-1-video-only');
+      const returnTo = localStorage.getItem('aventura-1-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-1-return-to');
+        setTimeout(() => router.push(returnTo), 500);
+        return;
+      }
+    }
+
     setVideoEnded(true);
-    
-    console.log('🎉 Scene7: Final scene video ended, saving progress for completed activity');
-    
-    // Save progress for scene7 and mark entire activity as completed
-    const progressSaved = await saveProgress('actividad-1', 'scene7', 'completed', 100, {
+
+    await saveProgress('actividad-1', 'scene7', 'completed', 100, {
       video_watched: true,
       activity_completed: true,
       completed_at: new Date().toISOString()
     });
-    
-    if (progressSaved) {
-      console.log('✅ Scene7: Activity 1 completed successfully!');
-    } else {
-      console.error('❌ Scene7: Failed to save progress');
-    }
   };
 
   const playSound = () => {

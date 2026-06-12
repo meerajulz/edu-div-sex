@@ -22,6 +22,7 @@ const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAl
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
 import { SimpleAlexRef } from '../components/ModuleAnimations/SimpleAlex';
 import { AVENTURA_3_CONFIG } from '../components/ActivityMenu/activityConfig';
+import { clearAvanzadoContext } from '../utils/avanzadoContext';
 
 export default function Aventura3NivelAvanzadoPage() {
   const router = useRouter();
@@ -51,6 +52,11 @@ export default function Aventura3NivelAvanzadoPage() {
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Returning to the aventura menu ends the avanzado header context.
+  useEffect(() => {
+    clearAvanzadoContext();
+  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {

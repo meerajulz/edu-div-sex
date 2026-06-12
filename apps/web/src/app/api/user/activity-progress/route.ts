@@ -123,9 +123,9 @@ export async function GET() {
                                activity.scenes['scene7']?.progress >= 100;
           break;
         case 2:
-          // Activity 2 is completed when scene5 (final scene) is completed
-          isActivityCompleted = activity.scenes['scene5']?.status === 'completed' &&
-                               activity.scenes['scene5']?.progress >= 100;
+          // Activity 2 is completed when scene6 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene6']?.status === 'completed' &&
+                               activity.scenes['scene6']?.progress >= 100;
           break;
         case 3:
           // Activity 3 is completed when scene2 (final scene) is completed
@@ -148,9 +148,9 @@ export async function GET() {
                                activity.scenes['scene4-1']?.progress >= 100;
           break;
         case 11:
-          // Aventura 1 (Nivel Avanzado) is completed when scene7 (final step) is completed
-          isActivityCompleted = activity.scenes['scene7']?.status === 'completed' &&
-                               activity.scenes['scene7']?.progress >= 100;
+          // Aventura 1 (Nivel Avanzado) is completed when juego4 (final step) is completed
+          isActivityCompleted = activity.scenes['juego4']?.status === 'completed' &&
+                               activity.scenes['juego4']?.progress >= 100;
           break;
         case 12:
           // Aventura 2 (Nivel Avanzado) is completed when scene6 (final step) is completed
@@ -163,9 +163,9 @@ export async function GET() {
                                activity.scenes['scene5']?.progress >= 100;
           break;
         case 14:
-          // Aventura 4 (Nivel Avanzado) is completed when scene7 (final step) is completed
-          isActivityCompleted = activity.scenes['scene7']?.status === 'completed' &&
-                               activity.scenes['scene7']?.progress >= 100;
+          // Aventura 4 (Nivel Avanzado) is completed when scene3 (final step) is completed
+          isActivityCompleted = activity.scenes['scene3']?.status === 'completed' &&
+                               activity.scenes['scene3']?.progress >= 100;
           break;
         case 15:
           // Aventura 5 (Nivel Avanzado) is completed when scene2 (final step) is completed

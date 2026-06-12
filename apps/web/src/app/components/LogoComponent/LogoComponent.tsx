@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { logoConfigs } from './logoConfig';
 
 interface LogoComponentProps {
@@ -25,6 +26,26 @@ export default function LogoComponent({
   customBgColor 
 }: LogoComponentProps) {
   
+  // Avanzado override: when a reused basic scene is entered from an aventura flow,
+  // the aventura wrappers store an "active context" in localStorage (the title to
+  // show, e.g. "AVENTURA 1 - NUESTRO CUERPO CAMBIA"). Each wrapper refreshes it as
+  // the user moves between sections, and the aventura menu clears it on return.
+  // Read it after mount (hydration-safe) and only apply while not expired.
+  const [overrideText, setOverrideText] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('avanzado-context');
+      if (!raw) return;
+      const ctx = JSON.parse(raw);
+      const notExpired = !ctx?.expires || Date.now() < ctx.expires;
+      if (ctx?.text && notExpired) {
+        setOverrideText(ctx.text);
+      }
+    } catch {
+      /* ignore malformed override */
+    }
+  }, []);
+
   let imageSrc: string;
   let text: string;
   let bgColor: string;
@@ -57,6 +78,11 @@ export default function LogoComponent({
     imageSrc = logoConfigs['default'].image;
     text = logoConfigs['default'].text;
     bgColor = logoConfigs['default'].bgColor;
+  }
+
+  // Avanzado context wins over the static config title.
+  if (overrideText) {
+    text = overrideText;
   }
 
   return (

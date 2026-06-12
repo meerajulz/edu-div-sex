@@ -94,13 +94,13 @@ export const NIVEL_AVANZADO_ITEMS: MenuLevelItem[] = [
     id: 7,
     label: 'Aventura 7',
     url: '/aventura-7',
-    svgPath: '/svg/menu/orbital/activity6.svg',
+    svgPath: '/svg/menu/orbital/aventura7.svg',
   },
   {
     id: 8,
     label: 'Aventura 8',
     url: '/aventura-8',
-    svgPath: '/svg/menu/orbital/activity6.svg',
+    svgPath: '/svg/menu/orbital/aventura8.svg',
   },
   // Add more advanced activities here as they are created
 ];

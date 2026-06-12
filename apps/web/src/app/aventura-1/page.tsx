@@ -23,6 +23,7 @@ const SimpleAlex = dynamic(() => import('../components/ModuleAnimations/SimpleAl
 const SunGif = dynamic(() => import('../components/ModuleAnimations/SunGif'), { ssr: false });
 import { SimpleAlexRef } from '../components/ModuleAnimations/SimpleAlex';
 import { AVENTURA_1_CONFIG } from '../components/ActivityMenu/activityConfig';
+import { clearAvanzadoContext } from '../utils/avanzadoContext';
 
 // TODO: replace with /video/INTRO_AVENTURA-1.mp4 when the video is ready
 const INTRO_VIDEO_SRC = '/video/INTRO_ACTIVIDAD-1.mp4';
@@ -86,6 +87,12 @@ export default function Aventura1NivelAvanzadoPage() {
   };
 
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
+
+  // Returning to the aventura menu ends the avanzado header context, so reused
+  // basic scenes show their normal title again outside this flow.
+  useEffect(() => {
+    clearAvanzadoContext();
+  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { setAvanzadoContext } from '../../utils/avanzadoContext';
 
 export default function Aventura1Juego2Page() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function Aventura1Juego2Page() {
     localStorage.setItem('aventura-1-next-return-to', '/actividad-1/scene6');
     localStorage.setItem('aventura-1-skip-video-on-next-return', 'true');
     localStorage.setItem('aventura-1-after-next-return-to', '/aventura-1');
+    setAvanzadoContext('AVENTURA 1 - Descubriendo mi sexualidad');
     router.push('/actividad-1/scene4');
   }, [saveProgress, router]);
 

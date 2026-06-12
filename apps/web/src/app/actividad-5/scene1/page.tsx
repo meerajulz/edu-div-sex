@@ -28,6 +28,7 @@ export default function Actividad5Scene1Page() {
   useActivityProtection();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isAvanzado, setIsAvanzado] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   
@@ -76,6 +77,7 @@ export default function Actividad5Scene1Page() {
     const savedVolume = localStorage.getItem('video-volume');
     if (savedVolume) setCurrentVolume(parseFloat(savedVolume));
     setHasWatchedVideo(!!localStorage.getItem('a5-scene1-video-watched'));
+    setIsAvanzado(!!localStorage.getItem('aventura-4-return-to') || !!localStorage.getItem('aventura-4-video-only'));
     console.log('📱 Activity5-Scene1: Device info initialized:', info);
   }, []);
 
@@ -154,10 +156,21 @@ export default function Actividad5Scene1Page() {
 
   const handleVideoEnd = () => {
     localStorage.setItem('a5-scene1-video-watched', 'true');
+
+    const videoOnly = localStorage.getItem('aventura-4-video-only');
+    if (videoOnly === 'true') {
+      localStorage.removeItem('aventura-4-video-only');
+      const returnTo = localStorage.getItem('aventura-4-return-to');
+      if (returnTo) {
+        localStorage.removeItem('aventura-4-return-to');
+        setTimeout(() => router.push(returnTo), 500);
+        return;
+      }
+    }
+
     setVideoEnded(true);
     setHasWatchedVideo(true);
   };
-
   const handleReplayVideo = () => {
     setVideoEnded(false);
     setShowVideo(true);
@@ -267,7 +280,7 @@ export default function Actividad5Scene1Page() {
             animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
-            <JugarButton text='¿QUÉ DICE MI CARA?' onClick={handleJugarClick} disabled={isAnimating} />
+            <JugarButton text={isAvanzado ? 'LA CARA HABLA MÁS QUE LAS PALABRAS' : '¿QUÉ DICE MI CARA?'} onClick={handleJugarClick} disabled={isAnimating} />
           </motion.div>
         </div>
       ) : (

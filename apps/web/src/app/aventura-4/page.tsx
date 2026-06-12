@@ -16,6 +16,7 @@ import JugarButton from '../components/JugarButton/JugarButton';
 import ContinueButton from '../components/ContinueButton/ContinueButton';
 import { playGameAudio, getDeviceAudioInfo, stopBackgroundMusic } from '../utils/gameAudio';
 import { AVENTURA_4_CONFIG } from '../components/ActivityMenu/activityConfig';
+import { clearAvanzadoContext } from '../utils/avanzadoContext';
 
 const ActivityMenu = dynamic(() => import('../components/ActivityMenu/ActivityMenu'), { ssr: false });
 const Ardilla = dynamic(() => import('../components/ModuleAnimations/Ardilla'), { ssr: false });
@@ -50,6 +51,11 @@ export default function Aventura4NivelAvanzadoPage() {
   const [browserDimensions, setBrowserDimensions] = useState({ width: 0, height: 0 });
   const aspectRatio = 16 / 9;
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Returning to the aventura menu ends the avanzado header context.
+  useEffect(() => {
+    clearAvanzadoContext();
+  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {

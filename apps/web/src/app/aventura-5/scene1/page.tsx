@@ -14,6 +14,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import JuegoUnoAventura5 from './JuegoUnoAventura5/JuegoUnoAventura5';
+import LogoComponent from '../../components/LogoComponent/LogoComponent';
 
 export default function Aventura5Scene1Page() {
   useActivityTracking();
@@ -181,6 +182,7 @@ export default function Aventura5Scene1Page() {
         ))}
       </div>
 
+      <LogoComponent customText="AVENTURA 5 - Diversidad sexual" customImage="/image/logo-image/aventura-5.png" customBgColor="bg-green-300" />
       <div className="absolute top-0 right-0 z-50 flex">
         <FloatingMenu />
       </div>

@@ -191,9 +191,15 @@ const { data: session } = useSession();
   };
 
   const handleGameComplete = () => {
-    setGameCompleted(true);
     setShowJuegoCuatro(false); // Close the game modal
-    // Go directly to final congratulations screen
+    // Advanced (aventura) flow: the basic "¡Acabaste la aventura!" screen is for
+    // basic users only. Skip it and go straight to the aventura's next step (video).
+    if (localStorage.getItem('aventura-3-return-to')) {
+      handleGoToNextActivity();
+      return;
+    }
+    setGameCompleted(true);
+    // Basic flow: go directly to final congratulations screen
   };
 
   const handleGoToNextActivity = async () => {

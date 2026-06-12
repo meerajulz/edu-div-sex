@@ -60,17 +60,19 @@ export default function Actividad5Scene1_1Page() {
     setIsAnimating(true);
     playSound();
 
-    const progressSaved = await saveProgress('actividad-5', 'scene1-1', 'completed', 100, {
+    const returnTo = localStorage.getItem('aventura-4-return-to');
+
+    await saveProgress('actividad-5', 'scene1-1', 'completed', 100, {
       juego2_completed: juego2Completed,
       completed_at: new Date().toISOString()
     });
 
     setTimeout(() => {
       setIsAnimating(false);
-      if (progressSaved) {
-        console.log('✅ Actividad5-Scene1-1: Progress saved successfully');
-      } else {
-        console.error('❌ Actividad5-Scene1-1: Failed to save progress, but continuing');
+      if (returnTo) {
+        localStorage.removeItem('aventura-4-return-to');
+        router.push(returnTo);
+        return;
       }
       router.push('/actividad-5');
     }, 800);

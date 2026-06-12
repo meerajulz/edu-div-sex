@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
+import { setAvanzadoContext } from '../../utils/avanzadoContext';
 
 export default function Aventura3Juego1Page() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function Aventura3Juego1Page() {
     localStorage.setItem('aventura-3-skip-video', 'true');
     localStorage.setItem('aventura-3-juego-dos-female', 'true');
     localStorage.setItem('aventura-3-return-to', '/aventura-3');
+    setAvanzadoContext('AVENTURA 3 - El placer sexual');
     router.push('/actividad-3/scene1');
   }, [saveProgress, router]);
 
