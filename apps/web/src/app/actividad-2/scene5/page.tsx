@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
+import OptimizedVideo from '../../components/OptimizedVideo';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
@@ -24,6 +25,7 @@ export default function Scene5Page() {
   const [showGame, setShowGame] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const playSound = () => {
     try { playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button Click Sound'); } catch (e) { console.warn(e); }
@@ -91,25 +93,25 @@ export default function Scene5Page() {
         </div>
       )}
 
-      {/* Video placeholder — replace with <OptimizedVideo src="/video/ACTIVIDAD-2-ESCENA-5.mp4"> when ready */}
+      {/* Video */}
       {showVideo && !videoEnded && (
-        <motion.div
-          className="fixed inset-0 z-40 bg-gradient-to-b from-purple-600 via-pink-500 to-orange-400 flex flex-col items-center justify-center gap-8"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        >
-          <div className="text-white text-center px-8">
-            <div className="text-6xl mb-4">🎬</div>
-            <h2 className="text-3xl font-bold mb-2">¡Próximamente!</h2>
-            <p className="text-lg text-white/80">El vídeo de esta sección estará disponible muy pronto.</p>
-          </div>
-          <motion.button
-            onClick={handleVideoEnd}
-            className="bg-white text-purple-600 font-bold py-3 px-10 rounded-full shadow-xl text-lg"
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          >
-            Continuar →
-          </motion.button>
-        </motion.div>
+        <div className="fixed inset-0 z-40 bg-black">
+          <OptimizedVideo
+            ref={videoRef}
+            src="/video/avanzado/Actividad_2_scene_5.mp4"
+            className="absolute inset-0 w-full h-full object-contain z-20"
+            autoPlay
+            playsInline
+            volume={0.8}
+            onEnded={handleVideoEnd}
+            onLoadedData={() => {
+              if (videoRef.current) videoRef.current.volume = 0.8;
+            }}
+            lazyLoad={true}
+            lowPowerMode={true}
+            maxRetries={3}
+          />
+        </div>
       )}
 
       {/* Game button after video */}
