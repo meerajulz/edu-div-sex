@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { 
+import {
   DndContext,
   TouchSensor,
   MouseSensor,
@@ -118,9 +118,22 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
             Salir juego
           </button>
 
-          {/* Center image - Full responsive */}
-          <div className="absolute inset-0 z-0 flex items-center justify-center px-4 pt-4 pb-40">
-            <div className="relative w-full h-full">
+          {/* Center image - Full responsive.
+              The inner box is locked to the image's aspect ratio (1389x1020) and
+              sized to fit the available area with container-query units, so the box
+              always matches the rendered image exactly. This keeps the drop zones
+              (positioned as % of this box) aligned to Clara's body on any screen size. */}
+          <div
+            className="absolute inset-0 z-0 flex items-center justify-center px-4 pt-4 pb-40"
+            style={{ containerType: 'size' }}
+          >
+            <div
+              className="relative"
+              style={{
+                aspectRatio: '1389 / 1020',
+                width: 'min(100cqw, 100cqh * 1389 / 1020)',
+              }}
+            >
               <Image
                 src="/image/juego_2/nenas.png"
                 alt="Nenas"
@@ -133,6 +146,7 @@ const JuegoDos: React.FC<JuegoDosProps> = ({ isVisible, onClose, onGameComplete 
                   key={zone.id}
                   id={zone.id}
                   position={zone.position}
+                  hit={zone.hit}
                   isMatched={matchedParts.includes(zone.acceptsId)}
                 />
               ))}

@@ -452,8 +452,8 @@ export default function Scene1Page() {
             />
           )}
 
-          {/* Skip button - only show during video if user has watched before */}
-          {!videoEnded && hasWatchedVideo && (
+          {/* Skip button - always available while the video is playing */}
+          {!videoEnded && (
             <SkipVideoButton onClick={handleVideoEnd} />
           )}
 

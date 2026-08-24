@@ -247,7 +247,10 @@ const ActivityMenu: React.FC<ActivityMenuProps> = ({
                     transition: { duration: 0.2 }
                   } : {}}
                   style={{
-                    zIndex: isNextSection ? 100 : (40 - index),
+                    // Always keep card order (first line on top); the next section
+                    // is highlighted by its pulsing scale animation, not by z-index,
+                    // so it never renders in front of the first card.
+                    zIndex: 40 - index,
                     filter: `brightness(${section.isCompleted ? 0.5 : (section.brightness || 1)})`,
                   }}
                 >
