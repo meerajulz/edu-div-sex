@@ -1,57 +1,101 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FloatingMenu from '../../components/FloatingMenu/FloatingMenu';
 import JugarButton from '../../components/JugarButton/JugarButton';
-import OptimizedVideo from '../../components/OptimizedVideo';
+import VolverAVerButton from '../../components/VolverAVerButton/VolverAVerButton';
+import JuegoCincoActividad2 from '../scene5/JuegoCincoActividad2/JuegoCincoActividad2';
 import LogoComponent from '@/app/components/LogoComponent/LogoComponent';
+import dynamic from 'next/dynamic';
+
+const AlexFinalCongratulations = dynamic(() => import('../components/AlexFinalCongratulations/AlexFinalCongratulations'), { ssr: false });
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { useProgressSaver } from '../../hooks/useProgressSaver';
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { playGameAudio } from '../../utils/gameAudio';
-import JuegoSeisActividad2 from './JuegoSeisActividad2/JuegoSeisActividad2';
 
 export default function Scene5Page() {
+  
+  // Track current activity URL for continue feature
   useActivityTracking();
-  useActivityProtection();
-
   const router = useRouter();
   const { saveProgress } = useProgressSaver();
-
-  const [showVideo, setShowVideo] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
-  const [showGame, setShowGame] = useState(false);
+  
+  useActivityProtection();
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [showJuegoCinco, setShowJuegoCinco] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [showAlexCongratulations, setShowAlexCongratulations] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasWatchedFinalVideo, setHasWatchedFinalVideo] = useState(false);
+
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
 
   const playSound = () => {
-    try { playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button Click Sound'); } catch (e) { console.warn(e); }
+    try {
+      playGameAudio('/audio/button/Bright.mp3', 0.7, 'Button Click Sound');
+    } catch (error) {
+      console.warn('Could not play sound:', error);
+    }
   };
 
   const handleButtonClick = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
-    setTimeout(() => { setIsAnimating(false); setShowVideo(true); }, 800);
+    setTimeout(() => {
+      setIsAnimating(false);
+      handleOpenJuegoCinco();
+    }, 800);
   };
 
-  const handleVideoEnd = () => setVideoEnded(true);
+  const handleOpenJuegoCinco = () => {
+    setShowJuegoCinco(true);
+  };
+
+  const handleCloseJuegoCinco = () => {
+    setShowJuegoCinco(false);
+  };
 
   const handleGameComplete = () => {
-    setShowGame(false);
-    setShowCongratulations(true);
+    setGameCompleted(true);
+    setShowJuegoCinco(false);
+    setTimeout(() => {
+      setShowAlexCongratulations(true);
+    }, 1000);
   };
 
-  const handleGoToNext = async () => {
+  const handleReplayFinalVideo = () => {
+    setShowCongratulations(false);
+    setShowAlexCongratulations(true);
+  };
+
+  const handleAlexAnimationComplete = () => {
+    setShowAlexCongratulations(false);
+    setHasWatchedFinalVideo(true);
+    setTimeout(() => {
+      setShowCongratulations(true);
+    }, 500);
+  };
+
+  const handleGoToHome = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+
     await saveProgress('actividad-2', 'scene5', 'completed', 100, {
-      completed_at: new Date().toISOString(),
+      game_completed: gameCompleted,
+      activity_completed: true,
+      completed_at: new Date().toISOString()
     });
+
     setTimeout(() => {
       setIsAnimating(false);
       const returnTo = localStorage.getItem('aventura-2-return-to');
@@ -59,95 +103,132 @@ export default function Scene5Page() {
         localStorage.removeItem('aventura-2-return-to');
         router.push(returnTo);
       } else {
-        router.push('/actividad-2');
+        localStorage.setItem('completedActivityId', '2');
+        router.push('/home');
       }
     }, 800);
   };
 
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-400 to-pink-300 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       className="relative min-h-screen overflow-hidden"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
     >
       <div className="absolute inset-0 z-0 bg-gradient-to-b from-purple-400 via-pink-300 to-orange-200" />
       <div className="absolute inset-0 z-10">
         {[...Array(20)].map((_, i) => (
           <motion.div
-            key={i} className="absolute rounded-full bg-white/10"
-            style={{ width: Math.random() * 60 + 20, height: Math.random() * 60 + 20, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
-            animate={{ y: [0, -20, 0], x: [0, Math.random() * 20 - 10, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, ease: 'easeInOut', delay: Math.random() * 2 }}
+            key={i}
+            className="absolute rounded-full bg-white/10"
+            style={{
+              width: Math.random() * 60 + 20,
+              height: Math.random() * 60 + 20,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -20, 0],
+              x: [0, Math.random() * 20 - 10, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: Math.random() * 3 + 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: Math.random() * 2,
+            }}
           />
         ))}
       </div>
 
-      <div className="absolute top-0 right-0 z-[95]"><FloatingMenu /></div>
-      <div className="z-[95] relative"><LogoComponent configKey="actividad-2-scene1" /></div>
+      <div className="absolute top-0 right-0 z-[95] flex">
+        <FloatingMenu />
+      </div>
+      <div className="z-[95] relative">
+        <LogoComponent configKey="actividad-2-scene1" />
+      </div>
 
-      {/* Entry button */}
-      {!showVideo && !showGame && !showCongratulations && (
+      {/* Background for JuegoCinco */}
+      {showJuegoCinco && (
+        <div
+          className="fixed inset-0 z-30 bg-cover bg-center"
+          style={{ backgroundImage: "url('/image/actividad_2/bg.png')" }}
+        />
+      )}
+
+      {/* Main Game Button - No video, direct to game */}
+      {!showJuegoCinco && !showAlexCongratulations && !showCongratulations ? (
         <div className="relative z-20 flex items-center justify-center min-h-screen">
-          <motion.div animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}} transition={{ duration: 0.8 }}>
-            <JugarButton text='EL CÍRCULO DE CONFIANZA' onClick={handleButtonClick} disabled={isAnimating} />
+          <motion.div
+            animate={isAnimating ? { scale: [1, 1.3, 1], rotate: [0, -360] } : {}}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            <JugarButton text='Jugar' onClick={handleButtonClick} disabled={isAnimating} />
           </motion.div>
         </div>
-      )}
+      ) : null}
 
-      {/* Video */}
-      {showVideo && !videoEnded && (
-        <div className="fixed inset-0 z-40 bg-black">
-          <OptimizedVideo
-            ref={videoRef}
-            src="/video/avanzado/Actividad_2_scene_5.mp4"
-            className="absolute inset-0 w-full h-full object-contain z-20"
-            autoPlay
-            playsInline
-            volume={0.8}
-            onEnded={handleVideoEnd}
-            onLoadedData={() => {
-              if (videoRef.current) videoRef.current.volume = 0.8;
-            }}
-            lazyLoad={true}
-            lowPowerMode={true}
-            maxRetries={3}
-          />
-        </div>
-      )}
-
-      {/* Game button after video */}
-      {showVideo && videoEnded && !showGame && !showCongratulations && (
-        <div className="relative z-20 flex items-center justify-center min-h-screen">
-          <JugarButton text='Jugar' onClick={() => setShowGame(true)} disabled={isAnimating} />
-        </div>
-      )}
-
-      <JuegoSeisActividad2
-        isVisible={showGame}
-        onClose={() => setShowGame(false)}
+      {/* JuegoCinco Game Modal */}
+      <JuegoCincoActividad2 
+        isOpen={showJuegoCinco}
+        onClose={handleCloseJuegoCinco}
         onGameComplete={handleGameComplete}
       />
 
+      {/* Alex Final Congratulations after Game Complete */}
+      <AlexFinalCongratulations 
+        isVisible={showAlexCongratulations}
+        onAnimationComplete={handleAlexAnimationComplete}
+      />
+
+      {/* Congratulations Overlay */}
       {showCongratulations && (
         <motion.div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
         >
           <motion.div
-            className="bg-gradient-to-br from-purple-300 via-purple-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
-            initial={{ scale: 0.5, y: 50 }} animate={{ scale: 1, y: 0 }}
-            transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center"
+            initial={{ scale: 0.5, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
           >
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-4">¡Muy bien!</h2>
-            <p className="text-white text-lg mb-6">Has completado el Círculo de Confianza</p>
-            <motion.button
-              onClick={handleGoToNext}
-              disabled={isAnimating}
-              className="bg-white text-purple-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            >
-              Continuar
-            </motion.button>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              ¡Excelente!
+            </h2>
+            <p className="text-white text-lg mb-6">
+              Has completado la Actividad Intimidad
+            </p>
+            <div className="flex flex-col items-center gap-4">
+              <motion.button
+                onClick={handleGoToHome}
+                disabled={isAnimating}
+                className="bg-white text-orange-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                IR A LA PROXIMA AVENTURA!
+              </motion.button>
+
+              {/* Volver a ver Button - positioned under main button */}
+              {hasWatchedFinalVideo && (
+                <VolverAVerButton onClick={handleReplayFinalVideo} />
+              )}
+            </div>
           </motion.div>
         </motion.div>
       )}

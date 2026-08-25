@@ -186,7 +186,7 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
     },
     {
       id: 5,
-      title: "EL CÍRCULO DE CONFIANZA",
+      title: "TU COFRE DE LA INTIMIDAD",
       scenes: ["/actividad-2/scene5"],
       isUnlocked: false,
       isCompleted: false,
@@ -200,24 +200,6 @@ export const ACTIVITY_2_CONFIG: ActivityConfig = {
       rotateX: 10,
       rotateY: 30,
       delay: 1.4,
-      brightness: 0.5
-    },
-    {
-      id: 6,
-      title: "TU COFRE DE LA INTIMIDAD",
-      scenes: ["/actividad-2/scene6"],
-      isUnlocked: false,
-      isCompleted: false,
-      activeImage: "/svg/menu-actividad/cartell-2-active.svg",
-      inactiveImage: "/svg/menu-actividad/cartell-2-hover.svg",
-      soundClick: "/audio/labels/mAct2/a6.mp3",
-      xPosition: 170,
-      yPosition: 220,
-      zPosition: -1250,
-      scale: 1.4,
-      rotateX: 5,
-      rotateY: -20,
-      delay: 1.7,
       brightness: 0.5
     }
   ]

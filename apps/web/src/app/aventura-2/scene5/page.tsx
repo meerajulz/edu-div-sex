@@ -12,6 +12,7 @@ import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useActivityProtection } from '../../components/ActivityGuard/useActivityProtection';
 import { playGameAudio } from '../../utils/gameAudio';
 import { setAvanzadoContext } from '../../utils/avanzadoContext';
+import JuegoSeisActividad2 from '../../actividad-2/scene5/JuegoSeisActividad2/JuegoSeisActividad2';
 
 const HEADER_TEXT = 'AVENTURA 2 - El círculo de confianza';
 
@@ -23,6 +24,7 @@ export default function Aventura2Scene5Page() {
 
   const [showVideo, setShowVideo] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showGame, setShowGame] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -106,7 +108,7 @@ export default function Aventura2Scene5Page() {
       )}
 
       {/* Video */}
-      {showVideo && (
+      {showVideo && !showGame && (
         <div className="fixed inset-0 z-40 bg-black">
           {!videoEnded ? (
             <OptimizedVideo
@@ -130,19 +132,18 @@ export default function Aventura2Scene5Page() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <motion.button
-                onClick={handleContinue}
-                disabled={isSaving}
-                className="bg-white text-purple-600 font-bold py-3 px-10 rounded-full shadow-xl text-lg disabled:opacity-60"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {isSaving ? 'Guardando...' : 'Continuar →'}
-              </motion.button>
+              <JugarButton text="Jugar" onClick={() => setShowGame(true)} disabled={isSaving} />
             </motion.div>
           )}
         </div>
       )}
+
+      {/* Círculo de confianza game (advanced-only). On completion: save + go to scene6. */}
+      <JuegoSeisActividad2
+        isVisible={showGame}
+        onClose={() => setShowGame(false)}
+        onGameComplete={handleContinue}
+      />
     </motion.div>
   );
 }

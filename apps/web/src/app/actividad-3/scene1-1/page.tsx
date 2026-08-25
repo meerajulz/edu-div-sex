@@ -426,7 +426,7 @@ export default function Actividad3Scene1_1Page() {
                 lowPowerMode={true}
                 maxRetries={3}
               />
-              {hasWatchedVideo && <SkipVideoButton onClick={handleVideoEnd} />}
+              <SkipVideoButton onClick={handleVideoEnd} />
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center z-20">

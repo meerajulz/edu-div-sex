@@ -123,9 +123,9 @@ export async function GET() {
                                activity.scenes['scene7']?.progress >= 100;
           break;
         case 2:
-          // Activity 2 is completed when scene6 (final scene) is completed
-          isActivityCompleted = activity.scenes['scene6']?.status === 'completed' &&
-                               activity.scenes['scene6']?.progress >= 100;
+          // Activity 2 is completed when scene5 (final scene) is completed
+          isActivityCompleted = activity.scenes['scene5']?.status === 'completed' &&
+                               activity.scenes['scene5']?.progress >= 100;
           break;
         case 3:
           // Activity 3 is completed when scene2 (final scene) is completed
