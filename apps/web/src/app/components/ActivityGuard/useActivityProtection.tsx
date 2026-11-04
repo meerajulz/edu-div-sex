@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { DEMO_MODE } from '../../demo/demoConfig';
 
 /**
  * Hook that provides activity access protection
@@ -15,6 +16,9 @@ export function useActivityProtection() {
 
   useEffect(() => {
     async function checkAccess() {
+      // Demo build: no login and no progress gating
+      if (DEMO_MODE) return;
+
       // Only check for activity paths
       const activityMatch = pathname.match(/^\/actividad-(\d+)(?:\/(.+))?$/);
       if (!activityMatch) {

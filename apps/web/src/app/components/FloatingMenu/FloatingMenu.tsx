@@ -8,6 +8,7 @@ import Image from "next/image";
 // import { signOut } from "@/auth";
 import { signOut } from "next-auth/react";
 import { initializeAudioForUserInteraction, getDeviceAudioInfo, isIPhone, isIPad, playGameAudio, updateBackgroundMusicVolume } from "../../utils/gameAudio";
+import { DEMO_MODE } from "../../demo/demoConfig";
 
 interface MenuItem {
 	id: string;
@@ -195,11 +196,11 @@ const FloatingMenu = () => {
 			id: "home",
 			icon1: "/svg/menu/home1.svg",
 			icon2: "/svg/menu/home2.svg",
-			href: "/home",
+			href: DEMO_MODE ? "/demo" : "/home",
 			sound: "/ui-sound/click.mp3",
 		},
-		// Map button - only show when in activity scenes
-		...(isInActivityScene() ? [{
+		// Map button - only show when in activity scenes (hidden in demo: no activity menus)
+		...(!DEMO_MODE && isInActivityScene() ? [{
 			id: "map",
 			icon1: "/svg/menu/map1.svg",
 			icon2: "/svg/menu/map2.svg",
@@ -304,6 +305,12 @@ const FloatingMenu = () => {
 
 			// Wait for animation to complete
 			await new Promise((resolve) => setTimeout(resolve, 600));
+
+			// Demo build: "exit" just goes back to the level selector
+			if (DEMO_MODE) {
+				router.push('/demo');
+				return;
+			}
 
 			// Sign out without redirect, then manually navigate
 			await signOut({ redirect: false });

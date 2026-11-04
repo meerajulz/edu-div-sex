@@ -14,6 +14,7 @@ import { playGameAudio, getDeviceAudioInfo } from '../../utils/gameAudio';
 import { initAudio } from '../../utils/audioHandler';
 import OptimizedVideo from '../../components/OptimizedVideo';
 import SkipVideoButton from '../../components/SkipVideoButton/SkipVideoButton';
+import { DEMO_MODE } from '../../demo/demoConfig';
 
 export default function Aventura8Scene1Page() {
 
@@ -148,6 +149,12 @@ export default function Aventura8Scene1Page() {
     if (isAnimating) return;
     setIsAnimating(true);
     playSound();
+
+    // Demo build: no login → nothing to save; go to the demo end screen
+    if (DEMO_MODE) {
+      setTimeout(() => router.push('/demo/fin?nivel=avanzado'), 800);
+      return;
+    }
 
     await saveProgress('aventura-8', 'scene1', 'completed', 100, {
       video_watched: videoEnded,
@@ -290,7 +297,7 @@ export default function Aventura8Scene1Page() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Volver al menú
+              {DEMO_MODE ? 'Continuar' : 'Volver al menú'}
             </motion.button>
           </motion.div>
         </motion.div>

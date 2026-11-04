@@ -2,7 +2,8 @@
 
 // app/page.tsx
 import { redirect } from 'next/navigation'
+import { DEMO_MODE } from './demo/demoConfig'
 
 export default function Home() {
-  redirect('/auth/login')
+  redirect(DEMO_MODE ? '/demo' : '/auth/login')
 }
