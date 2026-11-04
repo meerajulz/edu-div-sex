@@ -23,7 +23,9 @@ export default function Aventura3Scene2Page() {
       completed_at: new Date().toISOString(),
     });
 
-    localStorage.setItem('aventura-3-return-to', '/aventura-3/juego1');
+    // Back to the map after the male orgasm game (the extra "juego1" step was removed:
+    // it repeated the "¿Qué pasa cuando te excitas?" + female games — client feedback)
+    localStorage.setItem('aventura-3-return-to', '/aventura-3');
     setAvanzadoContext('AVENTURA 3 - El placer sexual');
     router.push('/actividad-3/scene1-1');
   }, [saveProgress, router]);

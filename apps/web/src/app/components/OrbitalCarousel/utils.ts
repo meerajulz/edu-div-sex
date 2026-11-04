@@ -224,10 +224,24 @@ export const getDefaultItems = async () => {
   const supervisionLevel = await getUserSupervisionLevel();
 
   // ── Nivel Avanzado ───────────────────────────────────────────────────────
+  // Sequential unlock like the basic level: Aventura 1 always open, Aventura N
+  // opens once Aventura N-1 is completed. Aventura N = DB activity id 10 + N
+  // (11–18); completion rules live in /api/user/activity-progress.
   if (supervisionLevel >= 2) {
+    let activityCompletion: Record<number, { isCompleted?: boolean }> = {};
+    try {
+      const response = await fetch('/api/user/activity-progress');
+      if (response.ok) {
+        const data = await response.json();
+        activityCompletion = data.activityCompletion || {};
+      }
+    } catch {
+      /* fall back to only Aventura 1 unlocked */
+    }
+
     return NIVEL_AVANZADO_ITEMS.map(item => ({
       ...item,
-      isUnlocked: true,
+      isUnlocked: item.id === 1 || !!activityCompletion[10 + item.id - 1]?.isCompleted,
     }));
   }
 

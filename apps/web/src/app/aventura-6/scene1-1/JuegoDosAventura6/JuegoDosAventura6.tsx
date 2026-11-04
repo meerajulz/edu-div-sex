@@ -144,7 +144,7 @@ export default function JuegoDosAventura6({ isVisible, onClose, onGameComplete }
       >
         {gameState !== GameState.COMPLETED && (
           <motion.div
-            className="relative bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-100 rounded-3xl shadow-2xl w-full max-w-5xl mx-4 overflow-hidden"
+            className="relative bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-100 rounded-3xl shadow-2xl w-[96vw] max-w-none mx-auto max-h-[96vh] min-h-[90vh] overflow-y-auto"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
@@ -221,7 +221,7 @@ export default function JuegoDosAventura6({ isVisible, onClose, onGameComplete }
                   <motion.div
                     key={`question-${currentQuestion.id}`}
                     className="relative flex-1 rounded-2xl overflow-hidden shadow-lg"
-                    style={{ height: '380px' }}
+                    style={{ height: '60vh' }}
                     initial={{ opacity: 0, x: 40 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4 }}

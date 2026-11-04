@@ -65,6 +65,13 @@ const { data: session } = useSession();
   // Volume control state
   const [currentVolume, setCurrentVolume] = useState(0.8);
 
+  // Nivel Avanzado (aventura-3): everyone plays BOTH versions — Cris (female) first,
+  // then Dani (male). Basic level keeps choosing the version from the student's sex.
+  const [avanzadoGender, setAvanzadoGender] = useState<'female' | 'male' | null>(null);
+  useEffect(() => {
+    if (localStorage.getItem('aventura-3-return-to')) setAvanzadoGender('female');
+  }, []);
+
   useEffect(() => {
     const updateDimensions = () => {
       const vw = window.innerWidth;
@@ -192,6 +199,12 @@ const { data: session } = useSession();
 
   const handleGameComplete = () => {
     setShowJuegoCuatro(false); // Close the game modal
+    // Advanced: after Cris's version, open Dani's version
+    if (avanzadoGender === 'female') {
+      setAvanzadoGender('male');
+      setTimeout(() => setShowJuegoCuatro(true), 600);
+      return;
+    }
     // Advanced (aventura) flow: the basic "¡Acabaste la aventura!" screen is for
     // basic users only. Skip it and go straight to the aventura's next step (video).
     if (localStorage.getItem('aventura-3-return-to')) {
@@ -487,9 +500,11 @@ const { data: session } = useSession();
 
       {/* FIXED: Correct component name - JuegoTresActividad3 */}
       <JuegoTresActividad3
+        key={avanzadoGender ?? 'basic'}
         isVisible={showJuegoCuatro}
         onClose={handleCloseJuegoCuatro}
         onGameComplete={handleGameComplete}
+        forceGender={avanzadoGender ?? undefined}
       />
 
     </motion.div>

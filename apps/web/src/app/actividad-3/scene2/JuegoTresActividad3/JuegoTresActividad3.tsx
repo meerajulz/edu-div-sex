@@ -16,13 +16,16 @@ interface JuegoTresActividad3Props {
   onClose: () => void;
   onGameComplete: () => void;
   userId?: string;
+  /** Nivel Avanzado: play a specific version regardless of the student's sex */
+  forceGender?: 'male' | 'female';
 }
 
 const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
   isVisible,
   onClose,
   onGameComplete,
-  userId
+  userId,
+  forceGender
 }) => {
   // Get the actual user session
   const { data: session } = useSession();
@@ -43,7 +46,7 @@ const JuegoTresActividad3: React.FC<JuegoTresActividad3Props> = ({
     return 'female';
   };
 
-  const userGender = getUserGender();
+  const userGender = forceGender ?? getUserGender();
   
   // Debug logging
   console.log('🎯 User gender from session:', session?.user?.sex);

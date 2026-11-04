@@ -90,6 +90,13 @@ export default function JuegoUnoAventura5({ isVisible, onClose, onGameComplete }
   };
 
   const handleNext = () => {
+    // Must choose INDIFERENCIA (the correct answer) to move on — otherwise retry same scene
+    if (selectedEmotion?.id !== 'indiferencia') {
+      setSelectedEmotion(null);
+      setCanContinue(false);
+      setGameState(GameState.PLAYING);
+      return;
+    }
     const nextIndex = roundIndex + 1;
     if (nextIndex >= shuffledScenes.length) {
       setGameState(GameState.COMPLETED);
@@ -282,7 +289,7 @@ export default function JuegoUnoAventura5({ isVisible, onClose, onGameComplete }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    {roundIndex + 1 >= shuffledScenes.length ? '¡Terminar!' : 'Siguiente →'}
+                    {selectedEmotion?.id !== 'indiferencia' ? 'Intentar de nuevo ↺' : roundIndex + 1 >= shuffledScenes.length ? '¡Terminar!' : 'Siguiente →'}
                   </motion.button>
                 )}
               </motion.div>

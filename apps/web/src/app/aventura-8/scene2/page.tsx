@@ -269,8 +269,8 @@ export default function Aventura8Scene2Page() {
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
           >
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
-            <p className="text-white text-lg mb-6">Has completado esta sección de la actividad</p>
+            <h2 className="text-3xl font-bold text-white mb-4">¡Muy bien!</h2>
+            <p className="text-white text-lg mb-6">Vuelve al mapa para seguir con la siguiente parte de la aventura</p>
             <motion.button
               onClick={handleGoToMenu}
               disabled={isAnimating}
@@ -278,7 +278,7 @@ export default function Aventura8Scene2Page() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Volver al menú
+              Volver al mapa
             </motion.button>
           </motion.div>
         </motion.div>

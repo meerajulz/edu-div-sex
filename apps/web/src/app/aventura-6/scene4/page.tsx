@@ -115,7 +115,7 @@ export default function Aventura6Scene4Page() {
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
           >
             <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
-            <p className="text-white text-lg mb-6">Has completado esta aventura</p>
+            <p className="text-white text-lg mb-6">¡Has completado la aventura! Vuelve al inicio para elegir la siguiente.</p>
             <motion.button
               onClick={handleGoToHub}
               disabled={isAnimating}
@@ -123,7 +123,7 @@ export default function Aventura6Scene4Page() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Volver al menú
+              Volver al inicio
             </motion.button>
           </motion.div>
         </motion.div>

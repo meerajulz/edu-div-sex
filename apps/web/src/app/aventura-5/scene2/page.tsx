@@ -153,7 +153,7 @@ export default function Aventura5Scene2Page() {
       video_watched: true,
       completed_at: new Date().toISOString(),
     });
-    setTimeout(() => { setIsAnimating(false); router.push('/aventura-5'); }, 800);
+    setTimeout(() => { setIsAnimating(false); router.push('/home'); }, 800);
   };
 
   return (
@@ -275,7 +275,7 @@ export default function Aventura5Scene2Page() {
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
           >
             <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
-            <p className="text-white text-lg mb-6">Has completado esta sección</p>
+            <p className="text-white text-lg mb-6">¡Has completado la aventura! Vuelve al inicio para elegir la siguiente.</p>
             <motion.button
               onClick={handleGoToHub}
               disabled={isAnimating}
@@ -283,7 +283,7 @@ export default function Aventura5Scene2Page() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Continuar al menú
+              Volver al inicio
             </motion.button>
           </motion.div>
         </motion.div>

@@ -18,7 +18,7 @@ export interface Scenario {
 
 export const GAME_CONFIG = {
   title: "Aprendo a pregunta y a no insistir",
-  introAudio: "/audio/actividad-6/juego4/t.mp3",
+  introAudio: "/audio/actividad-6/juego4/t-sin-titulo.mp3",
   introText: "Vamos a ver algunas situaciones. Si crees que la situación es correcta, pulsa la mano con el pulgar hacia arriba. Si te parece que la situación es incorrecta, pulsa la mano con el pulgar hacia abajo ¿Empezamos?",
   
   // Button images

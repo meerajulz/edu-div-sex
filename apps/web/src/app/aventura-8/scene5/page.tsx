@@ -214,7 +214,7 @@ export default function Aventura8Scene5Page() {
                   {!gameCompleted ? (
                     <JugarButton onClick={() => setShowGame(true)} disabled={isAnimating} text="Jugar" />
                   ) : (
-                    <JugarButton onClick={handleGoToMenu} disabled={isAnimating} text="Volver al menú" />
+                    <JugarButton onClick={handleGoToMenu} disabled={isAnimating} text="Volver al mapa" />
                   )}
                   {hasWatchedVideo && <VolverAVerButton onClick={handleReplayVideo} />}
                 </div>
@@ -235,15 +235,15 @@ export default function Aventura8Scene5Page() {
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
           >
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
-            <p className="text-white text-lg mb-6">Has completado esta sección</p>
+            <h2 className="text-3xl font-bold text-white mb-4">¡Muy bien!</h2>
+            <p className="text-white text-lg mb-6">Vuelve al mapa para seguir con la siguiente parte de la aventura</p>
             <motion.button
               onClick={handleGoToMenu}
               disabled={isAnimating}
               className="bg-white text-indigo-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             >
-              Volver al menú
+              Volver al mapa
             </motion.button>
           </motion.div>
         </motion.div>

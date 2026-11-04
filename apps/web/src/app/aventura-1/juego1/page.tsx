@@ -22,10 +22,12 @@ export default function Aventura1Juego1Page() {
     saveProgress('aventura-1', 'juego1', 'completed', 100, {
       completed_at: new Date().toISOString(),
     });
-    localStorage.setItem('aventura-1-return-to', '/aventura-1/scene4');
-    localStorage.setItem('aventura-1-skip-video', 'true');
+    // Client feedback: the girls' changes EXPLANATION must come before the Clara game.
+    // Chain: actividad-1/scene3 (video: cambios de las chicas) → aventura-1/juego1-clara
+    //        → actividad-1/scene4 (skip menstruation video, Clara game) → aventura-1/scene4
+    localStorage.setItem('aventura-1-return-to', '/aventura-1/juego1-clara');
     setAvanzadoContext('AVENTURA 1 - Descubriendo mi sexualidad');
-    router.push('/actividad-1/scene4');
+    router.push('/actividad-1/scene3');
   }, [saveProgress, router]);
 
   return (

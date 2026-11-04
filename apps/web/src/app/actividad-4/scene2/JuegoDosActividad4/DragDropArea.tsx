@@ -192,8 +192,11 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
       return;
     }
 
+    // Steps must be placed in order: only the first empty slot can be filled.
+    // Dropping a later step (e.g. step 5 before steps 1–4) counts as incorrect.
+    const nextPosition = currentSequence.findIndex(slot => slot === null);
     const expectedImageId = GAME_CONFIG.images.find(img => img.order === position + 1)?.id;
-    const isCorrect = draggedId === expectedImageId;
+    const isCorrect = position === nextPosition && draggedId === expectedImageId;
 
     console.log('🎮 Expected:', expectedImageId, 'Got:', draggedId, 'Correct:', isCorrect);
 

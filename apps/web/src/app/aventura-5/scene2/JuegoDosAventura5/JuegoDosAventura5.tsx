@@ -100,6 +100,8 @@ export default function JuegoDosAventura5({ isVisible, onClose, onGameComplete }
   };
 
   const handleNext = () => {
+    // Wrong answer → repeat the same question
+    if (!isCorrect) { startQuestion(questionIndex); return; }
     const nextIndex = questionIndex + 1;
     if (nextIndex >= questions.length) {
       setGameState(GameState.COMPLETED);
@@ -361,7 +363,7 @@ export default function JuegoDosAventura5({ isVisible, onClose, onGameComplete }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    {questionIndex + 1 >= questions.length ? '¡Terminar!' : 'Siguiente →'}
+                    {!isCorrect ? 'Intentar de nuevo ↺' : questionIndex + 1 >= questions.length ? '¡Terminar!' : 'Siguiente →'}
                   </motion.button>
                 )}
               </motion.div>

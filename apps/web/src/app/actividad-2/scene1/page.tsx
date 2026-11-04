@@ -267,7 +267,7 @@ export default function Actividad2Scene1Page() {
             <>
               <OptimizedVideo
                 ref={videoRef}
-                src="/video/ACTIVIDAD-2-ESCENA-1.mp4"
+                src="/video/ACTIVIDAD-2-ESCENA-2.mp4"
                 className="absolute inset-0 w-full h-full object-cover z-20"
                 autoPlay
                 playsInline

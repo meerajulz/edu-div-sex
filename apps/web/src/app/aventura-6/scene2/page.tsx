@@ -224,7 +224,7 @@ export default function Aventura6Scene2Page() {
                   animate={isAnimating ? { scale: [1, 1.3, 1] } : {}}
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 >
-                  <JugarButton text="Continuar al menú" onClick={handleGoToHub} disabled={isAnimating} />
+                  <JugarButton text="Volver al mapa" onClick={handleGoToHub} disabled={isAnimating} />
                 </motion.div>
                 {hasWatchedVideo && <VolverAVerButton onClick={handleReplayVideo} />}
               </div>

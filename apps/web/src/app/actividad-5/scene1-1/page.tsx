@@ -50,6 +50,13 @@ export default function Actividad5Scene1_1Page() {
   const handleGameComplete = () => {
     setJuego2Completed(true);
     setShowJuegoDos(false);
+    // Aventura 4 chain: another game follows right after — skip the
+    // "Has completado esta sección" overlay. Basic level unchanged.
+    const aventuraReturnTo = localStorage.getItem('aventura-4-return-to');
+    if (aventuraReturnTo && aventuraReturnTo !== '/aventura-4') {
+      handleGoToMenu();
+      return;
+    }
     setTimeout(() => {
       setShowCongratulations(true);
     }, 500);

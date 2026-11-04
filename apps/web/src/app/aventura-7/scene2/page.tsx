@@ -151,10 +151,10 @@ export default function Aventura7Scene2Page() {
       {showCongratulations && (
         <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
           <motion.div className="bg-gradient-to-br from-sky-300 via-blue-400 to-cyan-500 p-8 rounded-3xl shadow-2xl max-w-md mx-4 text-center" initial={{ scale: 0.5, y: 50 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', damping: 15, stiffness: 300 }}>
-            <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
-            <p className="text-white text-lg mb-6">Has completado esta sección</p>
+            <h2 className="text-3xl font-bold text-white mb-4">¡Muy bien!</h2>
+            <p className="text-white text-lg mb-6">Vuelve al mapa para seguir con la siguiente parte de la aventura</p>
             <motion.button onClick={handleGoToHub} disabled={isAnimating} className="bg-white text-sky-600 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              Continuar al menú
+              Volver al mapa
             </motion.button>
           </motion.div>
         </motion.div>

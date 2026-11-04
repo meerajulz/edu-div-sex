@@ -68,6 +68,6 @@ export const QUESTIONS: Question[] = [
     image: '/image/avanzado/aventura1/juego4/pregunta7/Pregunta7.png',
     audio: '/audio/advanced-aventura1/juego4/P7.mp3',
     correct:   { image: '/image/avanzado/aventura1/juego4/pregunta7/Respuesta7.1.png',   audio: '/audio/advanced-aventura1/juego4/P7C.mp3' },
-    incorrect: { image: '/image/avanzado/aventura1/juego4/pregunta7/Respuesta 7.2.png', audio: '/audio/advanced-aventura1/juego4/P7I.mp3' },
+    incorrect: { image: '/image/avanzado/aventura1/juego4/pregunta7/Respuesta7.2.png', audio: '/audio/advanced-aventura1/juego4/P7I.mp3' },
   },
 ];

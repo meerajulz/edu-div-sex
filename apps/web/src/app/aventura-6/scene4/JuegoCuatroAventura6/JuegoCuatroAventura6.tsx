@@ -177,6 +177,8 @@ export default function JuegoCuatroAventura6({ isVisible, onClose, onGameComplet
   };
 
   const handleNext = () => {
+    // Wrong answer → repeat the same situation
+    if (!isCorrect) { startScene(roundIndex); return; }
     const nextIndex = roundIndex + 1;
     if (nextIndex >= scenes.length) {
       setGameState(GameState.COMPLETED);
@@ -339,7 +341,7 @@ export default function JuegoCuatroAventura6({ isVisible, onClose, onGameComplet
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    {roundIndex + 1 >= scenes.length ? '¡Terminar!' : 'Siguiente →'}
+                    {!isCorrect ? 'Intentar de nuevo ↺' : roundIndex + 1 >= scenes.length ? '¡Terminar!' : 'Siguiente →'}
                   </motion.button>
                 )}
               </motion.div>

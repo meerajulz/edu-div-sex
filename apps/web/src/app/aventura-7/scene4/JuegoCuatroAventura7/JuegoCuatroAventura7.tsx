@@ -119,7 +119,7 @@ export default function JuegoCuatroAventura7({ isVisible, onClose, onGameComplet
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       >
         <motion.div
-          className="relative bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 rounded-3xl shadow-2xl w-full max-w-5xl mx-4 overflow-hidden min-h-[700px]"
+          className="relative bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 rounded-3xl shadow-2xl w-[96vw] max-w-none mx-auto max-h-[96vh] min-h-[90vh] overflow-y-auto"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
@@ -200,7 +200,7 @@ export default function JuegoCuatroAventura7({ isVisible, onClose, onGameComplet
                         className={`relative overflow-hidden transition-all duration-200 ${
                           isProcessing ? 'cursor-default' : 'cursor-pointer hover:scale-105'
                         }`}
-                        style={{ width: '380px', height: '340px' }}
+                        style={{ width: 'min(42vw, 600px)', height: 'min(50vh, 540px)' }}
                         whileTap={{ scale: 0.97 }}
                       >
                         <Image src={opt.image} alt={`Opción ${opt.id}`} fill className="object-contain" unoptimized />
@@ -253,7 +253,7 @@ export default function JuegoCuatroAventura7({ isVisible, onClose, onGameComplet
                 >
                   <motion.div
                     className="relative rounded-2xl overflow-hidden"
-                    style={{ width: '500px', height: '420px' }}
+                    style={{ width: 'min(46vw, 640px)', height: 'min(56vh, 560px)' }}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: 'spring', damping: 15, delay: 0.2 }}
@@ -271,7 +271,7 @@ export default function JuegoCuatroAventura7({ isVisible, onClose, onGameComplet
                 >
                   <motion.div
                     className="relative rounded-2xl overflow-hidden"
-                    style={{ width: '460px', height: '400px' }}
+                    style={{ width: 'min(44vw, 600px)', height: 'min(54vh, 540px)' }}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: 'spring', damping: 15, delay: 0.2 }}

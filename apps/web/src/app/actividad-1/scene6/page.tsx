@@ -207,7 +207,15 @@ export default function Scene6Page() {
 
   const handleGameComplete = () => {
     setGameCompleted(true);
-    // Always show congratulations overlay — handleGoToActivityMenu handles navigation
+    // Inside the Aventura 1 (Nivel Avanzado) chain, more content follows right after
+    // this game: skip the "Has completado esta sección" overlay and continue directly.
+    // Only show it when going back to a menu. Basic level (no return-to) is unchanged.
+    const aventuraReturnTo = localStorage.getItem('aventura-1-return-to');
+    if (aventuraReturnTo && aventuraReturnTo !== '/aventura-1') {
+      handleGoToActivityMenu();
+      return;
+    }
+    // Show congratulations overlay — handleGoToActivityMenu handles navigation
     setTimeout(() => {
       setShowCongratulations(true);
     }, 1000);

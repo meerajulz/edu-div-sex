@@ -111,6 +111,8 @@ export default function JuegoTresAventura6({ isVisible, onClose, onGameComplete 
   };
 
   const handleNext = () => {
+    // Wrong answer → repeat the same situation
+    if (!isCorrect) { startQuestion(roundIndex); return; }
     const nextIndex = roundIndex + 1;
     if (nextIndex >= questions.length) {
       setGameState(GameState.COMPLETED);
@@ -338,7 +340,7 @@ export default function JuegoTresAventura6({ isVisible, onClose, onGameComplete 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    {roundIndex + 1 >= questions.length ? '¡Terminar!' : 'Siguiente →'}
+                    {!isCorrect ? 'Intentar de nuevo ↺' : roundIndex + 1 >= questions.length ? '¡Terminar!' : 'Siguiente →'}
                   </motion.button>
                 )}
               </motion.div>

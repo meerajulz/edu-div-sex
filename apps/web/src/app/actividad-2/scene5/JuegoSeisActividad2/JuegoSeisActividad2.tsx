@@ -43,6 +43,8 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const circleRefs = useRef<Partial<Record<CircleId, HTMLDivElement | null>>>({});
+  // The draggable person card — its on-screen centre is used for hit-testing
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const dragControls = useAnimation();
 
   const stopAudio = () => {
@@ -98,11 +100,15 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
   const currentPerson = PEOPLE[part1Index];
   const currentQ = shuffledQuestions[part2Index];
 
+  // All coordinates here are VIEWPORT coordinates (getBoundingClientRect).
+  // Previously framer's info.point (PAGE coordinates) was compared against viewport
+  // rects, so any page scroll (common on tablets) made every drop miss → the card
+  // just sprang back with no feedback.
   const getDroppedCircle = (pointX: number, pointY: number): CircleId | null => {
     for (const [id, el] of Object.entries(circleRefs.current)) {
       if (!el) continue;
       const rect = el.getBoundingClientRect();
-      const padding = 20;
+      const padding = 40;
       if (
         pointX >= rect.left - padding && pointX <= rect.right + padding &&
         pointY >= rect.top - padding && pointY <= rect.bottom + padding
@@ -113,9 +119,20 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
     return null;
   };
 
+  const getCardCenter = (info: { point: { x: number; y: number } }) => {
+    const el = cardRef.current;
+    if (el) {
+      const r = el.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+    // Fallback: convert page coordinates to viewport coordinates
+    return { x: info.point.x - window.scrollX, y: info.point.y - window.scrollY };
+  };
+
   const handleDragEnd = async (_: unknown, info: { point: { x: number; y: number } }) => {
     if (phase !== Phase.PART1) return;
-    const dropped = getDroppedCircle(info.point.x, info.point.y);
+    const center = getCardCenter(info);
+    const dropped = getDroppedCircle(center.x, center.y);
 
     if (!dropped) {
       dragControls.start({ x: 0, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } });
@@ -136,8 +153,10 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
   };
 
   const handleDragMove = (_: unknown, info: { point: { x: number; y: number } }) => {
-    const hovered = getDroppedCircle(info.point.x, info.point.y);
-    setActiveCircle(hovered);
+    const center = getCardCenter(info);
+    const hovered = getDroppedCircle(center.x, center.y);
+    // Only re-render when the hovered circle actually changes
+    if (hovered !== activeCircle) setActiveCircle(hovered);
   };
 
   const handlePart1Next = () => {
@@ -180,8 +199,9 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
     }
   };
 
-  // Circle component used in both parts
-  const CircleZone = ({
+  // Circle renderer used in both parts. Called as a plain function (not <CircleZone/>)
+  // so React doesn't unmount/remount the circles on every drag-move re-render.
+  const renderCircleZone = ({
     circleId,
     isDropTarget,
     showPeople,
@@ -315,10 +335,16 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
 
                 {/* Main area: Noa + Circles */}
                 <div className="flex items-start gap-6 mb-6">
-                  {/* Noa placeholder */}
+                  {/* Noa (the character, not an emoji) */}
                   <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                    <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-purple-100 border-2 border-purple-200 flex items-center justify-center">
-                      <span className="absolute text-4xl">🧒</span>
+                    <div className="relative w-24 h-40 rounded-2xl overflow-hidden bg-purple-100 border-2 border-purple-200">
+                      <Image
+                        src="/svg/noa/noa-talk/noa-eyes-open-mouth-close-cross-leg.svg"
+                        fill
+                        alt="Noa"
+                        className="object-contain object-top p-1"
+                        unoptimized
+                      />
                     </div>
                     <span className="text-sm font-bold text-purple-600">Noa</span>
                   </div>
@@ -326,12 +352,13 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
                   {/* 3 Circles as drop zones */}
                   <div className="flex gap-4 justify-center flex-1">
                     {CIRCLES.map(circle => (
-                      <CircleZone
-                        key={circle.id}
-                        circleId={circle.id}
-                        isDropTarget={activeCircle === circle.id}
-                        showPeople={true}
-                      />
+                      <div key={circle.id}>
+                        {renderCircleZone({
+                          circleId: circle.id,
+                          isDropTarget: activeCircle === circle.id,
+                          showPeople: true,
+                        })}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -342,6 +369,7 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
                     <p className="text-sm text-gray-500 font-medium">Arrastra a la persona al círculo correcto</p>
                     <motion.div
                       key={`person-${dragKey}`}
+                      ref={cardRef}
                       drag
                       dragMomentum={false}
                       dragElastic={0.1}
@@ -452,13 +480,13 @@ export default function JuegoSeisActividad2({ isVisible, onClose, onGameComplete
                       : null;
                     return (
                       <div key={circle.id} className="relative">
-                        <CircleZone
-                          circleId={circle.id}
-                          showPeople={true}
-                          clickable={phase === Phase.PART2}
-                          onClick={() => handlePart2Select(circle.id)}
-                          highlight={highlight as 'correct' | 'incorrect' | null}
-                        />
+                        {renderCircleZone({
+                          circleId: circle.id,
+                          showPeople: true,
+                          clickable: phase === Phase.PART2,
+                          onClick: () => handlePart2Select(circle.id),
+                          highlight: highlight as 'correct' | 'incorrect' | null,
+                        })}
                         {isCorrectCircle && !part2Correct && phase === Phase.PART2_FEEDBACK && (
                           <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">✓</div>
                         )}

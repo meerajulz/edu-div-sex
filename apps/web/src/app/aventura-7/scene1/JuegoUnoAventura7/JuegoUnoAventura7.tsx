@@ -106,6 +106,8 @@ export default function JuegoUnoAventura7({ isVisible, onClose, onGameComplete }
   };
 
   const handleNext = () => {
+    // Wrong answer → repeat the same situation
+    if (!isCorrect) { startSituation(roundIndex); return; }
     const nextIndex = roundIndex + 1;
     if (nextIndex >= situations.length) {
       setGameState(GameState.COMPLETED);
@@ -277,7 +279,7 @@ export default function JuegoUnoAventura7({ isVisible, onClose, onGameComplete }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    {roundIndex + 1 >= situations.length ? '¡Terminar!' : 'Siguiente →'}
+                    {!isCorrect ? 'Intentar de nuevo ↺' : roundIndex + 1 >= situations.length ? '¡Terminar!' : 'Siguiente →'}
                   </motion.button>
                 )}
               </motion.div>

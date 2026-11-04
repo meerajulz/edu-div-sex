@@ -20,8 +20,9 @@ export default function Aventura4Juego1Page() {
     saveProgress('aventura-4', 'juego1', 'completed', 100, {
       completed_at: new Date().toISOString(),
     });
-    // Chain to JuegoDos (actividad-5/scene1-1), which returns to /aventura-4
-    localStorage.setItem('aventura-4-return-to', '/aventura-4');
+    // Chain: tono de voz game (actividad-5/scene1-1) → aventura-4/juego2
+    // → "¿Qué cara pondrá…?" (actividad-5/scene1-2) → /aventura-4
+    localStorage.setItem('aventura-4-return-to', '/aventura-4/juego2');
     setAvanzadoContext('AVENTURA 4 - Nos entendemos y respetamos');
     router.push('/actividad-5/scene1-1');
   };

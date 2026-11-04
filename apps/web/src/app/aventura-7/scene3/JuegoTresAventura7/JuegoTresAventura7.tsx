@@ -148,7 +148,7 @@ export default function JuegoTresAventura7({ isVisible, onClose, onGameComplete 
       >
         {gameState !== 'completed' && (
           <motion.div
-            className="relative bg-gradient-to-br from-teal-100 via-cyan-50 to-emerald-100 rounded-3xl shadow-2xl w-full max-w-5xl mx-4 overflow-hidden min-h-[700px]"
+            className="relative bg-gradient-to-br from-teal-100 via-cyan-50 to-emerald-100 rounded-3xl shadow-2xl w-[96vw] max-w-none mx-auto max-h-[96vh] min-h-[90vh] overflow-y-auto"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}

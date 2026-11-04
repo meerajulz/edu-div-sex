@@ -22,12 +22,12 @@ export default function Aventura1Juego2Page() {
     saveProgress('aventura-1', 'juego2', 'completed', 100, {
       completed_at: new Date().toISOString(),
     });
-    // Chain: scene4 (video only) → scene2 (full video+game) → scene6 (skip video, game) → /aventura-1
+    // Chain: actividad-1/scene4 (menstruation video only) → actividad-4/scene2
+    // (higiene menstrual video + compresa game) → /aventura-1 (map, before "El cuerpo de los mayores")
+    // (Client feedback: the erección game must NOT repeat after the compresa game.)
     localStorage.setItem('aventura-1-video-only', 'true');
     localStorage.setItem('aventura-1-return-to', '/actividad-4/scene2');
-    localStorage.setItem('aventura-1-next-return-to', '/actividad-1/scene6');
-    localStorage.setItem('aventura-1-skip-video-on-next-return', 'true');
-    localStorage.setItem('aventura-1-after-next-return-to', '/aventura-1');
+    localStorage.setItem('aventura-1-next-return-to', '/aventura-1');
     setAvanzadoContext('AVENTURA 1 - Descubriendo mi sexualidad');
     router.push('/actividad-1/scene4');
   }, [saveProgress, router]);

@@ -50,7 +50,7 @@ export default function Aventura8Scene6Page() {
 
     setTimeout(() => {
       setIsAnimating(false);
-      router.push('/aventura-8');
+      router.push('/home');
     }, 800);
   };
 
@@ -115,7 +115,7 @@ export default function Aventura8Scene6Page() {
           >
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-bold text-white mb-4">¡Felicidades!</h2>
-            <p className="text-white text-lg mb-6">Has completado esta sección de la actividad</p>
+            <p className="text-white text-lg mb-6">¡Has completado la aventura! Vuelve al inicio para elegir la siguiente.</p>
             <motion.button
               onClick={handleGoToMenu}
               disabled={isAnimating}
@@ -123,7 +123,7 @@ export default function Aventura8Scene6Page() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Volver al menú
+              Volver al inicio
             </motion.button>
           </motion.div>
         </motion.div>
